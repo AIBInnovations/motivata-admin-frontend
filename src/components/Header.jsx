@@ -1,10 +1,10 @@
 import { Bell, Search, Menu } from 'lucide-react'
 import adminImg from '../assets/images/header/adminimg.jpg'
 
-function Header() {
+function Header({ toggleSidebar }) {
   return (
     <header className="bg-white shadow-sm px-6 py-4 flex items-center justify-between">
-      <button className="p-2 text-gray-500 hover:bg-gray-100 rounded-lg transition-all">
+      <button onClick={toggleSidebar} className="p-2 text-gray-500 hover:bg-gray-100 rounded-lg transition-all">
         <Menu className="h-6 w-6" />
       </button>
 

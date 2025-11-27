@@ -1,10 +1,8 @@
-import { useState } from 'react'
-import { LayoutDashboard, Calendar, Users, LogOut, ChevronLeft, ChevronRight } from 'lucide-react'
+import { LayoutDashboard, Calendar, Users, LogOut, Ticket, UserCog, CreditCard, ShieldCheck, Banknote } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
-function Sidebar({ activeMenu, setActiveMenu }) {
+function Sidebar({ activeMenu, setActiveMenu, collapsed }) {
   const navigate = useNavigate()
-  const [collapsed, setCollapsed] = useState(false)
 
   const handleLogout = () => {
     navigate('/login')
@@ -14,6 +12,11 @@ function Sidebar({ activeMenu, setActiveMenu }) {
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'events', label: 'Events', icon: Calendar },
     { id: 'enrollments', label: 'Enrollments', icon: Users },
+    { id: 'coupons', label: 'Coupons', icon: Ticket },
+    { id: 'users', label: 'Users Management', icon: UserCog },
+    { id: 'admins', label: 'Admin Management', icon: ShieldCheck },
+    { id: 'payments', label: 'Payment History', icon: CreditCard },
+    { id: 'cashtickets', label: 'Cash Tickets', icon: Banknote },
   ]
 
   return (
@@ -46,14 +49,6 @@ function Sidebar({ activeMenu, setActiveMenu }) {
           ))}
         </ul>
       </nav>
-
-      {/* Collapse Button */}
-      <button
-        onClick={() => setCollapsed(!collapsed)}
-        className="p-4 border-t border-gray-200 flex items-center justify-center text-gray-500 hover:text-gray-700"
-      >
-        {collapsed ? <ChevronRight className="h-5 w-5" /> : <ChevronLeft className="h-5 w-5" />}
-      </button>
 
       {/* Logout */}
       <div className="p-4 border-t border-gray-200">
