@@ -24,7 +24,7 @@ function Sidebar({ activeMenu, collapsed }) {
 
   const menuItems = [
     // { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
-    // { id: 'events', label: 'Events', icon: Calendar, path: '/events' },
+    { id: "events", label: "Events", icon: Calendar, path: "/events" },
     // { id: 'enrollments', label: 'Enrollments', icon: Users, path: '/enrollments' },
     // { id: 'coupons', label: 'Coupons', icon: Ticket, path: '/coupons' },
     { id: "users", label: "Users Management", icon: UserCog, path: "/users" },
