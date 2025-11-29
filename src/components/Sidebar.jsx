@@ -27,7 +27,7 @@ function Sidebar({ activeMenu, collapsed }) {
     // { id: 'events', label: 'Events', icon: Calendar, path: '/events' },
     // { id: 'enrollments', label: 'Enrollments', icon: Users, path: '/enrollments' },
     // { id: 'coupons', label: 'Coupons', icon: Ticket, path: '/coupons' },
-    // { id: 'users', label: 'Users Management', icon: UserCog, path: '/users' },
+    { id: "users", label: "Users Management", icon: UserCog, path: "/users" },
     {
       id: "admins",
       label: "Admin Management",
