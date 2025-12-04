@@ -176,19 +176,29 @@ function Users() {
   };
 
   return (
-    <div>
+    <div className="space-y-4 sm:space-y-6">
+      {/* Page Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Users Management</h1>
+          <p className="text-sm sm:text-base text-gray-600 mt-1">
+            Manage and monitor user accounts
+          </p>
+        </div>
+      </div>
+
       {/* Search & Filters */}
-      <div className="bg-white rounded-xl shadow-sm p-4 mb-6">
-        <div className="flex flex-wrap items-center gap-4">
+      <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 border border-gray-200">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
           {/* Search Input */}
-          <div className="relative w-80">
+          <div className="relative flex-1 max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
             <input
               type="text"
               placeholder="Search by name, email, or phone..."
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+              className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
             />
           </div>
 
@@ -221,7 +231,7 @@ function Users() {
       )}
 
       {/* Users List */}
-      <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+      <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-200">
         {isLoading && users.length === 0 ? (
           <div className="py-12 flex flex-col items-center justify-center">
             <Loader2 className="h-8 w-8 text-blue-600 animate-spin" />
@@ -236,7 +246,8 @@ function Users() {
           </div>
         ) : (
           <>
-            <div className="overflow-x-auto">
+            {/* Desktop Table View */}
+            <div className="hidden lg:block overflow-x-auto">
               <table className="w-full">
                 <thead className="bg-gray-50 border-b border-gray-200">
                   <tr>
@@ -251,25 +262,25 @@ function Users() {
                   {users.map((user) => (
                     <tr
                       key={user._id}
-                      className={`border-b border-gray-100 hover:bg-gray-50 ${
+                      className={`border-b border-gray-100 hover:bg-gray-50 transition-colors ${
                         user.isDeleted ? 'bg-red-50/50' : ''
                       }`}
                     >
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                            <span className="text-blue-600 font-medium">
+                          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
+                            <span className="text-white font-semibold text-sm">
                               {user.name?.charAt(0)?.toUpperCase() || '?'}
                             </span>
                           </div>
-                          <div>
-                            <p className="font-medium text-gray-900">{user.name}</p>
-                            <p className="text-sm text-gray-500">{user.email}</p>
+                          <div className="min-w-0">
+                            <p className="font-medium text-gray-900 truncate">{user.name}</p>
+                            <p className="text-sm text-gray-500 truncate">{user.email}</p>
                           </div>
                         </div>
                       </td>
                       <td className="px-6 py-4 text-gray-600">{user.phone || '-'}</td>
-                      <td className="px-6 py-4 text-gray-600">
+                      <td className="px-6 py-4 text-gray-600 text-sm">
                         {user.lastLogin
                           ? new Date(user.lastLogin).toLocaleDateString('en-IN', {
                               day: 'numeric',
@@ -291,7 +302,6 @@ function Users() {
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center justify-end gap-2">
-                          {/* View Details */}
                           <button
                             onClick={() => handleViewDetails(user)}
                             className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
@@ -300,12 +310,10 @@ function Users() {
                             <Eye className="h-5 w-5" />
                           </button>
 
-                          {/* Actions based on user status and permissions */}
                           {canModify && (
                             <>
                               {user.isDeleted ? (
                                 <>
-                                  {/* Restore */}
                                   <button
                                     onClick={() => handleRestoreClick(user)}
                                     className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-all"
@@ -313,7 +321,6 @@ function Users() {
                                   >
                                     <RotateCcw className="h-5 w-5" />
                                   </button>
-                                  {/* Permanent Delete */}
                                   <button
                                     onClick={() => handlePermanentDeleteClick(user)}
                                     className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-all"
@@ -324,7 +331,6 @@ function Users() {
                                 </>
                               ) : (
                                 <>
-                                  {/* Edit */}
                                   <button
                                     onClick={() => handleEditClick(user)}
                                     className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-all"
@@ -332,7 +338,6 @@ function Users() {
                                   >
                                     <Edit className="h-5 w-5" />
                                   </button>
-                                  {/* Delete */}
                                   <button
                                     onClick={() => handleDeleteClick(user)}
                                     className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-all"
@@ -350,6 +355,104 @@ function Users() {
                   ))}
                 </tbody>
               </table>
+            </div>
+
+            {/* Mobile Card View */}
+            <div className="lg:hidden divide-y divide-gray-200">
+              {users.map((user) => (
+                <div
+                  key={user._id}
+                  className={`p-4 hover:bg-gray-50 transition-colors ${
+                    user.isDeleted ? 'bg-red-50/50' : ''
+                  }`}
+                >
+                  <div className="flex items-start gap-3 mb-3">
+                    <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
+                      <span className="text-white font-semibold">
+                        {user.name?.charAt(0)?.toUpperCase() || '?'}
+                      </span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-gray-900 truncate">{user.name}</p>
+                      <p className="text-sm text-gray-500 truncate">{user.email}</p>
+                      <p className="text-sm text-gray-500 mt-1">{user.phone || 'No phone'}</p>
+                    </div>
+                    <div>
+                      {user.isDeleted ? (
+                        <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700">
+                          Deleted
+                        </span>
+                      ) : (
+                        <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                          Active
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-500">
+                      Last login:{' '}
+                      {user.lastLogin
+                        ? new Date(user.lastLogin).toLocaleDateString('en-IN', {
+                            day: 'numeric',
+                            month: 'short',
+                          })
+                        : 'Never'}
+                    </span>
+
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => handleViewDetails(user)}
+                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                        title="View Details"
+                      >
+                        <Eye className="h-5 w-5" />
+                      </button>
+
+                      {canModify && (
+                        <>
+                          {user.isDeleted ? (
+                            <>
+                              <button
+                                onClick={() => handleRestoreClick(user)}
+                                className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-all"
+                                title="Restore"
+                              >
+                                <RotateCcw className="h-5 w-5" />
+                              </button>
+                              <button
+                                onClick={() => handlePermanentDeleteClick(user)}
+                                className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                                title="Delete Forever"
+                              >
+                                <Trash2 className="h-5 w-5" />
+                              </button>
+                            </>
+                          ) : (
+                            <>
+                              <button
+                                onClick={() => handleEditClick(user)}
+                                className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-all"
+                                title="Edit"
+                              >
+                                <Edit className="h-5 w-5" />
+                              </button>
+                              <button
+                                onClick={() => handleDeleteClick(user)}
+                                className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                                title="Delete"
+                              >
+                                <Trash2 className="h-5 w-5" />
+                              </button>
+                            </>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
 
             {/* Pagination */}

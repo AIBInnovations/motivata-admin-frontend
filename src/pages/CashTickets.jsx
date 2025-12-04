@@ -14,6 +14,7 @@ import {
   RefreshCw,
   ChevronDown,
 } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 import useCashTickets from '../hooks/useCashTickets';
 import CashTicketForm from '../components/cashtickets/CashTicketForm';
 import CashTicketDetailsModal from '../components/cashtickets/CashTicketDetailsModal';
@@ -59,6 +60,9 @@ const statusColors = {
 };
 
 function CashTickets() {
+  // Auth context
+  const { admin } = useAuth();
+
   // Hook for data management
   const {
     records,
@@ -77,6 +81,19 @@ function CashTickets() {
     changePage,
     clearError,
   } = useCashTickets();
+
+  // Check if user should see "Created By" column
+  const showCreatedByColumn = useMemo(() => {
+    return admin?.role === 'ADMIN' || admin?.role === 'SUPER_ADMIN';
+  }, [admin?.role]);
+
+  // Filter records for MANAGEMENT_STAFF to show only their own records
+  const filteredRecords = useMemo(() => {
+    if (admin?.role === 'MANAGEMENT_STAFF') {
+      return records.filter(record => record.generatedBy?._id === admin._id);
+    }
+    return records;
+  }, [records, admin?.role, admin?._id]);
 
   // Modal states
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
@@ -248,6 +265,26 @@ function CashTickets() {
     return filters.eventId || filters.redeemed !== '';
   }, [filters]);
 
+  // Calculate total tickets created (from current view)
+  const totalTicketsCreated = useMemo(() => {
+    return filteredRecords.reduce((sum, record) => sum + (record.ticketCount || 0), 0);
+  }, [filteredRecords]);
+
+  // Check if should show usage banner
+  const showUsageBanner = useMemo(() => {
+    return admin?.role === 'MANAGEMENT_STAFF' && admin?.maxCashTicketsAllowed != null;
+  }, [admin?.role, admin?.maxCashTicketsAllowed]);
+
+  // Calculate usage percentage
+  const usagePercentage = useMemo(() => {
+    if (!showUsageBanner) return 0;
+    return Math.min(100, (totalTicketsCreated / admin.maxCashTicketsAllowed) * 100);
+  }, [showUsageBanner, totalTicketsCreated, admin?.maxCashTicketsAllowed]);
+
+  // Determine if near or over limit
+  const isNearLimit = usagePercentage >= 80;
+  const isOverLimit = totalTicketsCreated >= admin?.maxCashTicketsAllowed;
+
   return (
     <div className="space-y-4 sm:space-y-6">
       {/* Header */}
@@ -260,12 +297,123 @@ function CashTickets() {
         </div>
         <button
           onClick={handleOpenFormModal}
-          className="flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+          disabled={isOverLimit}
+          className={`flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg transition-colors font-medium ${
+            isOverLimit
+              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              : 'bg-blue-600 text-white hover:bg-blue-700'
+          }`}
+          title={isOverLimit ? 'Ticket limit reached' : 'Generate new ticket link'}
         >
           <Plus className="h-5 w-5" />
           <span>Generate Link</span>
         </button>
       </div>
+
+      {/* Usage Banner for MANAGEMENT_STAFF with limits */}
+      {showUsageBanner && (
+        <div
+          className={`p-4 rounded-xl border ${
+            isOverLimit
+              ? 'bg-red-50 border-red-200'
+              : isNearLimit
+              ? 'bg-yellow-50 border-yellow-200'
+              : 'bg-blue-50 border-blue-200'
+          }`}
+        >
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-2">
+                <Ticket
+                  className={`h-5 w-5 ${
+                    isOverLimit
+                      ? 'text-red-600'
+                      : isNearLimit
+                      ? 'text-yellow-600'
+                      : 'text-blue-600'
+                  }`}
+                />
+                <h3
+                  className={`font-medium ${
+                    isOverLimit
+                      ? 'text-red-800'
+                      : isNearLimit
+                      ? 'text-yellow-800'
+                      : 'text-blue-800'
+                  }`}
+                >
+                  Ticket Generation Limit
+                </h3>
+              </div>
+              <p
+                className={`text-sm ${
+                  isOverLimit
+                    ? 'text-red-700'
+                    : isNearLimit
+                    ? 'text-yellow-700'
+                    : 'text-blue-700'
+                }`}
+              >
+                {isOverLimit ? (
+                  <>
+                    You have reached your maximum ticket limit. Contact your administrator to
+                    increase your limit.
+                  </>
+                ) : (
+                  <>
+                    You have created{' '}
+                    <span className="font-semibold">
+                      {totalTicketsCreated} of {admin.maxCashTicketsAllowed}
+                    </span>{' '}
+                    tickets ({admin.maxCashTicketsAllowed - totalTicketsCreated} remaining)
+                  </>
+                )}
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="text-right">
+                <div
+                  className={`text-2xl font-bold ${
+                    isOverLimit
+                      ? 'text-red-700'
+                      : isNearLimit
+                      ? 'text-yellow-700'
+                      : 'text-blue-700'
+                  }`}
+                >
+                  {totalTicketsCreated}
+                </div>
+                <div
+                  className={`text-xs ${
+                    isOverLimit
+                      ? 'text-red-600'
+                      : isNearLimit
+                      ? 'text-yellow-600'
+                      : 'text-blue-600'
+                  }`}
+                >
+                  of {admin.maxCashTicketsAllowed}
+                </div>
+              </div>
+            </div>
+          </div>
+          {/* Progress Bar */}
+          <div className="mt-3">
+            <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+              <div
+                className={`h-full transition-all duration-300 ${
+                  isOverLimit
+                    ? 'bg-red-600'
+                    : isNearLimit
+                    ? 'bg-yellow-500'
+                    : 'bg-blue-600'
+                }`}
+                style={{ width: `${usagePercentage}%` }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Error Banner */}
       {error && (
@@ -396,16 +544,15 @@ function CashTickets() {
                   Phone
                 </th>
                 <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">
-                  Tickets
+                  Details
                 </th>
-                <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">
-                  Price
-                </th>
+                {showCreatedByColumn && (
+                  <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">
+                    Created By
+                  </th>
+                )}
                 <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">
                   Status
-                </th>
-                <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">
-                  Created
                 </th>
                 <th className="text-right px-6 py-4 text-sm font-medium text-gray-600">
                   Actions
@@ -413,16 +560,16 @@ function CashTickets() {
               </tr>
             </thead>
             <tbody>
-              {isLoading && records.length === 0 ? (
+              {isLoading && filteredRecords.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center">
+                  <td colSpan={showCreatedByColumn ? 6 : 5} className="px-6 py-12 text-center">
                     <Loader2 className="h-8 w-8 text-blue-600 animate-spin mx-auto" />
                     <p className="mt-2 text-sm text-gray-500">Loading records...</p>
                   </td>
                 </tr>
-              ) : records.length === 0 ? (
+              ) : filteredRecords.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center">
+                  <td colSpan={showCreatedByColumn ? 6 : 5} className="px-6 py-12 text-center">
                     <Ticket className="h-12 w-12 text-gray-300 mx-auto" />
                     <p className="mt-2 text-sm text-gray-500">No records found</p>
                     <button
@@ -434,7 +581,7 @@ function CashTickets() {
                   </td>
                 </tr>
               ) : (
-                records.map((record) => (
+                filteredRecords.map((record) => (
                   <tr
                     key={record._id}
                     className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
@@ -459,15 +606,33 @@ function CashTickets() {
                       </div>
                     </td>
 
-                    {/* Tickets */}
-                    <td className="px-6 py-4 text-gray-600">
-                      {record.ticketCount} {record.ticketCount === 1 ? 'ticket' : 'tickets'}
+                    {/* Merged Column: Price x Tickets + Created At */}
+                    <td className="px-6 py-4">
+                      <div className="flex flex-col">
+                        <span className="text-gray-900 font-medium">
+                          {record.ticketCount} x {formatCurrency(record.priceCharged)}
+                        </span>
+                        <span className="text-xs text-gray-500 mt-0.5">
+                          {formatDate(record.createdAt)}
+                        </span>
+                      </div>
                     </td>
 
-                    {/* Price */}
-                    <td className="px-6 py-4 text-gray-900 font-medium">
-                      {formatCurrency(record.priceCharged)}
-                    </td>
+                    {/* Created By Column */}
+                    {showCreatedByColumn && (
+                      <td className="px-6 py-4">
+                        <div className="flex flex-col">
+                          <span className="text-gray-900 font-medium">
+                            {record.generatedBy?.name || '-'}
+                          </span>
+                          {(record.generatedBy?.email || record.generatedBy?.phone) && (
+                            <span className="text-xs text-gray-500 mt-0.5">
+                              {record.generatedBy?.email || record.generatedBy?.phone}
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                    )}
 
                     {/* Status */}
                     <td className="px-6 py-4">
@@ -478,11 +643,6 @@ function CashTickets() {
                       >
                         {record.redeemed ? 'Redeemed' : 'Pending'}
                       </span>
-                    </td>
-
-                    {/* Created */}
-                    <td className="px-6 py-4 text-sm text-gray-500">
-                      {formatDate(record.createdAt)}
                     </td>
 
                     {/* Actions */}
@@ -550,12 +710,12 @@ function CashTickets() {
 
       {/* Records Cards - Mobile */}
       <div className="md:hidden space-y-4">
-        {isLoading && records.length === 0 ? (
+        {isLoading && filteredRecords.length === 0 ? (
           <div className="bg-white rounded-xl shadow-sm p-8 text-center">
             <Loader2 className="h-8 w-8 text-blue-600 animate-spin mx-auto" />
             <p className="mt-2 text-sm text-gray-500">Loading records...</p>
           </div>
-        ) : records.length === 0 ? (
+        ) : filteredRecords.length === 0 ? (
           <div className="bg-white rounded-xl shadow-sm p-8 text-center">
             <Ticket className="h-12 w-12 text-gray-300 mx-auto" />
             <p className="mt-2 text-sm text-gray-500">No records found</p>
@@ -568,7 +728,7 @@ function CashTickets() {
           </div>
         ) : (
           <>
-            {records.map((record) => (
+            {filteredRecords.map((record) => (
               <div
                 key={record._id}
                 className="bg-white rounded-xl shadow-sm p-4 space-y-3"
@@ -606,18 +766,27 @@ function CashTickets() {
                   <div className="flex items-center gap-2">
                     <Ticket className="h-4 w-4 text-gray-400" />
                     <span className="text-gray-600">
-                      {record.ticketCount} ticket{record.ticketCount !== 1 ? 's' : ''}
+                      {record.ticketCount} x {formatCurrency(record.priceCharged)}
                     </span>
                   </div>
                 </div>
 
-                {/* Price */}
-                <div className="flex items-center justify-between pt-2 border-t border-gray-100">
-                  <span className="text-sm text-gray-500">Price Charged</span>
-                  <span className="font-semibold text-gray-900">
-                    {formatCurrency(record.priceCharged)}
-                  </span>
-                </div>
+                {/* Created By - Show for ADMIN/SUPER_ADMIN */}
+                {showCreatedByColumn && (
+                  <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+                    <span className="text-sm text-gray-500">Created By</span>
+                    <div className="flex flex-col items-end">
+                      <span className="text-sm font-medium text-gray-900">
+                        {record.generatedBy?.name || '-'}
+                      </span>
+                      {(record.generatedBy?.email || record.generatedBy?.phone) && (
+                        <span className="text-xs text-gray-500">
+                          {record.generatedBy?.email || record.generatedBy?.phone}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )}
 
                 {/* Actions */}
                 <div className="flex items-center gap-2 pt-2 border-t border-gray-100">

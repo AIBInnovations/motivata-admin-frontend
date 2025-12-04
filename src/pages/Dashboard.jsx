@@ -1,47 +1,210 @@
+import { useState, useEffect } from 'react';
+import { MdRefresh, MdDownload } from 'react-icons/md';
+import { toast } from 'react-toastify';
+
+// Components
+import TimeRangeSelector from '../components/analytics/TimeRangeSelector';
+import CommunicationStats from '../components/analytics/CommunicationStats';
+import UserStats from '../components/analytics/UserStats';
+import RevenueChart from '../components/analytics/RevenueChart';
+import EventsOverview from '../components/analytics/EventsOverview';
+import AdminPerformanceTable from '../components/analytics/AdminPerformanceTable';
+import TopPerformingEvents from '../components/analytics/TopPerformingEvents';
+import RecentActivity from '../components/analytics/RecentActivity';
+import CouponsVouchers from '../components/analytics/CouponsVouchers';
+
+// Services
+import { getDashboardStatistics } from '../services/analytics.service';
+
+/**
+ * Dashboard Page - Analytics dashboard with comprehensive statistics
+ */
 function Dashboard() {
-  const stats = [
-    { title: 'Total Events', value: '24', color: 'bg-blue-500' },
-    { title: 'Total Enrollments', value: '1,234', color: 'bg-green-500' },
-    { title: 'Active Users', value: '856', color: 'bg-purple-500' },
-    { title: 'This Month', value: '+12.5%', color: 'bg-orange-500' },
-  ]
+  const [timeRange, setTimeRange] = useState('lifetime');
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [lastUpdated, setLastUpdated] = useState(null);
+
+  // Fetch dashboard statistics
+  const fetchDashboardData = async () => {
+    setLoading(true);
+    try {
+      const response = await getDashboardStatistics();
+
+      if (response.success) {
+        setData(response.data);
+        setLastUpdated(new Date());
+        console.log('[Dashboard] Data loaded successfully');
+      } else {
+        const errorMsg = response.message || 'Failed to load dashboard statistics';
+        toast.error(errorMsg);
+        console.error('[Dashboard] Error:', response.error);
+
+        // Show backend error details in console for debugging
+        if (response.error) {
+          console.error('[Dashboard] Backend Error Details:', {
+            status: response.status,
+            message: response.message,
+            error: response.error,
+          });
+        }
+      }
+    } catch (error) {
+      toast.error('An unexpected error occurred while loading dashboard');
+      console.error('[Dashboard] Exception:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Load data on mount
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
+
+  // Handle refresh
+  const handleRefresh = () => {
+    toast.info('Refreshing dashboard data...');
+    fetchDashboardData();
+  };
+
+  // Handle export (placeholder)
+  const handleExport = () => {
+    toast.info('Export functionality coming soon!');
+    // TODO: Implement CSV/Excel export
+  };
+
+  // Get data for selected time range
+  const getTimeRangeData = (dataObj) => {
+    if (!dataObj) return null;
+    return dataObj[timeRange] || dataObj.lifetime || dataObj;
+  };
 
   return (
     <>
-      <div className="mb-8">
-        <h2 className="text-2xl font-bold text-gray-900">Welcome back, Admin!</h2>
-        <p className="text-gray-600 mt-1">Here's what's happening with your business today.</p>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {stats.map((stat, index) => (
-          <div key={index} className="bg-white rounded-xl shadow-sm p-6">
-            <p className="text-sm text-gray-600">{stat.title}</p>
-            <p className="text-2xl font-bold text-gray-900 mt-1">{stat.value}</p>
-            <div className={`${stat.color} h-1 w-full rounded mt-4`}></div>
+      <div className="space-y-4">
+        {/* Header - More Compact */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div>
+            <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 tracking-tight">Dashboard</h1>
+            <p className="text-xs text-gray-600 mt-1">
+              Comprehensive insights and analytics
+              {lastUpdated && (
+                <span className="ml-2">
+                  • Updated {lastUpdated.toLocaleTimeString()}
+                </span>
+              )}
+            </p>
           </div>
-        ))}
-      </div>
 
-      <div className="bg-white rounded-xl shadow-sm p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h3>
-        <div className="space-y-4">
-          {[1, 2, 3, 4, 5].map((item) => (
-            <div key={item} className="flex items-center justify-between py-3 border-b border-gray-100 last:border-0">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gray-200 rounded-full"></div>
-                <div>
-                  <p className="font-medium text-gray-900">New enrollment #{1000 + item}</p>
-                  <p className="text-sm text-gray-500">2 minutes ago</p>
-                </div>
-              </div>
-              <span className="text-green-600 font-medium">Confirmed</span>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleRefresh}
+              disabled={loading}
+              className="flex items-center gap-1.5 px-3 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm text-sm"
+              title="Refresh dashboard data"
+            >
+              <MdRefresh className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+              <span className="hidden sm:inline font-medium">Refresh</span>
+            </button>
+
+            <button
+              onClick={handleExport}
+              className="flex items-center gap-1.5 px-3 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all shadow-sm text-sm"
+              title="Export dashboard data"
+            >
+              <MdDownload className="w-4 h-4" />
+              <span className="hidden sm:inline font-medium">Export</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Time Range Selector */}
+        {data && <TimeRangeSelector selected={timeRange} onChange={setTimeRange} />}
+
+        {/* Error/Empty State */}
+        {!loading && !data && (
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
+            <div className="max-w-md mx-auto">
+              <div className="text-red-500 text-6xl mb-4">⚠️</div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Failed to Load Dashboard</h3>
+              <p className="text-gray-600 mb-6">
+                There was an error loading the analytics data. This is likely a backend issue.
+              </p>
+              <button
+                onClick={handleRefresh}
+                className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Try Again
+              </button>
             </div>
-          ))}
+          </div>
+        )}
+
+        {/* 🔥 Recent Activity - PRIORITY: Always shows at top */}
+        {data?.recentActivity?.last24Hours && (
+          <RecentActivity data={data.recentActivity.last24Hours} loading={loading} />
+        )}
+
+        {/* 💰 Revenue & Payments - IMPORTANT: Business metrics */}
+        {data?.payments && (
+          <RevenueChart data={getTimeRangeData(data.payments)} loading={loading} />
+        )}
+
+        {/* 👥 Users & Admins - Compact side-by-side */}
+        {(data?.users || data?.admins) && (
+          <UserStats usersData={data.users} adminsData={data.admins} loading={loading} />
+        )}
+
+        {/* 🎪 Events Overview - Major section with asymmetric layout */}
+        {data?.events && (
+          <EventsOverview
+            data={data.events}
+            enrollmentsData={getTimeRangeData(data.enrollments)}
+            cashTicketsData={getTimeRangeData(data.cashTickets)}
+            loading={loading}
+          />
+        )}
+
+        {/* 💬 Communication Stats - Compact layout */}
+        {data?.communications && (
+          <CommunicationStats data={getTimeRangeData(data.communications)} loading={loading} />
+        )}
+
+        {/* 🎟️ Coupons & Vouchers - Compact single row */}
+        {(data?.coupons || data?.vouchers) && (
+          <CouponsVouchers couponsData={data.coupons} vouchersData={data.vouchers} loading={loading} />
+        )}
+
+        {/* 🏆 Top Performing Events */}
+        {data?.topPerformingEvents && data.topPerformingEvents.length > 0 && (
+          <TopPerformingEvents events={data.topPerformingEvents} loading={loading} />
+        )}
+
+        {/* 📊 Event Stats (Time-based) */}
+        {data?.eventStats && getTimeRangeData(data.eventStats)?.length > 0 && (
+          <div className="space-y-4">
+            <h2 className="text-2xl font-bold text-gray-900 tracking-tight">
+              Events Performance ({timeRange.replace(/([A-Z])/g, ' $1').trim()})
+            </h2>
+            <TopPerformingEvents events={getTimeRangeData(data.eventStats)} loading={loading} />
+          </div>
+        )}
+
+        {/* 👨‍💼 Admin Performance */}
+        {data?.adminPerformance && data.adminPerformance.length > 0 && (
+          <AdminPerformanceTable data={data.adminPerformance} loading={loading} />
+        )}
+
+        {/* Footer */}
+        <div className="text-center text-xs text-gray-500 py-6 border-t border-gray-200">
+          {data?.generatedAt && (
+            <p>Statistics generated at: {new Date(data.generatedAt).toLocaleString()}</p>
+          )}
         </div>
       </div>
     </>
-  )
+  );
 }
 
-export default Dashboard
+export default Dashboard;

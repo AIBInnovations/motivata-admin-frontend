@@ -290,6 +290,11 @@ function Admins() {
             {statusInfo.label}
           </span>
           <span className="text-xs text-gray-500">{formatPhone(admin.phone)}</span>
+          {admin.role === 'MANAGEMENT_STAFF' && admin.maxCashTicketsAllowed != null && (
+            <span className="text-xs text-gray-500">
+              Max Tickets: {admin.maxCashTicketsAllowed}
+            </span>
+          )}
         </div>
       </div>
     );
@@ -441,11 +446,18 @@ function Admins() {
                     </td>
                     <td className="px-4 lg:px-6 py-3 lg:py-4 text-sm text-gray-600">{formatPhone(admin.phone)}</td>
                     <td className="px-4 lg:px-6 py-3 lg:py-4">
-                      <span
-                        className={`px-2 lg:px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap ${roleInfo.color}`}
-                      >
-                        {roleInfo.label}
-                      </span>
+                      <div className="flex flex-col gap-1">
+                        <span
+                          className={`px-2 lg:px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap ${roleInfo.color} inline-flex items-center w-fit`}
+                        >
+                          {roleInfo.label}
+                        </span>
+                        {admin.role === 'MANAGEMENT_STAFF' && admin.maxCashTicketsAllowed != null && (
+                          <span className="text-xs text-gray-500">
+                            Max: {admin.maxCashTicketsAllowed} tickets
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td className="px-4 lg:px-6 py-3 lg:py-4">
                       <span

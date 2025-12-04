@@ -1,28 +1,28 @@
-import { useState, useEffect } from 'react';
-import { Loader2, Eye, EyeOff } from 'lucide-react';
-import Modal from '../ui/Modal';
-import EventMultiSelect from '../ui/EventMultiSelect';
+import { useState, useEffect } from "react";
+import { Loader2, Eye, EyeOff } from "lucide-react";
+import Modal from "../ui/Modal";
+import EventMultiSelect from "../ui/EventMultiSelect";
 
 // Role options matching backend enum
 const ROLE_OPTIONS = [
-  { value: 'MANAGEMENT_STAFF', label: 'Management Staff' },
-  { value: 'ADMIN', label: 'Admin' },
-  { value: 'SUPER_ADMIN', label: 'Super Admin' },
+  { value: "MANAGEMENT_STAFF", label: "Management Staff" },
+  { value: "ADMIN", label: "Admin" },
+  { value: "SUPER_ADMIN", label: "Super Admin" },
 ];
 
 // Status options matching backend enum
 const STATUS_OPTIONS = [
-  { value: 'ACTIVATED', label: 'Active' },
-  { value: 'DEACTIVATED', label: 'Inactive' },
+  { value: "ACTIVATED", label: "Active" },
+  { value: "DEACTIVATED", label: "Inactive" },
 ];
 
 // Common access permissions
 const ACCESS_OPTIONS = [
-  { value: 'events', label: 'Events' },
-  { value: 'enrollments', label: 'Enrollments' },
-  { value: 'payments', label: 'Payments' },
-  { value: 'users', label: 'Users' },
-  { value: 'coupons', label: 'Coupons' },
+  { value: "events", label: "Events" },
+  { value: "enrollments", label: "Enrollments" },
+  { value: "payments", label: "Payments" },
+  { value: "users", label: "Users" },
+  { value: "coupons", label: "Coupons" },
 ];
 
 /**
@@ -31,24 +31,25 @@ const ACCESS_OPTIONS = [
  */
 const extractEventIds = (allowedEvents) => {
   if (!allowedEvents || !Array.isArray(allowedEvents)) return [];
-  return allowedEvents.map((event) =>
-    typeof event === 'string' ? event : event._id
-  ).filter(Boolean);
+  return allowedEvents
+    .map((event) => (typeof event === "string" ? event : event._id))
+    .filter(Boolean);
 };
 
 /**
  * Initial form state
  */
 const getInitialFormState = (admin = null) => ({
-  name: admin?.name || '',
-  username: admin?.username || '',
-  email: admin?.email || '',
-  phone: admin?.phone || '',
-  password: '',
-  role: admin?.role || 'MANAGEMENT_STAFF',
-  status: admin?.status || 'ACTIVATED',
+  name: admin?.name || "",
+  username: admin?.username || "",
+  email: admin?.email || "",
+  phone: admin?.phone || "",
+  password: "",
+  role: admin?.role || "MANAGEMENT_STAFF",
+  status: admin?.status || "ACTIVATED",
   access: admin?.access || [],
   allowedEvents: extractEventIds(admin?.allowedEvents),
+  maxCashTicketsAllowed: admin?.maxCashTicketsAllowed || "",
 });
 
 /**
@@ -62,39 +63,57 @@ const validateForm = (data, isEdit = false) => {
 
   // Name validation
   if (!data.name.trim()) {
-    errors.name = 'Name is required';
+    errors.name = "Name is required";
   } else if (data.name.length < 2 || data.name.length > 100) {
-    errors.name = 'Name must be between 2 and 100 characters';
+    errors.name = "Name must be between 2 and 100 characters";
   }
 
   // Username validation (required)
   if (!data.username.trim()) {
-    errors.username = 'Username is required';
+    errors.username = "Username is required";
   } else if (data.username.length < 3 || data.username.length > 50) {
-    errors.username = 'Username must be between 3 and 50 characters';
+    errors.username = "Username must be between 3 and 50 characters";
   } else if (!/^[a-zA-Z0-9_]+$/.test(data.username)) {
-    errors.username = 'Username can only contain letters, numbers, and underscores';
+    errors.username =
+      "Username can only contain letters, numbers, and underscores";
   }
 
   // Email validation (optional, but validate format if provided)
   if (data.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
-    errors.email = 'Invalid email format';
+    errors.email = "Invalid email format";
   }
 
   // Phone validation (optional, but validate format if provided)
   if (data.phone.trim()) {
-    const cleanedPhone = data.phone.replace(/[^0-9]/g, '');
-    if (cleanedPhone.length > 0 && (cleanedPhone.length < 10 || cleanedPhone.length > 15)) {
-      errors.phone = 'Phone must be 10-15 digits';
+    const cleanedPhone = data.phone.replace(/[^0-9]/g, "");
+    if (
+      cleanedPhone.length > 0 &&
+      (cleanedPhone.length < 10 || cleanedPhone.length > 15)
+    ) {
+      errors.phone = "Phone must be 10-15 digits";
     }
   }
 
   // Password validation (only required for create)
   if (!isEdit) {
     if (!data.password) {
-      errors.password = 'Password is required';
+      errors.password = "Password is required";
     } else if (data.password.length < 8) {
-      errors.password = 'Password must be at least 8 characters';
+      errors.password = "Password must be at least 8 characters";
+    }
+  }
+
+  // Max cash tickets validation (optional, but validate if provided)
+  if (
+    data.maxCashTicketsAllowed !== "" &&
+    data.maxCashTicketsAllowed !== null &&
+    data.maxCashTicketsAllowed !== undefined
+  ) {
+    const maxTickets = parseInt(data.maxCashTicketsAllowed, 10);
+    if (isNaN(maxTickets)) {
+      errors.maxCashTicketsAllowed = "Must be a valid number";
+    } else if (maxTickets < 0) {
+      errors.maxCashTicketsAllowed = "Cannot be negative";
     }
   }
 
@@ -156,8 +175,12 @@ function AdminForm({
     setFormData((prev) => {
       const newData = { ...prev, [name]: value };
       // Clear allowedEvents when switching to SUPER_ADMIN
-      if (name === 'role' && value === 'SUPER_ADMIN') {
+      if (name === "role" && value === "SUPER_ADMIN") {
         newData.allowedEvents = [];
+      }
+      // Clear maxCashTicketsAllowed when switching to ADMIN or SUPER_ADMIN (unlimited)
+      if (name === "role" && (value === "ADMIN" || value === "SUPER_ADMIN")) {
+        newData.maxCashTicketsAllowed = "";
       }
       return newData;
     });
@@ -168,7 +191,10 @@ function AdminForm({
   };
 
   // Check if allowed events should be shown (not for SUPER_ADMIN)
-  const showAllowedEvents = formData.role !== 'SUPER_ADMIN';
+  const showAllowedEvents = formData.role !== "SUPER_ADMIN";
+
+  // Check if max cash tickets field should be shown (only for MANAGEMENT_STAFF)
+  const showMaxCashTickets = formData.role === "MANAGEMENT_STAFF";
 
   const handleAccessChange = (accessValue) => {
     setFormData((prev) => ({
@@ -200,7 +226,7 @@ function AdminForm({
     const submitData = { ...formData };
 
     // Clean phone number
-    submitData.phone = submitData.phone.replace(/[^0-9]/g, '');
+    submitData.phone = submitData.phone.replace(/[^0-9]/g, "");
 
     // Remove password field if edit and empty
     if (isEdit && !submitData.password) {
@@ -210,6 +236,20 @@ function AdminForm({
     // Remove status from create (backend uses default)
     if (!isEdit) {
       delete submitData.status;
+    }
+
+    // Handle maxCashTicketsAllowed - convert to number or remove if empty
+    if (
+      submitData.maxCashTicketsAllowed === "" ||
+      submitData.maxCashTicketsAllowed === null ||
+      submitData.maxCashTicketsAllowed === undefined
+    ) {
+      delete submitData.maxCashTicketsAllowed;
+    } else {
+      submitData.maxCashTicketsAllowed = parseInt(
+        submitData.maxCashTicketsAllowed,
+        10
+      );
     }
 
     await onSubmit(submitData);
@@ -225,7 +265,7 @@ function AdminForm({
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      title={isEdit ? 'Edit Admin' : 'Create New Admin'}
+      title={isEdit ? "Edit Admin" : "Create New Admin"}
       size="xl"
       closeOnOverlayClick={!isLoading}
     >
@@ -242,7 +282,10 @@ function AdminForm({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Name */}
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="name"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Name <span className="text-red-500">*</span>
               </label>
               <input
@@ -253,16 +296,23 @@ function AdminForm({
                 onChange={handleChange}
                 disabled={isLoading}
                 className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none disabled:bg-gray-100 text-sm sm:text-base ${
-                  errors.name ? 'border-red-500' : 'border-gray-300'
+                  errors.name ? "border-red-500" : "border-gray-300"
                 }`}
                 placeholder="Enter admin name"
               />
-              {errors.name && <p className="mt-1 text-xs sm:text-sm text-red-500">{errors.name}</p>}
+              {errors.name && (
+                <p className="mt-1 text-xs sm:text-sm text-red-500">
+                  {errors.name}
+                </p>
+              )}
             </div>
 
             {/* Username */}
             <div>
-              <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="username"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Username <span className="text-red-500">*</span>
               </label>
               <input
@@ -273,17 +323,25 @@ function AdminForm({
                 onChange={handleChange}
                 disabled={isLoading}
                 className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none disabled:bg-gray-100 text-sm sm:text-base ${
-                  errors.username ? 'border-red-500' : 'border-gray-300'
+                  errors.username ? "border-red-500" : "border-gray-300"
                 }`}
                 placeholder="Enter username"
               />
-              {errors.username && <p className="mt-1 text-xs sm:text-sm text-red-500">{errors.username}</p>}
+              {errors.username && (
+                <p className="mt-1 text-xs sm:text-sm text-red-500">
+                  {errors.username}
+                </p>
+              )}
             </div>
 
             {/* Email */}
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                Email <span className="text-gray-400 text-xs ml-1">(optional)</span>
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Email{" "}
+                <span className="text-gray-400 text-xs ml-1">(optional)</span>
               </label>
               <input
                 type="email"
@@ -293,17 +351,25 @@ function AdminForm({
                 onChange={handleChange}
                 disabled={isLoading}
                 className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none disabled:bg-gray-100 text-sm sm:text-base ${
-                  errors.email ? 'border-red-500' : 'border-gray-300'
+                  errors.email ? "border-red-500" : "border-gray-300"
                 }`}
                 placeholder="Enter email address"
               />
-              {errors.email && <p className="mt-1 text-xs sm:text-sm text-red-500">{errors.email}</p>}
+              {errors.email && (
+                <p className="mt-1 text-xs sm:text-sm text-red-500">
+                  {errors.email}
+                </p>
+              )}
             </div>
 
             {/* Phone */}
             <div>
-              <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
-                Phone <span className="text-gray-400 text-xs ml-1">(optional)</span>
+              <label
+                htmlFor="phone"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Phone{" "}
+                <span className="text-gray-400 text-xs ml-1">(optional)</span>
               </label>
               <input
                 type="tel"
@@ -313,46 +379,70 @@ function AdminForm({
                 onChange={handleChange}
                 disabled={isLoading}
                 className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none disabled:bg-gray-100 text-sm sm:text-base ${
-                  errors.phone ? 'border-red-500' : 'border-gray-300'
+                  errors.phone ? "border-red-500" : "border-gray-300"
                 }`}
                 placeholder="Enter phone number"
               />
-              {errors.phone && <p className="mt-1 text-xs sm:text-sm text-red-500">{errors.phone}</p>}
+              {errors.phone && (
+                <p className="mt-1 text-xs sm:text-sm text-red-500">
+                  {errors.phone}
+                </p>
+              )}
             </div>
 
             {/* Password */}
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Password {!isEdit && <span className="text-red-500">*</span>}
-                {isEdit && <span className="text-gray-400 text-xs ml-1">(leave empty to keep current)</span>}
+                {isEdit && (
+                  <span className="text-gray-400 text-xs ml-1">
+                    (leave empty to keep current)
+                  </span>
+                )}
               </label>
               <div className="relative">
                 <input
-                  type={showPassword ? 'text' : 'password'}
+                  type={showPassword ? "text" : "password"}
                   id="password"
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
                   disabled={isLoading}
                   className={`w-full px-3 py-2 pr-10 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none disabled:bg-gray-100 text-sm sm:text-base ${
-                    errors.password ? 'border-red-500' : 'border-gray-300'
+                    errors.password ? "border-red-500" : "border-gray-300"
                   }`}
-                  placeholder={isEdit ? 'New password (optional)' : 'Enter password'}
+                  placeholder={
+                    isEdit ? "New password (optional)" : "Enter password"
+                  }
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                 >
-                  {showPassword ? <EyeOff className="h-4 w-4 sm:h-5 sm:w-5" /> : <Eye className="h-4 w-4 sm:h-5 sm:w-5" />}
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4 sm:h-5 sm:w-5" />
+                  ) : (
+                    <Eye className="h-4 w-4 sm:h-5 sm:w-5" />
+                  )}
                 </button>
               </div>
-              {errors.password && <p className="mt-1 text-xs sm:text-sm text-red-500">{errors.password}</p>}
+              {errors.password && (
+                <p className="mt-1 text-xs sm:text-sm text-red-500">
+                  {errors.password}
+                </p>
+              )}
             </div>
 
             {/* Role */}
             <div>
-              <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="role"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Role
               </label>
               <select
@@ -374,7 +464,10 @@ function AdminForm({
             {/* Status (only for edit) */}
             {isEdit && (
               <div>
-                <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="status"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Status
                 </label>
                 <select
@@ -393,6 +486,45 @@ function AdminForm({
                 </select>
               </div>
             )}
+
+            {/* Max Cash Tickets Allowed (only for MANAGEMENT_STAFF) */}
+            {showMaxCashTickets && (
+              <div>
+                <label
+                  htmlFor="maxCashTicketsAllowed"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Max Cash Tickets Allowed
+                </label>
+                <input
+                  type="number"
+                  id="maxCashTicketsAllowed"
+                  name="maxCashTicketsAllowed"
+                  value={formData.maxCashTicketsAllowed}
+                  onChange={handleChange}
+                  disabled={isLoading}
+                  min="0"
+                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none disabled:bg-gray-100 text-sm sm:text-base ${
+                    errors.maxCashTicketsAllowed
+                      ? "border-red-500"
+                      : "border-gray-300"
+                  }`}
+                  placeholder="Enter max tickets or leave empty"
+                />
+                {errors.maxCashTicketsAllowed && (
+                  <p className="mt-1 text-xs sm:text-sm text-red-500">
+                    {errors.maxCashTicketsAllowed}
+                  </p>
+                )}
+                <p className="mt-1 text-xs text-gray-500">
+                  Limit the total number of cash tickets this admin can
+                  generate. Leave empty for unlimited.
+                </p>
+                <p className="text-gray-400 text-xs">
+                  optional, leave empty for unlimited
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Access Permissions */}
@@ -406,9 +538,9 @@ function AdminForm({
                   key={option.value}
                   className={`inline-flex items-center px-3 py-2 rounded-lg border cursor-pointer transition-colors ${
                     formData.access.includes(option.value)
-                      ? 'bg-blue-50 border-blue-500 text-blue-700'
-                      : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
-                  } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      ? "bg-blue-50 border-blue-500 text-blue-700"
+                      : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+                  } ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
                 >
                   <input
                     type="checkbox"
@@ -467,7 +599,7 @@ function AdminForm({
             className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
           >
             {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
-            {isEdit ? 'Update Admin' : 'Create Admin'}
+            {isEdit ? "Update Admin" : "Create Admin"}
           </button>
         </div>
       </form>
