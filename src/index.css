@@ -44,7 +44,7 @@
 
   /* Better focus states for accessibility */
   *:focus-visible {
-    @apply outline-none ring-2 ring-blue-500 ring-offset-2;
+    @apply outline-none;
   }
 }
 
@@ -158,6 +158,6 @@
   input[type='search']:focus,
   textarea:focus,
   select:focus {
-    @apply ring-2 ring-blue-500 border-blue-500;
+    @apply border-gray-800;
   }
 }

@@ -35,7 +35,7 @@ const formatCurrency = (amount) => {
  * Category color mapping
  */
 const CATEGORY_COLORS = {
-  TECHNOLOGY: 'bg-blue-100 text-blue-700',
+  TECHNOLOGY: 'bg-blue-100 text-gray-900',
   MUSIC: 'bg-purple-100 text-purple-700',
   SPORTS: 'bg-green-100 text-green-700',
   BUSINESS: 'bg-yellow-100 text-yellow-700',
@@ -211,7 +211,7 @@ function EventSingleSelect({
           disabled
             ? 'bg-gray-100 cursor-not-allowed'
             : isOpen
-            ? 'border-blue-500 ring-2 ring-blue-500'
+            ? 'border-gray-800'
             : externalError
             ? 'border-red-500'
             : 'border-gray-300 hover:border-gray-400'
@@ -277,7 +277,7 @@ function EventSingleSelect({
                 value={localSearch}
                 onChange={handleSearchChange}
                 placeholder="Search events..."
-                className="w-full pl-8 sm:pl-9 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
+                className="w-full pl-8 sm:pl-9 pr-4 py-2 border border-gray-300 rounded-md focus:border-gray-800 outline-none text-sm"
               />
               {isLoading && (
                 <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 animate-spin" />
@@ -330,7 +330,7 @@ function EventSingleSelect({
                       <div
                         className={`shrink-0 w-4 h-4 sm:w-5 sm:h-5 rounded-full border-2 flex items-center justify-center mt-0.5 ${
                           isSelected
-                            ? 'bg-blue-600 border-blue-600'
+                            ? 'bg-gray-800 border-gray-800'
                             : 'border-gray-300'
                         }`}
                       >

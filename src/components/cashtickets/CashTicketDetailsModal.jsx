@@ -101,7 +101,7 @@ function CashTicketDetailsModal({ isOpen, onClose, record, isLoading = false }) 
     >
       {isLoading ? (
         <div className="flex flex-col items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 text-blue-600 animate-spin" />
+          <Loader2 className="h-8 w-8 text-gray-800 animate-spin" />
           <p className="mt-2 text-sm text-gray-500">Loading details...</p>
         </div>
       ) : record ? (
@@ -138,10 +138,10 @@ function CashTicketDetailsModal({ isOpen, onClose, record, isLoading = false }) 
           <div className="p-4 bg-blue-50 rounded-lg border border-blue-100">
             <div className="flex items-start gap-3">
               <div className="shrink-0 w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                <Calendar className="h-5 w-5 text-blue-600" />
+                <Calendar className="h-5 w-5 text-gray-800" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-xs text-blue-600 font-medium">Event</p>
+                <p className="text-xs text-gray-800 font-medium">Event</p>
                 <p className="text-base font-semibold text-gray-900 truncate">
                   {record.eventId?.name || 'Unknown Event'}
                 </p>
@@ -227,7 +227,7 @@ function CashTicketDetailsModal({ isOpen, onClose, record, isLoading = false }) 
                   className={`px-3 py-2 rounded-lg transition-colors flex items-center gap-1.5 shrink-0 ${
                     copied
                       ? 'bg-green-600 text-white'
-                      : 'bg-blue-600 text-white hover:bg-blue-700'
+                      : 'bg-gray-800 text-white hover:bg-gray-900'
                   }`}
                 >
                   {copied ? (

@@ -413,7 +413,7 @@ function EventForm({
               onChange={handleChange}
               disabled={isLoading}
               maxLength={200}
-              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none disabled:bg-gray-100 ${
+              className={`w-full px-3 py-2 border rounded-lg focus:border-gray-800 outline-none disabled:bg-gray-100 ${
                 errors.name ? 'border-red-500' : 'border-gray-300'
               }`}
               placeholder="Enter event name"
@@ -434,7 +434,7 @@ function EventForm({
               disabled={isLoading}
               rows={4}
               maxLength={5000}
-              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none disabled:bg-gray-100 resize-none ${
+              className={`w-full px-3 py-2 border rounded-lg focus:border-gray-800 outline-none disabled:bg-gray-100 resize-none ${
                 errors.description ? 'border-red-500' : 'border-gray-300'
               }`}
               placeholder="Enter event description"
@@ -461,7 +461,7 @@ function EventForm({
                 value={formData.mode}
                 onChange={handleChange}
                 disabled={isLoading}
-                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none disabled:bg-gray-100 ${
+                className={`w-full px-3 py-2 border rounded-lg focus:border-gray-800 outline-none disabled:bg-gray-100 ${
                   errors.mode ? 'border-red-500' : 'border-gray-300'
                 }`}
               >
@@ -485,7 +485,7 @@ function EventForm({
                 value={formData.category}
                 onChange={handleChange}
                 disabled={isLoading}
-                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none disabled:bg-gray-100 ${
+                className={`w-full px-3 py-2 border rounded-lg focus:border-gray-800 outline-none disabled:bg-gray-100 ${
                   errors.category ? 'border-red-500' : 'border-gray-300'
                 }`}
               >
@@ -513,7 +513,7 @@ function EventForm({
                 value={formData.city}
                 onChange={handleChange}
                 disabled={isLoading}
-                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none disabled:bg-gray-100 ${
+                className={`w-full px-3 py-2 border rounded-lg focus:border-gray-800 outline-none disabled:bg-gray-100 ${
                   errors.city ? 'border-red-500' : 'border-gray-300'
                 }`}
                 placeholder="Enter city"
@@ -539,7 +539,7 @@ function EventForm({
                 value={formData.startDate}
                 onChange={handleChange}
                 disabled={isLoading}
-                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none disabled:bg-gray-100 ${
+                className={`w-full px-3 py-2 border rounded-lg focus:border-gray-800 outline-none disabled:bg-gray-100 ${
                   errors.startDate ? 'border-red-500' : 'border-gray-300'
                 }`}
               />
@@ -557,7 +557,7 @@ function EventForm({
                 value={formData.endDate}
                 onChange={handleChange}
                 disabled={isLoading}
-                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none disabled:bg-gray-100 ${
+                className={`w-full px-3 py-2 border rounded-lg focus:border-gray-800 outline-none disabled:bg-gray-100 ${
                   errors.endDate ? 'border-red-500' : 'border-gray-300'
                 }`}
               />
@@ -576,7 +576,7 @@ function EventForm({
                 checked={formData.usePricingTiers}
                 onChange={handleTogglePricingTiers}
                 disabled={isLoading}
-                className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                className="w-4 h-4 text-gray-800 rounded focus:ring-0"
               />
               <span className="text-sm text-gray-600">Use pricing tiers</span>
             </label>
@@ -597,7 +597,7 @@ function EventForm({
                   disabled={isLoading}
                   min="0"
                   step="0.01"
-                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none disabled:bg-gray-100 ${
+                  className={`w-full px-3 py-2 border rounded-lg focus:border-gray-800 outline-none disabled:bg-gray-100 ${
                     errors.price ? 'border-red-500' : 'border-gray-300'
                   }`}
                   placeholder="0.00"
@@ -618,7 +618,7 @@ function EventForm({
                   disabled={isLoading}
                   min="0"
                   step="0.01"
-                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none disabled:bg-gray-100 ${
+                  className={`w-full px-3 py-2 border rounded-lg focus:border-gray-800 outline-none disabled:bg-gray-100 ${
                     errors.compareAtPrice ? 'border-red-500' : 'border-gray-300'
                   }`}
                   placeholder="0.00"
@@ -640,7 +640,7 @@ function EventForm({
                   onChange={handleChange}
                   disabled={isLoading}
                   min="0"
-                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none disabled:bg-gray-100 ${
+                  className={`w-full px-3 py-2 border rounded-lg focus:border-gray-800 outline-none disabled:bg-gray-100 ${
                     errors.availableSeats ? 'border-red-500' : 'border-gray-300'
                   }`}
                   placeholder="Unlimited"
@@ -682,7 +682,7 @@ function EventForm({
                         value={tier.name}
                         onChange={(e) => handleTierChange(index, 'name', e.target.value)}
                         disabled={isLoading}
-                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none disabled:bg-gray-100 ${
+                        className={`w-full px-3 py-2 border rounded-lg focus:border-gray-800 outline-none disabled:bg-gray-100 ${
                           errors.tierErrors?.[index]?.name ? 'border-red-500' : 'border-gray-300'
                         }`}
                         placeholder="e.g., General Admission"
@@ -703,7 +703,7 @@ function EventForm({
                         disabled={isLoading}
                         min="0"
                         step="0.01"
-                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none disabled:bg-gray-100 ${
+                        className={`w-full px-3 py-2 border rounded-lg focus:border-gray-800 outline-none disabled:bg-gray-100 ${
                           errors.tierErrors?.[index]?.price ? 'border-red-500' : 'border-gray-300'
                         }`}
                         placeholder="0.00"
@@ -724,7 +724,7 @@ function EventForm({
                         disabled={isLoading}
                         min="0"
                         step="0.01"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none disabled:bg-gray-100"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-gray-800 outline-none disabled:bg-gray-100"
                         placeholder="0.00"
                       />
                     </div>
@@ -739,7 +739,7 @@ function EventForm({
                         onChange={(e) => handleTierChange(index, 'ticketQuantity', e.target.value)}
                         disabled={isLoading}
                         min="1"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none disabled:bg-gray-100"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-gray-800 outline-none disabled:bg-gray-100"
                         placeholder="1"
                       />
                     </div>
@@ -753,7 +753,7 @@ function EventForm({
                         value={tier.shortDescription}
                         onChange={(e) => handleTierChange(index, 'shortDescription', e.target.value)}
                         disabled={isLoading}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none disabled:bg-gray-100"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-gray-800 outline-none disabled:bg-gray-100"
                         placeholder="Brief description of this tier"
                       />
                     </div>
@@ -765,7 +765,7 @@ function EventForm({
                         onChange={(e) => handleTierChange(index, 'notes', e.target.value)}
                         disabled={isLoading}
                         rows={2}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none disabled:bg-gray-100 resize-none"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-gray-800 outline-none disabled:bg-gray-100 resize-none"
                         placeholder="Additional notes"
                       />
                     </div>
@@ -777,7 +777,7 @@ function EventForm({
                 type="button"
                 onClick={handleAddTier}
                 disabled={isLoading}
-                className="flex items-center gap-2 px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors disabled:opacity-50"
+                className="flex items-center gap-2 px-4 py-2 text-gray-800 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
               >
                 <Plus className="h-4 w-4" />
                 Add Pricing Tier
@@ -795,7 +795,7 @@ function EventForm({
                   onChange={handleChange}
                   disabled={isLoading}
                   min="0"
-                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none disabled:bg-gray-100 ${
+                  className={`w-full px-3 py-2 border rounded-lg focus:border-gray-800 outline-none disabled:bg-gray-100 ${
                     errors.availableSeats ? 'border-red-500' : 'border-gray-300'
                   }`}
                   placeholder="Unlimited"
@@ -823,7 +823,7 @@ function EventForm({
                 value={formData.thumbnail.imageUrl}
                 onChange={(e) => handleThumbnailChange('imageUrl', e.target.value)}
                 disabled={isLoading}
-                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none disabled:bg-gray-100 ${
+                className={`w-full px-3 py-2 border rounded-lg focus:border-gray-800 outline-none disabled:bg-gray-100 ${
                   errors.thumbnailImage ? 'border-red-500' : 'border-gray-300'
                 }`}
                 placeholder="https://example.com/image.jpg"
@@ -842,7 +842,7 @@ function EventForm({
                 value={formData.thumbnail.videoUrl}
                 onChange={(e) => handleThumbnailChange('videoUrl', e.target.value)}
                 disabled={isLoading}
-                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none disabled:bg-gray-100 ${
+                className={`w-full px-3 py-2 border rounded-lg focus:border-gray-800 outline-none disabled:bg-gray-100 ${
                   errors.thumbnailVideo ? 'border-red-500' : 'border-gray-300'
                 }`}
                 placeholder="https://example.com/video.mp4"
@@ -862,7 +862,7 @@ function EventForm({
                 value={newImageUrl}
                 onChange={(e) => setNewImageUrl(e.target.value)}
                 disabled={isLoading}
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none disabled:bg-gray-100"
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:border-gray-800 outline-none disabled:bg-gray-100"
                 placeholder="https://example.com/image.jpg"
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
@@ -875,7 +875,7 @@ function EventForm({
                 type="button"
                 onClick={handleAddImageUrl}
                 disabled={isLoading || !newImageUrl.trim()}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+                className="px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition-colors disabled:opacity-50"
               >
                 <Plus className="h-4 w-4" />
               </button>
@@ -930,7 +930,7 @@ function EventForm({
           <button
             type="submit"
             disabled={isLoading}
-            className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+            className="flex-1 px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
           >
             {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
             {isEditMode ? 'Update Event' : 'Create Event'}

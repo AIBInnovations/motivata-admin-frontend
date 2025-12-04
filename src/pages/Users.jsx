@@ -198,7 +198,7 @@ function Users() {
               placeholder="Search by name, email, or phone..."
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
+              className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:border-gray-800 outline-none text-sm"
             />
           </div>
 
@@ -209,7 +209,7 @@ function Users() {
                 type="checkbox"
                 checked={filters.includeDeleted}
                 onChange={handleIncludeDeletedToggle}
-                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                className="w-4 h-4 text-gray-800 border-gray-300 rounded focus:ring-0"
               />
               <span className="text-sm text-gray-600">Show deleted users</span>
             </label>
@@ -268,7 +268,7 @@ function Users() {
                     >
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
+                          <div className="w-10 h-10 bg-gradient-to-br from-gray-700 to-gray-800 rounded-full flex items-center justify-center flex-shrink-0">
                             <span className="text-white font-semibold text-sm">
                               {user.name?.charAt(0)?.toUpperCase() || '?'}
                             </span>
@@ -304,7 +304,7 @@ function Users() {
                         <div className="flex items-center justify-end gap-2">
                           <button
                             onClick={() => handleViewDetails(user)}
-                            className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                            className="p-2 text-gray-800 hover:bg-gray-50 rounded-lg transition-all"
                             title="View Details"
                           >
                             <Eye className="h-5 w-5" />
@@ -367,7 +367,7 @@ function Users() {
                   }`}
                 >
                   <div className="flex items-start gap-3 mb-3">
-                    <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
+                    <div className="w-12 h-12 bg-gradient-to-br from-gray-700 to-gray-800 rounded-full flex items-center justify-center flex-shrink-0">
                       <span className="text-white font-semibold">
                         {user.name?.charAt(0)?.toUpperCase() || '?'}
                       </span>
@@ -404,7 +404,7 @@ function Users() {
                     <div className="flex items-center gap-1">
                       <button
                         onClick={() => handleViewDetails(user)}
-                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                        className="p-2 text-gray-800 hover:bg-gray-50 rounded-lg transition-all"
                         title="View Details"
                       >
                         <Eye className="h-5 w-5" />

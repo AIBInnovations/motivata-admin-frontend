@@ -157,7 +157,7 @@ function UserForm({
               value={formData.name}
               onChange={handleChange}
               disabled={isLoading}
-              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none disabled:bg-gray-100 text-sm sm:text-base ${
+              className={`w-full px-3 py-2 border rounded-lg focus:border-gray-800 outline-none disabled:bg-gray-100 text-sm sm:text-base ${
                 errors.name ? 'border-red-500' : 'border-gray-300'
               }`}
               placeholder="Enter user name"
@@ -177,7 +177,7 @@ function UserForm({
               value={formData.email}
               onChange={handleChange}
               disabled={isLoading}
-              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none disabled:bg-gray-100 text-sm sm:text-base ${
+              className={`w-full px-3 py-2 border rounded-lg focus:border-gray-800 outline-none disabled:bg-gray-100 text-sm sm:text-base ${
                 errors.email ? 'border-red-500' : 'border-gray-300'
               }`}
               placeholder="Enter email address"
@@ -197,7 +197,7 @@ function UserForm({
               value={formData.phone}
               onChange={handleChange}
               disabled={isLoading}
-              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none disabled:bg-gray-100 text-sm sm:text-base ${
+              className={`w-full px-3 py-2 border rounded-lg focus:border-gray-800 outline-none disabled:bg-gray-100 text-sm sm:text-base ${
                 errors.phone ? 'border-red-500' : 'border-gray-300'
               }`}
               placeholder="Enter phone number"
@@ -219,7 +219,7 @@ function UserForm({
           <button
             type="submit"
             disabled={isLoading}
-            className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+            className="flex-1 px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
           >
             {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
             Update User

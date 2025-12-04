@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { User, Lock, Eye, EyeOff, Loader2, AlertCircle } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
+import MotivataLogo from "../assets/logo/Motivata.png";
 
 function Login() {
   const [username, setUsername] = useState("");
@@ -68,8 +69,12 @@ function Login() {
       <div className="w-full max-w-md">
         {/* Logo/Brand */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-          <p className="text-gray-600 mt-2">Sign in to your account</p>
+          <img
+            src={MotivataLogo}
+            alt="Motivata"
+            className="h-16 mx-auto mb-4"
+          />
+          <p className="text-gray-600">Sign in to your account</p>
         </div>
 
         {/* Login Card */}
@@ -100,7 +105,7 @@ function Login() {
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all disabled:bg-gray-50 disabled:cursor-not-allowed"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:border-gray-800 outline-none transition-all disabled:bg-gray-50 disabled:cursor-not-allowed"
                   placeholder="Enter your username"
                   disabled={isSubmitting}
                   autoComplete="username"
@@ -125,7 +130,7 @@ function Login() {
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all disabled:bg-gray-50 disabled:cursor-not-allowed"
+                  className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:border-gray-800 outline-none transition-all disabled:bg-gray-50 disabled:cursor-not-allowed"
                   placeholder="Enter your password"
                   disabled={isSubmitting}
                   autoComplete="current-password"
@@ -153,14 +158,14 @@ function Login() {
                   type="checkbox"
                   checked={rememberMe}
                   onChange={(e) => setRememberMe(e.target.checked)}
-                  className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
+                  className="h-4 w-4 text-gray-800 border-gray-300 rounded focus:ring-gray-700 cursor-pointer"
                   disabled={isSubmitting}
                 />
                 <span className="ml-2 text-sm text-gray-600">Remember me</span>
               </label>
               <a
                 href="#"
-                className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                className="text-sm text-gray-800 hover:text-black font-medium"
               >
                 Forgot password?
               </a>
@@ -170,7 +175,7 @@ function Login() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 transition-all disabled:bg-blue-400 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="w-full bg-gray-800 text-white py-3 px-4 rounded-lg font-medium hover:bg-gray-900 focus:ring-4 focus:ring-gray-300 transition-all disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {isSubmitting ? (
                 <>

@@ -178,7 +178,7 @@ function Enrollments() {
               placeholder="Search by name or email..."
               value={searchQuery}
               onChange={(e) => handleFilterChange(setSearchQuery, e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:border-gray-800 outline-none"
             />
           </div>
 
@@ -186,7 +186,7 @@ function Enrollments() {
           <select
             value={statusFilter}
             onChange={(e) => handleFilterChange(setStatusFilter, e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
+            className="px-4 py-2 border border-gray-300 rounded-lg focus:border-gray-800 outline-none bg-white"
           >
             <option value="">All Status</option>
             {statuses.map((status) => (
@@ -200,7 +200,7 @@ function Enrollments() {
           <select
             value={eventFilter}
             onChange={(e) => handleFilterChange(setEventFilter, e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
+            className="px-4 py-2 border border-gray-300 rounded-lg focus:border-gray-800 outline-none bg-white"
           >
             <option value="">All Events</option>
             {events.map((event) => (
@@ -249,7 +249,7 @@ function Enrollments() {
                 <td className="px-6 py-4">
                   <div className="flex items-center justify-end gap-2">
                     <button
-                      className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                      className="p-2 text-gray-800 hover:bg-gray-50 rounded-lg transition-all"
                       title="View Details"
                     >
                       <Eye className="h-5 w-5" />
@@ -289,7 +289,7 @@ function Enrollments() {
                 key={page}
                 onClick={() => setCurrentPage(page)}
                 className={`w-8 h-8 rounded-lg transition-all ${
-                  currentPage === page ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'
+                  currentPage === page ? 'bg-gray-800 text-white' : 'text-gray-600 hover:bg-gray-100'
                 }`}
               >
                 {page}

@@ -84,7 +84,7 @@ const RevenueChart = ({ data, loading }) => {
             value={formatNumber(totalPayments)}
             subtitle="Successful transactions"
             icon={<MdPayment className="w-6 h-6" />}
-            iconColor="text-blue-600"
+            iconColor="text-gray-800"
             loading={loading}
           />
 
@@ -171,10 +171,10 @@ const RevenueChart = ({ data, loading }) => {
               >
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-1.5">
-                    <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white font-bold px-2 py-0.5 rounded text-xs shadow-sm">
+                    <div className="bg-gradient-to-r from-gray-800 to-gray-900 text-white font-bold px-2 py-0.5 rounded text-xs shadow-sm">
                       #{index + 1}
                     </div>
-                    <span className="font-bold text-sm text-gray-900 group-hover:text-blue-700 transition-colors truncate">
+                    <span className="font-bold text-sm text-gray-900 group-hover:text-gray-900 transition-colors truncate">
                       {coupon._id}
                     </span>
                   </div>

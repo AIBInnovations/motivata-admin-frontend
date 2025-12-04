@@ -7,11 +7,14 @@ import {
   Gift,
   X,
   LogOut,
-  ChevronLeft,
-  ChevronRight,
+  Video,
+  ClipboardList,
+  Trophy,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
+import MotivataLogo from "../assets/logo/Motivata.png";
+import MotivataLogoSmall from "../assets/logo/logo2.png";
 
 /**
  * Sidebar Component
@@ -70,6 +73,27 @@ function Sidebar({ activeMenu, collapsed, isOpen, onClose }) {
       path: "/vouchers",
       color: "pink",
     },
+    {
+      id: "sessions",
+      label: "Sessions",
+      icon: Video,
+      path: "/sessions",
+      color: "indigo",
+    },
+    {
+      id: "quizes",
+      label: "Quizes",
+      icon: ClipboardList,
+      path: "/quizes",
+      color: "amber",
+    },
+    {
+      id: "challenges",
+      label: "Challenges",
+      icon: Trophy,
+      path: "/challenges",
+      color: "emerald",
+    },
   ];
 
   // Get display name or fallback
@@ -105,18 +129,15 @@ function Sidebar({ activeMenu, collapsed, isOpen, onClose }) {
     >
       {/* Header with Logo and Close Button */}
       <div className="p-5 lg:p-6 border-b border-gray-200/80 shrink-0 bg-white/80 backdrop-blur-sm">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3 min-w-0 flex-1">
-            <div className="bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-700 p-2.5 rounded-xl shrink-0 shadow-md">
-              <LayoutDashboard className="h-6 w-6 text-white" />
-            </div>
+        <div className="flex items-start justify-between">
+          <div className={`flex flex-col ${collapsed ? 'items-center' : 'items-start'} min-w-0 flex-1`}>
+            <img
+              src={collapsed ? MotivataLogoSmall : MotivataLogo}
+              alt="Motivata"
+              className={`${collapsed ? 'h-12 w-12' : 'h-16'} object-contain`}
+            />
             {!collapsed && (
-              <div className="min-w-0 flex-1">
-                <h1 className="text-xl font-bold text-gray-900 tracking-tight">
-                  Motivata
-                </h1>
-                <p className="text-xs text-gray-500 font-medium">Admin Panel</p>
-              </div>
+              <p className="text-xs text-gray-500 font-medium -mt-1 ml-4">Admin Panel</p>
             )}
           </div>
 
@@ -127,20 +148,6 @@ function Sidebar({ activeMenu, collapsed, isOpen, onClose }) {
             aria-label="Close sidebar"
           >
             <X className="h-5 w-5" />
-          </button>
-
-          {/* Collapse toggle for desktop */}
-          <button
-            onClick={onClose}
-            className="hidden lg:block p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-all"
-            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-            title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-          >
-            {collapsed ? (
-              <ChevronRight className="h-4 w-4" />
-            ) : (
-              <ChevronLeft className="h-4 w-4" />
-            )}
           </button>
         </div>
       </div>
@@ -159,7 +166,7 @@ function Sidebar({ activeMenu, collapsed, isOpen, onClose }) {
                     transition-all duration-200 group relative
                     ${
                       isActive
-                        ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg shadow-blue-500/30"
+                        ? "bg-gradient-to-r from-gray-800 to-gray-900 text-white shadow-lg shadow-gray-500/30"
                         : "text-gray-700 hover:bg-gray-100/80 hover:translate-x-1"
                     }
                     ${collapsed ? "lg:justify-center lg:px-2" : ""}
@@ -176,10 +183,6 @@ function Sidebar({ activeMenu, collapsed, isOpen, onClose }) {
                     <span className="font-semibold text-sm truncate">
                       {item.label}
                     </span>
-                  )}
-                  {/* Active indicator */}
-                  {isActive && !collapsed && (
-                    <div className="ml-auto w-1.5 h-1.5 rounded-full bg-white shadow-sm" />
                   )}
                 </Link>
               </li>
@@ -204,7 +207,7 @@ function Sidebar({ activeMenu, collapsed, isOpen, onClose }) {
           >
             {/* Avatar with initials */}
             <div className="relative shrink-0">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 flex items-center justify-center text-white font-bold text-sm shadow-md ring-2 ring-white">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-gray-800 via-purple-600 to-pink-600 flex items-center justify-center text-white font-bold text-sm shadow-md ring-2 ring-white">
                 {getInitials(displayName)}
               </div>
               {/* Online status indicator */}
@@ -218,7 +221,7 @@ function Sidebar({ activeMenu, collapsed, isOpen, onClose }) {
                 </p>
                 <p className="text-xs text-gray-600 truncate">{displayEmail}</p>
                 <div className="flex items-center gap-1 mt-1">
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold bg-blue-100 text-blue-700 border border-blue-200">
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold bg-blue-100 text-gray-900 border border-blue-200">
                     {displayRole}
                   </span>
                 </div>

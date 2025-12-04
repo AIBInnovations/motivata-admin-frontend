@@ -111,7 +111,7 @@ const TopPerformingEvents = ({ events, loading }) => {
             {/* Stats Grid */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-3">
               <div className="bg-blue-50 rounded-lg p-3">
-                <p className="text-xs text-blue-600 font-medium mb-1">Total Revenue</p>
+                <p className="text-xs text-gray-800 font-medium mb-1">Total Revenue</p>
                 <p className="text-lg font-bold text-blue-900">{formatCurrency(event.totalRevenue)}</p>
               </div>
               <div className="bg-green-50 rounded-lg p-3">
@@ -134,7 +134,7 @@ const TopPerformingEvents = ({ events, loading }) => {
             <div className="grid grid-cols-2 gap-4 pt-3 border-t border-gray-100">
               <div>
                 <p className="text-xs text-gray-600 font-medium mb-2 flex items-center gap-1">
-                  <FaLaptop className="text-blue-600" />
+                  <FaLaptop className="text-gray-800" />
                   Online Sales
                 </p>
                 <div className="space-y-1 text-sm">
@@ -148,7 +148,7 @@ const TopPerformingEvents = ({ events, loading }) => {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Revenue:</span>
-                    <span className="font-semibold text-blue-600">{formatCurrency(event.onlineRevenue)}</span>
+                    <span className="font-semibold text-gray-800">{formatCurrency(event.onlineRevenue)}</span>
                   </div>
                 </div>
               </div>

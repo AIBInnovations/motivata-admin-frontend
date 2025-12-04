@@ -82,7 +82,7 @@ function Pagination({
           onClick={() => onPageChange(page)}
           className={`${isMobile ? 'w-7 h-7 text-xs' : 'w-8 h-8 text-sm'} rounded-lg transition-all ${
             currentPage === page
-              ? 'bg-blue-600 text-white'
+              ? 'bg-gray-800 text-white'
               : 'text-gray-600 hover:bg-gray-100'
           }`}
         >

@@ -21,7 +21,7 @@ function StatCard({
     blue: {
       bg: 'from-blue-500 to-blue-600',
       light: 'bg-blue-50',
-      text: 'text-blue-600',
+      text: 'text-gray-800',
       border: 'border-blue-200',
     },
     green: {

@@ -35,7 +35,7 @@ const RecentActivity = ({ data, loading }) => {
           value={formatNumber(enrollments)}
           subtitle="Event registrations"
           icon={<MdConfirmationNumber className="w-6 h-6" />}
-          iconColor="text-blue-600"
+          iconColor="text-gray-800"
           loading={loading}
         />
 

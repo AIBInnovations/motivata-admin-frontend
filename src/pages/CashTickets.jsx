@@ -301,7 +301,7 @@ function CashTickets() {
           className={`flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg transition-colors font-medium ${
             isOverLimit
               ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-              : 'bg-blue-600 text-white hover:bg-blue-700'
+              : 'bg-gray-800 text-white hover:bg-gray-900'
           }`}
           title={isOverLimit ? 'Ticket limit reached' : 'Generate new ticket link'}
         >
@@ -330,7 +330,7 @@ function CashTickets() {
                       ? 'text-red-600'
                       : isNearLimit
                       ? 'text-yellow-600'
-                      : 'text-blue-600'
+                      : 'text-gray-800'
                   }`}
                 />
                 <h3
@@ -389,7 +389,7 @@ function CashTickets() {
                       ? 'text-red-600'
                       : isNearLimit
                       ? 'text-yellow-600'
-                      : 'text-blue-600'
+                      : 'text-gray-800'
                   }`}
                 >
                   of {admin.maxCashTicketsAllowed}
@@ -440,14 +440,14 @@ function CashTickets() {
             onClick={() => setShowFilters(!showFilters)}
             className={`flex items-center gap-2 px-4 py-2 border rounded-lg transition-colors ${
               hasActiveFilters
-                ? 'border-blue-500 bg-blue-50 text-blue-700'
+                ? 'border-gray-800 bg-gray-50 text-gray-800'
                 : 'border-gray-300 text-gray-700 hover:bg-gray-50'
             }`}
           >
             <Filter className="h-4 w-4" />
             <span>Filters</span>
             {hasActiveFilters && (
-              <span className="px-1.5 py-0.5 bg-blue-600 text-white text-xs rounded-full">
+              <span className="px-1.5 py-0.5 bg-gray-800 text-white text-xs rounded-full">
                 {(filters.eventId ? 1 : 0) + (filters.redeemed !== '' ? 1 : 0)}
               </span>
             )}
@@ -484,7 +484,7 @@ function CashTickets() {
                 <select
                   value={localEventFilter}
                   onChange={(e) => setLocalEventFilter(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-gray-800 outline-none"
                 >
                   <option value="">All Events</option>
                   {allowedEvents.map((event) => (
@@ -503,7 +503,7 @@ function CashTickets() {
                 <select
                   value={localStatusFilter}
                   onChange={(e) => setLocalStatusFilter(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-gray-800 outline-none"
                 >
                   <option value="">All Status</option>
                   <option value="false">Pending</option>
@@ -515,7 +515,7 @@ function CashTickets() {
               <div className="flex items-end gap-2 sm:col-span-2 lg:col-span-1">
                 <button
                   onClick={handleApplyFilters}
-                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  className="flex-1 px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition-colors"
                 >
                   Apply
                 </button>
@@ -563,7 +563,7 @@ function CashTickets() {
               {isLoading && filteredRecords.length === 0 ? (
                 <tr>
                   <td colSpan={showCreatedByColumn ? 6 : 5} className="px-6 py-12 text-center">
-                    <Loader2 className="h-8 w-8 text-blue-600 animate-spin mx-auto" />
+                    <Loader2 className="h-8 w-8 text-gray-800 animate-spin mx-auto" />
                     <p className="mt-2 text-sm text-gray-500">Loading records...</p>
                   </td>
                 </tr>
@@ -574,7 +574,7 @@ function CashTickets() {
                     <p className="mt-2 text-sm text-gray-500">No records found</p>
                     <button
                       onClick={handleOpenFormModal}
-                      className="mt-3 text-sm text-blue-600 hover:text-blue-800 font-medium"
+                      className="mt-3 text-sm text-gray-800 hover:text-black font-medium"
                     >
                       Generate your first ticket link
                     </button>
@@ -589,8 +589,8 @@ function CashTickets() {
                     {/* Event */}
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center shrink-0">
-                          <Calendar className="h-4 w-4 text-blue-600" />
+                        <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center shrink-0">
+                          <Calendar className="h-4 w-4 text-gray-800" />
                         </div>
                         <span className="font-medium text-gray-900 truncate max-w-[200px]">
                           {record.eventId?.name || 'Unknown Event'}
@@ -670,7 +670,7 @@ function CashTickets() {
                         {/* View Details */}
                         <button
                           onClick={() => handleOpenDetails(record)}
-                          className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                          className="p-2 text-gray-800 hover:bg-gray-50 rounded-lg transition-colors"
                           title="View details"
                         >
                           <Eye className="h-4 w-4" />
@@ -712,7 +712,7 @@ function CashTickets() {
       <div className="md:hidden space-y-4">
         {isLoading && filteredRecords.length === 0 ? (
           <div className="bg-white rounded-xl shadow-sm p-8 text-center">
-            <Loader2 className="h-8 w-8 text-blue-600 animate-spin mx-auto" />
+            <Loader2 className="h-8 w-8 text-gray-800 animate-spin mx-auto" />
             <p className="mt-2 text-sm text-gray-500">Loading records...</p>
           </div>
         ) : filteredRecords.length === 0 ? (
@@ -721,7 +721,7 @@ function CashTickets() {
             <p className="mt-2 text-sm text-gray-500">No records found</p>
             <button
               onClick={handleOpenFormModal}
-              className="mt-3 text-sm text-blue-600 hover:text-blue-800 font-medium"
+              className="mt-3 text-sm text-gray-800 hover:text-black font-medium"
             >
               Generate your first ticket link
             </button>
@@ -736,8 +736,8 @@ function CashTickets() {
                 {/* Header */}
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-center gap-2 min-w-0">
-                    <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center shrink-0">
-                      <Calendar className="h-5 w-5 text-blue-600" />
+                    <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center shrink-0">
+                      <Calendar className="h-5 w-5 text-gray-800" />
                     </div>
                     <div className="min-w-0">
                       <p className="font-medium text-gray-900 truncate">
@@ -814,7 +814,7 @@ function CashTickets() {
                   )}
                   <button
                     onClick={() => handleOpenDetails(record)}
-                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-blue-100 text-blue-700 rounded-lg text-sm font-medium hover:bg-blue-200 transition-colors"
+                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors"
                   >
                     <Eye className="h-4 w-4" />
                     Details

@@ -49,7 +49,7 @@ function UserDetailsModal({ isOpen, onClose, user, isLoading = false }) {
     <Modal isOpen={isOpen} onClose={onClose} title="User Details" size="lg">
       {isLoading ? (
         <div className="py-12 flex flex-col items-center justify-center">
-          <Loader2 className="h-8 w-8 text-blue-600 animate-spin" />
+          <Loader2 className="h-8 w-8 text-gray-800 animate-spin" />
           <p className="mt-2 text-sm text-gray-500">Loading user details...</p>
         </div>
       ) : user ? (
@@ -57,7 +57,7 @@ function UserDetailsModal({ isOpen, onClose, user, isLoading = false }) {
           {/* User Header */}
           <div className="flex items-start gap-4 pb-4 border-b border-gray-200">
             <div className="w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center shrink-0">
-              <span className="text-xl font-semibold text-blue-600">
+              <span className="text-xl font-semibold text-gray-800">
                 {user.name?.charAt(0)?.toUpperCase() || '?'}
               </span>
             </div>
@@ -141,7 +141,7 @@ function UserDetailsModal({ isOpen, onClose, user, isLoading = false }) {
                     className="bg-gray-50 rounded-lg p-3 flex items-center gap-3"
                   >
                     <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center shrink-0">
-                      <Award className="h-4 w-4 text-blue-600" />
+                      <Award className="h-4 w-4 text-gray-800" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-gray-900 truncate">
@@ -156,7 +156,7 @@ function UserDetailsModal({ isOpen, onClose, user, isLoading = false }) {
                         href={enrollment.certificate}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-xs text-blue-600 hover:text-blue-700 hover:underline shrink-0"
+                        className="text-xs text-gray-800 hover:text-gray-900 hover:underline shrink-0"
                       >
                         View Certificate
                       </a>

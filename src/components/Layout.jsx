@@ -53,6 +53,9 @@ function Layout() {
     '/payments': 'payments',
     '/cash-tickets': 'cashtickets',
     '/vouchers': 'vouchers',
+    '/sessions': 'sessions',
+    '/quizes': 'quizes',
+    '/challenges': 'challenges',
   };
 
   const getActiveMenu = () => {

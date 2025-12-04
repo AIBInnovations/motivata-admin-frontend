@@ -12,6 +12,9 @@ import Admins from './pages/Admins';
 import Payments from './pages/Payments';
 import CashTickets from './pages/CashTickets';
 import Vouchers from './pages/Vouchers';
+import Sessions from './pages/Sessions';
+import Quizes from './pages/Quizes';
+import Challenges from './pages/Challenges';
 
 function App() {
   return (
@@ -45,6 +48,9 @@ function App() {
             <Route path="/payments" element={<Payments />} />
             <Route path="/cash-tickets" element={<CashTickets />} />
             <Route path="/vouchers" element={<Vouchers />} />
+            <Route path="/sessions" element={<Sessions />} />
+            <Route path="/quizes" element={<Quizes />} />
+            <Route path="/challenges" element={<Challenges />} />
           </Route>
 
           {/* Default redirect */}

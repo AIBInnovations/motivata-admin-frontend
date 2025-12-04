@@ -52,7 +52,7 @@ const CouponsVouchers = ({ couponsData, vouchersData, loading }) => {
               value={formatNumber(vouchersData.totalUsage)}
               subtitle={`${formatNumber(vouchersData.totalClaimedPhones)} phones`}
               icon={<MdCheckCircle className="w-6 h-6" />}
-              iconColor="text-blue-600"
+              iconColor="text-gray-800"
               loading={loading}
             />
           </>

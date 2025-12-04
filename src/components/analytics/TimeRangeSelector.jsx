@@ -28,7 +28,7 @@ const TimeRangeSelector = ({ selected, onChange }) => {
               px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200
               ${
                 selected === range.value
-                  ? 'bg-blue-600 text-white shadow-md'
+                  ? 'bg-gray-800 text-white shadow-md'
                   : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
               }
             `}

@@ -26,9 +26,9 @@ const Button = forwardRef(
 
     const variants = {
       primary:
-        'bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800 focus:ring-blue-500 shadow-sm hover:shadow-md active:scale-[0.98]',
+        'bg-gradient-to-r from-gray-800 to-gray-900 text-white hover:from-gray-900 hover:to-black focus:ring-gray-700 shadow-sm hover:shadow-md active:scale-[0.98]',
       secondary:
-        'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 focus:ring-blue-500 shadow-sm hover:shadow active:scale-[0.98]',
+        'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 focus:ring-gray-700 shadow-sm hover:shadow active:scale-[0.98]',
       success:
         'bg-gradient-to-r from-green-600 to-green-700 text-white hover:from-green-700 hover:to-green-800 focus:ring-green-500 shadow-sm hover:shadow-md active:scale-[0.98]',
       danger:
@@ -36,7 +36,7 @@ const Button = forwardRef(
       warning:
         'bg-gradient-to-r from-yellow-500 to-yellow-600 text-white hover:from-yellow-600 hover:to-yellow-700 focus:ring-yellow-500 shadow-sm hover:shadow-md active:scale-[0.98]',
       ghost: 'bg-transparent text-gray-700 hover:bg-gray-100 focus:ring-gray-300',
-      link: 'bg-transparent text-blue-600 hover:text-blue-700 hover:underline focus:ring-blue-500 p-0',
+      link: 'bg-transparent text-gray-800 hover:text-gray-900 hover:underline focus:ring-gray-700 p-0',
     };
 
     const sizes = {

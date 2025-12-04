@@ -35,8 +35,8 @@ function ConfirmDialog({
       button: 'bg-yellow-600 hover:bg-yellow-700 focus:ring-yellow-500',
     },
     primary: {
-      icon: 'bg-blue-100 text-blue-600',
-      button: 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500',
+      icon: 'bg-blue-100 text-gray-800',
+      button: 'bg-gray-800 hover:bg-gray-900 focus:ring-blue-500',
     },
   };
 

@@ -81,20 +81,20 @@ const AdminPerformanceTable = ({ data, loading }) => {
               <th className="text-left py-3 px-4 font-semibold text-gray-700 text-sm">Admin</th>
               <th className="text-left py-3 px-4 font-semibold text-gray-700 text-sm">Role</th>
               <th
-                className="text-right py-3 px-4 font-semibold text-gray-700 text-sm cursor-pointer hover:text-blue-600"
+                className="text-right py-3 px-4 font-semibold text-gray-700 text-sm cursor-pointer hover:text-gray-800"
                 onClick={() => handleSort('totalTickets')}
               >
                 Tickets {sortBy === 'totalTickets' && (sortOrder === 'asc' ? '↑' : '↓')}
               </th>
               <th
-                className="text-right py-3 px-4 font-semibold text-gray-700 text-sm cursor-pointer hover:text-blue-600"
+                className="text-right py-3 px-4 font-semibold text-gray-700 text-sm cursor-pointer hover:text-gray-800"
                 onClick={() => handleSort('redeemedRecords')}
               >
                 Redeemed {sortBy === 'redeemedRecords' && (sortOrder === 'asc' ? '↑' : '↓')}
               </th>
               <th className="text-right py-3 px-4 font-semibold text-gray-700 text-sm">Pending</th>
               <th
-                className="text-right py-3 px-4 font-semibold text-gray-700 text-sm cursor-pointer hover:text-blue-600"
+                className="text-right py-3 px-4 font-semibold text-gray-700 text-sm cursor-pointer hover:text-gray-800"
                 onClick={() => handleSort('totalRevenue')}
               >
                 Revenue {sortBy === 'totalRevenue' && (sortOrder === 'asc' ? '↑' : '↓')}
@@ -169,7 +169,7 @@ const AdminPerformanceTable = ({ data, loading }) => {
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <p className="text-gray-600 flex items-center gap-1">
-                  <FaTicketAlt className="text-blue-600" /> Tickets
+                  <FaTicketAlt className="text-gray-800" /> Tickets
                 </p>
                 <p className="font-semibold text-gray-900">{formatNumber(admin.totalTickets)}</p>
               </div>
@@ -196,7 +196,7 @@ const AdminPerformanceTable = ({ data, loading }) => {
             <div className="mt-3 pt-3 border-t border-gray-100">
               <div className="flex items-center justify-between text-xs">
                 <span className="text-gray-600">Redemption Rate</span>
-                <span className="font-semibold text-blue-600">
+                <span className="font-semibold text-gray-800">
                   {getRedemptionRate(admin.redeemedRecords, admin.totalRecords)}%
                 </span>
               </div>

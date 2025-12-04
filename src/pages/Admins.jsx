@@ -220,7 +220,7 @@ function Admins() {
             {!hasFilters && (
               <button
                 onClick={handleOpenCreateModal}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 text-sm"
+                className="px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition-colors flex items-center gap-2 text-sm"
               >
                 <Plus className="h-4 w-4 sm:h-5 sm:w-5" />
                 Create Admin
@@ -310,7 +310,7 @@ function Admins() {
         </div>
         <button
           onClick={handleOpenCreateModal}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 text-sm sm:text-base w-full sm:w-auto"
+          className="px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition-colors flex items-center justify-center gap-2 text-sm sm:text-base w-full sm:w-auto"
         >
           <Plus className="h-4 w-4 sm:h-5 sm:w-5" />
           Create Admin
@@ -328,7 +328,7 @@ function Admins() {
               placeholder="Search by name, username, or phone..."
               value={searchInput}
               onChange={(e) => handleSearchChange(e.target.value)}
-              className="w-full pl-9 sm:pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
+              className="w-full pl-9 sm:pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:border-gray-800 outline-none text-sm"
             />
           </div>
 
@@ -337,7 +337,7 @@ function Admins() {
             <select
               value={filters.role}
               onChange={(e) => handleRoleFilterChange(e.target.value)}
-              className="flex-1 sm:flex-none px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white text-sm"
+              className="flex-1 sm:flex-none px-3 py-2 border border-gray-300 rounded-lg focus:border-gray-800 outline-none bg-white text-sm"
             >
               {ROLE_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -349,7 +349,7 @@ function Admins() {
             <select
               value={filters.status}
               onChange={(e) => handleStatusFilterChange(e.target.value)}
-              className="flex-1 sm:flex-none px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white text-sm"
+              className="flex-1 sm:flex-none px-3 py-2 border border-gray-300 rounded-lg focus:border-gray-800 outline-none bg-white text-sm"
             >
               {STATUS_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -521,7 +521,7 @@ function Admins() {
               {!(filters.search || filters.role || filters.status) && (
                 <button
                   onClick={handleOpenCreateModal}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors inline-flex items-center gap-2 text-sm"
+                  className="px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition-colors inline-flex items-center gap-2 text-sm"
                 >
                   <Plus className="h-4 w-4" />
                   Create Admin

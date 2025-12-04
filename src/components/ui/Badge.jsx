@@ -20,7 +20,7 @@ function Badge({
     danger: 'bg-red-100 text-red-800 border border-red-200',
     info: 'bg-cyan-100 text-cyan-800 border border-cyan-200',
     purple: 'bg-purple-100 text-purple-800 border border-purple-200',
-    solid: 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-sm',
+    solid: 'bg-gradient-to-r from-gray-800 to-gray-900 text-white shadow-sm',
     outline: 'bg-transparent text-gray-700 border-2 border-gray-300',
   };
 

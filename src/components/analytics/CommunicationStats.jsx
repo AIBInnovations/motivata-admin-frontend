@@ -47,7 +47,7 @@ const CommunicationStats = ({ data, loading }) => {
           value={formatNumber(email.total)}
           subtitle={`${email.successRate} success rate`}
           icon={<HiMail className="w-6 h-6" />}
-          iconColor="text-blue-600"
+          iconColor="text-gray-800"
           loading={loading}
         />
 

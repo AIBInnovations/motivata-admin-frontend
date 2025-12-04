@@ -194,7 +194,7 @@ function VoucherForm({
             onChange={(e) => handleChange('title', e.target.value)}
             placeholder="e.g., Festival Food Court Discount"
             disabled={isLoading}
-            className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors ${
+            className={`w-full px-3 py-2 border rounded-lg focus:border-gray-800 outline-none transition-colors ${
               errors.title ? 'border-red-500' : 'border-gray-300'
             } ${isLoading ? 'bg-gray-100' : ''}`}
           />
@@ -214,7 +214,7 @@ function VoucherForm({
             placeholder="e.g., Get Rs.200 off at the food court for first 1500 buyers"
             rows={3}
             disabled={isLoading}
-            className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none transition-colors ${
+            className={`w-full px-3 py-2 border rounded-lg focus:border-gray-800 outline-none resize-none transition-colors ${
               errors.description ? 'border-red-500' : 'border-gray-300'
             } ${isLoading ? 'bg-gray-100' : ''}`}
           />
@@ -236,7 +236,7 @@ function VoucherForm({
               onChange={(e) => handleCodeChange(e.target.value)}
               placeholder="e.g., FESTIVAL200"
               disabled={isLoading}
-              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none font-mono uppercase transition-colors ${
+              className={`w-full px-3 py-2 border rounded-lg focus:border-gray-800 outline-none font-mono uppercase transition-colors ${
                 errors.code ? 'border-red-500' : 'border-gray-300'
               } ${isLoading ? 'bg-gray-100' : ''}`}
             />
@@ -257,7 +257,7 @@ function VoucherForm({
               placeholder="e.g., 1500"
               min="1"
               disabled={isLoading}
-              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors ${
+              className={`w-full px-3 py-2 border rounded-lg focus:border-gray-800 outline-none transition-colors ${
                 errors.maxUsage ? 'border-red-500' : 'border-gray-300'
               } ${isLoading ? 'bg-gray-100' : ''}`}
             />
@@ -294,7 +294,7 @@ function VoucherForm({
               disabled={isLoading}
               className="sr-only peer"
             />
-            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-0 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gray-800"></div>
           </label>
           <span className="text-sm text-gray-700">
             {formData.isActive ? 'Active' : 'Disabled'}
@@ -322,7 +322,7 @@ function VoucherForm({
           <button
             type="submit"
             disabled={isLoading}
-            className="flex-1 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center justify-center gap-2 disabled:opacity-50"
+            className="flex-1 px-4 py-2.5 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition-colors font-medium flex items-center justify-center gap-2 disabled:opacity-50"
           >
             {isLoading ? (
               <>

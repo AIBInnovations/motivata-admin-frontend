@@ -45,7 +45,7 @@ function formatCurrency(amount) {
  */
 function getCategoryColor(category) {
   const colors = {
-    TECHNOLOGY: 'bg-blue-100 text-blue-700',
+    TECHNOLOGY: 'bg-blue-100 text-gray-900',
     EDUCATION: 'bg-indigo-100 text-indigo-700',
     MEDICAL: 'bg-green-100 text-green-700',
     COMEDY: 'bg-yellow-100 text-yellow-700',
@@ -82,7 +82,7 @@ function EventTable({
     return (
       <div className="bg-white rounded-xl shadow-sm p-8">
         <div className="flex items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+          <Loader2 className="h-8 w-8 animate-spin text-gray-800" />
           <span className="ml-3 text-gray-600">Loading events...</span>
         </div>
       </div>
@@ -254,7 +254,7 @@ function EventTable({
                         {canEdit && (
                           <button
                             onClick={() => onEdit(event)}
-                            className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                            className="p-2 text-gray-800 hover:bg-blue-50 rounded-lg transition-colors"
                             title="Edit Event"
                           >
                             <Edit className="h-4 w-4" />

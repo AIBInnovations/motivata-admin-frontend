@@ -295,7 +295,7 @@ function AdminForm({
                 value={formData.name}
                 onChange={handleChange}
                 disabled={isLoading}
-                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none disabled:bg-gray-100 text-sm sm:text-base ${
+                className={`w-full px-3 py-2 border rounded-lg focus:border-gray-800 outline-none disabled:bg-gray-100 text-sm sm:text-base ${
                   errors.name ? "border-red-500" : "border-gray-300"
                 }`}
                 placeholder="Enter admin name"
@@ -322,7 +322,7 @@ function AdminForm({
                 value={formData.username}
                 onChange={handleChange}
                 disabled={isLoading}
-                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none disabled:bg-gray-100 text-sm sm:text-base ${
+                className={`w-full px-3 py-2 border rounded-lg focus:border-gray-800 outline-none disabled:bg-gray-100 text-sm sm:text-base ${
                   errors.username ? "border-red-500" : "border-gray-300"
                 }`}
                 placeholder="Enter username"
@@ -350,7 +350,7 @@ function AdminForm({
                 value={formData.email}
                 onChange={handleChange}
                 disabled={isLoading}
-                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none disabled:bg-gray-100 text-sm sm:text-base ${
+                className={`w-full px-3 py-2 border rounded-lg focus:border-gray-800 outline-none disabled:bg-gray-100 text-sm sm:text-base ${
                   errors.email ? "border-red-500" : "border-gray-300"
                 }`}
                 placeholder="Enter email address"
@@ -378,7 +378,7 @@ function AdminForm({
                 value={formData.phone}
                 onChange={handleChange}
                 disabled={isLoading}
-                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none disabled:bg-gray-100 text-sm sm:text-base ${
+                className={`w-full px-3 py-2 border rounded-lg focus:border-gray-800 outline-none disabled:bg-gray-100 text-sm sm:text-base ${
                   errors.phone ? "border-red-500" : "border-gray-300"
                 }`}
                 placeholder="Enter phone number"
@@ -411,7 +411,7 @@ function AdminForm({
                   value={formData.password}
                   onChange={handleChange}
                   disabled={isLoading}
-                  className={`w-full px-3 py-2 pr-10 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none disabled:bg-gray-100 text-sm sm:text-base ${
+                  className={`w-full px-3 py-2 pr-10 border rounded-lg focus:border-gray-800 outline-none disabled:bg-gray-100 text-sm sm:text-base ${
                     errors.password ? "border-red-500" : "border-gray-300"
                   }`}
                   placeholder={
@@ -451,7 +451,7 @@ function AdminForm({
                 value={formData.role}
                 onChange={handleChange}
                 disabled={isLoading}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white disabled:bg-gray-100 text-sm sm:text-base"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-gray-800 outline-none bg-white disabled:bg-gray-100 text-sm sm:text-base"
               >
                 {ROLE_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -476,7 +476,7 @@ function AdminForm({
                   value={formData.status}
                   onChange={handleChange}
                   disabled={isLoading}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white disabled:bg-gray-100 text-sm sm:text-base"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-gray-800 outline-none bg-white disabled:bg-gray-100 text-sm sm:text-base"
                 >
                   {STATUS_OPTIONS.map((option) => (
                     <option key={option.value} value={option.value}>
@@ -504,7 +504,7 @@ function AdminForm({
                   onChange={handleChange}
                   disabled={isLoading}
                   min="0"
-                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none disabled:bg-gray-100 text-sm sm:text-base ${
+                  className={`w-full px-3 py-2 border rounded-lg focus:border-gray-800 outline-none disabled:bg-gray-100 text-sm sm:text-base ${
                     errors.maxCashTicketsAllowed
                       ? "border-red-500"
                       : "border-gray-300"
@@ -538,7 +538,7 @@ function AdminForm({
                   key={option.value}
                   className={`inline-flex items-center px-3 py-2 rounded-lg border cursor-pointer transition-colors ${
                     formData.access.includes(option.value)
-                      ? "bg-blue-50 border-blue-500 text-blue-700"
+                      ? "bg-blue-50 border-blue-500 text-gray-900"
                       : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
                   } ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
                 >
@@ -576,7 +576,7 @@ function AdminForm({
           {/* Info message for Super Admin */}
           {!showAllowedEvents && (
             <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-              <p className="text-sm text-blue-700">
+              <p className="text-sm text-gray-900">
                 Super Admins have access to all events by default.
               </p>
             </div>
@@ -596,7 +596,7 @@ function AdminForm({
           <button
             type="submit"
             disabled={isLoading}
-            className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+            className="flex-1 px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
           >
             {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
             {isEdit ? "Update Admin" : "Create Admin"}

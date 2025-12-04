@@ -110,7 +110,7 @@ function Dashboard() {
 
             <button
               onClick={handleExport}
-              className="flex items-center gap-1.5 px-3 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all shadow-sm text-sm"
+              className="flex items-center gap-1.5 px-3 py-2 bg-gradient-to-r from-gray-800 to-gray-900 text-white rounded-lg hover:from-gray-900 hover:to-black transition-all shadow-sm text-sm"
               title="Export dashboard data"
             >
               <MdDownload className="w-4 h-4" />
@@ -133,7 +133,7 @@ function Dashboard() {
               </p>
               <button
                 onClick={handleRefresh}
-                className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                className="px-6 py-3 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition-colors"
               >
                 Try Again
               </button>

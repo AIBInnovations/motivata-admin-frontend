@@ -22,7 +22,7 @@ const UserStats = ({ usersData, adminsData, loading }) => {
                 <p className="text-3xl font-bold text-gray-900">{formatNumber(usersData.total)}</p>
               </div>
               <div className="p-2 bg-blue-50 rounded-lg">
-                <FaUsers className="w-6 h-6 text-blue-600" />
+                <FaUsers className="w-6 h-6 text-gray-800" />
               </div>
             </div>
 

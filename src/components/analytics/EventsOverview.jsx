@@ -49,7 +49,7 @@ const EventsOverview = ({ data, enrollmentsData, cashTicketsData, loading }) => 
         <div className="bg-white p-3 rounded-lg shadow-lg border border-gray-200">
           <p className="text-sm font-semibold text-gray-900">{payload[0].name}</p>
           <p className="text-sm text-gray-600">
-            Events: <span className="font-bold text-blue-600">{payload[0].value}</span>
+            Events: <span className="font-bold text-gray-800">{payload[0].value}</span>
           </p>
         </div>
       );
@@ -70,7 +70,7 @@ const EventsOverview = ({ data, enrollmentsData, cashTicketsData, loading }) => 
             value={formatNumber(total)}
             subtitle="All time events"
             icon={<MdEvent className="w-6 h-6" />}
-            iconColor="text-blue-600"
+            iconColor="text-gray-800"
             loading={loading}
           />
 
@@ -202,7 +202,7 @@ const EventsOverview = ({ data, enrollmentsData, cashTicketsData, loading }) => 
             value={formatNumber(enrollmentsData.onlineEnrollments)}
             subtitle={`${formatNumber(enrollmentsData.onlineTickets)} tickets sold`}
             icon={<FaLaptop className="w-6 h-6" />}
-            iconColor="text-blue-600"
+            iconColor="text-gray-800"
             loading={loading}
           />
 

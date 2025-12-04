@@ -41,7 +41,7 @@ function formatPrice(price) {
  */
 function getCategoryColor(category) {
   const colors = {
-    TECHNOLOGY: 'bg-blue-100 text-blue-700',
+    TECHNOLOGY: 'bg-blue-100 text-gray-900',
     EDUCATION: 'bg-indigo-100 text-indigo-700',
     MEDICAL: 'bg-green-100 text-green-700',
     COMEDY: 'bg-yellow-100 text-yellow-700',
@@ -63,7 +63,7 @@ function getCategoryColor(category) {
 function getModeColor(mode) {
   const colors = {
     ONLINE: 'bg-green-100 text-green-700',
-    OFFLINE: 'bg-blue-100 text-blue-700',
+    OFFLINE: 'bg-blue-100 text-gray-900',
     HYBRID: 'bg-purple-100 text-purple-700',
   };
   return colors[mode] || 'bg-gray-100 text-gray-700';

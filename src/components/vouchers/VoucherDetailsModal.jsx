@@ -60,7 +60,7 @@ function VoucherDetailsModal({ isOpen, onClose, voucher, isLoading = false }) {
     <Modal isOpen={isOpen} onClose={onClose} title="Voucher Details" size="lg">
       {isLoading ? (
         <div className="py-12 flex flex-col items-center justify-center">
-          <Loader2 className="h-8 w-8 text-blue-600 animate-spin" />
+          <Loader2 className="h-8 w-8 text-gray-800 animate-spin" />
           <p className="mt-2 text-sm text-gray-500">Loading voucher details...</p>
         </div>
       ) : voucher ? (
@@ -91,10 +91,10 @@ function VoucherDetailsModal({ isOpen, onClose, voucher, isLoading = false }) {
           <div className="bg-blue-50 rounded-lg p-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                <Tag className="h-5 w-5 text-blue-600" />
+                <Tag className="h-5 w-5 text-gray-800" />
               </div>
               <div>
-                <p className="text-xs text-blue-600 font-medium uppercase">Voucher Code</p>
+                <p className="text-xs text-gray-800 font-medium uppercase">Voucher Code</p>
                 <p className="text-xl font-bold text-blue-900 font-mono tracking-wider">
                   {voucher.code}
                 </p>
@@ -195,7 +195,7 @@ function VoucherDetailsModal({ isOpen, onClose, voucher, isLoading = false }) {
                 {voucher.events.map((event) => (
                   <span
                     key={event._id || event}
-                    className="px-3 py-1.5 bg-blue-100 text-blue-700 rounded-full text-sm font-medium"
+                    className="px-3 py-1.5 bg-blue-100 text-gray-900 rounded-full text-sm font-medium"
                   >
                     {event.name || event}
                   </span>

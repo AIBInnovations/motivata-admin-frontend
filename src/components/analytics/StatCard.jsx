@@ -20,7 +20,7 @@ const StatCard = ({
   trend,
   trendDirection = 'neutral',
   bgColor = 'bg-white',
-  iconColor = 'text-blue-600',
+  iconColor = 'text-gray-800',
   children,
   loading = false,
 }) => {

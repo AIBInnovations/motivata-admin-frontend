@@ -7,7 +7,7 @@ import { useAuth } from '../contexts/AuthContext';
 const LoadingSpinner = () => (
   <div className="min-h-screen flex items-center justify-center bg-gray-100">
     <div className="flex flex-col items-center gap-4">
-      <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+      <div className="w-12 h-12 border-4 border-gray-800 border-t-transparent rounded-full animate-spin"></div>
       <p className="text-gray-600">Loading...</p>
     </div>
   </div>
@@ -40,7 +40,7 @@ const AccessDenied = () => (
       </p>
       <a
         href="/dashboard"
-        className="inline-block px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+        className="inline-block px-6 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition-colors"
       >
         Go to Dashboard
       </a>

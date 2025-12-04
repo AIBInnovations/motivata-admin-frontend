@@ -297,7 +297,7 @@ function CashTicketForm({
                 className={`px-4 py-2 rounded-lg transition-colors flex items-center gap-2 shrink-0 ${
                   copied
                     ? 'bg-green-600 text-white'
-                    : 'bg-blue-600 text-white hover:bg-blue-700'
+                    : 'bg-gray-800 text-white hover:bg-gray-900'
                 }`}
               >
                 {copied ? (
@@ -336,7 +336,7 @@ function CashTicketForm({
             <button
               type="button"
               onClick={handleCreateNew}
-              className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="flex-1 px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition-colors"
             >
               Create Another
             </button>
@@ -382,7 +382,7 @@ function CashTicketForm({
               onChange={handleChange}
               disabled={isLoading}
               placeholder="Enter customer phone number"
-              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors ${
+              className={`w-full px-3 py-2 border rounded-lg focus:border-gray-800 outline-none transition-colors ${
                 errors.phone ? 'border-red-500' : 'border-gray-300'
               } ${isLoading ? 'bg-gray-100' : ''}`}
             />
@@ -407,7 +407,7 @@ function CashTicketForm({
                 min="1"
                 max="100"
                 placeholder="1"
-                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors ${
+                className={`w-full px-3 py-2 border rounded-lg focus:border-gray-800 outline-none transition-colors ${
                   errors.ticketCount ? 'border-red-500' : 'border-gray-300'
                 } ${isLoading ? 'bg-gray-100' : ''}`}
               />
@@ -429,7 +429,7 @@ function CashTicketForm({
                 disabled={isLoading}
                 min="0"
                 placeholder="0"
-                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors ${
+                className={`w-full px-3 py-2 border rounded-lg focus:border-gray-800 outline-none transition-colors ${
                   errors.priceCharged ? 'border-red-500' : 'border-gray-300'
                 } ${isLoading ? 'bg-gray-100' : ''}`}
               />
@@ -456,7 +456,7 @@ function CashTicketForm({
               disabled={isLoading}
               rows={2}
               placeholder="Add any notes about this transaction"
-              className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors resize-none ${
+              className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-gray-800 outline-none transition-colors resize-none ${
                 isLoading ? 'bg-gray-100' : ''
               }`}
             />
@@ -475,7 +475,7 @@ function CashTicketForm({
             <button
               type="submit"
               disabled={isLoading}
-              className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+              className="flex-1 px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
               Generate Link
