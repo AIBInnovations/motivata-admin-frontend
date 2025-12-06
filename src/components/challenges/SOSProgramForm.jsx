@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Loader2, AlertCircle } from 'lucide-react';
 import Modal from '../ui/Modal';
+import FileUpload from '../ui/FileUpload';
 
 /**
  * Get initial form state
@@ -283,26 +284,17 @@ function SOSProgramForm({
           </div>
         </div>
 
-        {/* Image URL */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Image URL
-            <span className="text-gray-400 font-normal ml-1">(optional)</span>
-          </label>
-          <input
-            type="url"
-            value={formData.imageUrl}
-            onChange={(e) => handleChange('imageUrl', e.target.value)}
-            placeholder="https://example.com/program-image.jpg"
-            disabled={isLoading}
-            className={`w-full px-3 py-2 border rounded-lg focus:border-gray-800 outline-none transition-colors ${
-              errors.imageUrl ? 'border-red-500' : 'border-gray-300'
-            } ${isLoading ? 'bg-gray-100' : ''}`}
-          />
-          {errors.imageUrl && (
-            <p className="text-red-600 text-sm mt-1">{errors.imageUrl}</p>
-          )}
-        </div>
+        {/* Program Image */}
+        <FileUpload
+          label="Program Image"
+          value={formData.imageUrl}
+          onUpload={(url) => handleChange('imageUrl', url)}
+          disabled={isLoading}
+          error={errors.imageUrl}
+          type="image"
+          folder="sos-programs"
+          placeholder="Drop image here or click to upload"
+        />
 
         {/* Active Status */}
         <div className="flex items-center gap-3">

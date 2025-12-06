@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Loader2, AlertCircle, Plus, X } from 'lucide-react';
 import Modal from '../ui/Modal';
+import FileUpload from '../ui/FileUpload';
 
 /**
  * Session categories
@@ -193,8 +194,10 @@ function SessionForm({
       }
     }
 
-    // Calendly link validation
-    if (data.calendlyLink && !/^https?:\/\/.+/.test(data.calendlyLink)) {
+    // Calendly link validation (required)
+    if (!data.calendlyLink.trim()) {
+      newErrors.calendlyLink = 'Calendly link is required';
+    } else if (!/^https?:\/\/.+/.test(data.calendlyLink)) {
       newErrors.calendlyLink = 'Please provide a valid URL';
     }
 
@@ -260,9 +263,7 @@ function SessionForm({
     if (formData.availableSlots) {
       submitData.availableSlots = parseInt(formData.availableSlots, 10);
     }
-    if (formData.calendlyLink.trim()) {
-      submitData.calendlyLink = formData.calendlyLink.trim();
-    }
+    submitData.calendlyLink = formData.calendlyLink.trim();
     if (formData.sessionDate) {
       submitData.sessionDate = new Date(formData.sessionDate).toISOString();
     }
@@ -579,8 +580,7 @@ function SessionForm({
         {/* Calendly Link */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Calendly Link
-            <span className="text-gray-400 font-normal ml-1">(optional)</span>
+            Calendly Link <span className="text-red-500">*</span>
           </label>
           <input
             type="url"
@@ -597,26 +597,17 @@ function SessionForm({
           )}
         </div>
 
-        {/* Image URL */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Image URL
-            <span className="text-gray-400 font-normal ml-1">(optional)</span>
-          </label>
-          <input
-            type="url"
-            value={formData.imageUrl}
-            onChange={(e) => handleChange('imageUrl', e.target.value)}
-            placeholder="https://example.com/image.jpg"
-            disabled={isLoading}
-            className={`w-full px-3 py-2 border rounded-lg focus:border-gray-800 outline-none transition-colors ${
-              errors.imageUrl ? 'border-red-500' : 'border-gray-300'
-            } ${isLoading ? 'bg-gray-100' : ''}`}
-          />
-          {errors.imageUrl && (
-            <p className="text-red-600 text-sm mt-1">{errors.imageUrl}</p>
-          )}
-        </div>
+        {/* Session Image */}
+        <FileUpload
+          label="Session Image"
+          value={formData.imageUrl}
+          onUpload={(url) => handleChange('imageUrl', url)}
+          disabled={isLoading}
+          error={errors.imageUrl}
+          type="image"
+          folder="sessions"
+          placeholder="Drop image here or click to upload"
+        />
 
         {/* Tags */}
         <div>

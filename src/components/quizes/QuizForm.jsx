@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Loader2, AlertCircle, Plus, Trash2, GripVertical } from 'lucide-react';
 import Modal from '../ui/Modal';
+import FileUpload from '../ui/FileUpload';
 
 /**
  * Question types
@@ -522,46 +523,38 @@ function QuizForm({
                 </div>
               </div>
 
-              {/* Max Attempts and Image URL */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Max Attempts
-                  </label>
-                  <input
-                    type="number"
-                    value={formData.maxAttempts}
-                    onChange={(e) => handleChange('maxAttempts', e.target.value)}
-                    placeholder="Unlimited"
-                    min="1"
-                    disabled={isLoading}
-                    className={`w-full px-3 py-2 border rounded-lg focus:border-gray-800 outline-none ${
-                      errors.maxAttempts ? 'border-red-500' : 'border-gray-300'
-                    }`}
-                  />
-                  {errors.maxAttempts && (
-                    <p className="text-red-600 text-sm mt-1">{errors.maxAttempts}</p>
-                  )}
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Image URL
-                  </label>
-                  <input
-                    type="url"
-                    value={formData.imageUrl}
-                    onChange={(e) => handleChange('imageUrl', e.target.value)}
-                    placeholder="https://example.com/image.jpg"
-                    disabled={isLoading}
-                    className={`w-full px-3 py-2 border rounded-lg focus:border-gray-800 outline-none ${
-                      errors.imageUrl ? 'border-red-500' : 'border-gray-300'
-                    }`}
-                  />
-                  {errors.imageUrl && (
-                    <p className="text-red-600 text-sm mt-1">{errors.imageUrl}</p>
-                  )}
-                </div>
+              {/* Max Attempts */}
+              <div className="w-1/2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Max Attempts
+                </label>
+                <input
+                  type="number"
+                  value={formData.maxAttempts}
+                  onChange={(e) => handleChange('maxAttempts', e.target.value)}
+                  placeholder="Unlimited"
+                  min="1"
+                  disabled={isLoading}
+                  className={`w-full px-3 py-2 border rounded-lg focus:border-gray-800 outline-none ${
+                    errors.maxAttempts ? 'border-red-500' : 'border-gray-300'
+                  }`}
+                />
+                {errors.maxAttempts && (
+                  <p className="text-red-600 text-sm mt-1">{errors.maxAttempts}</p>
+                )}
               </div>
+
+              {/* Quiz Image */}
+              <FileUpload
+                label="Quiz Image"
+                value={formData.imageUrl}
+                onUpload={(url) => handleChange('imageUrl', url)}
+                disabled={isLoading}
+                error={errors.imageUrl}
+                type="image"
+                folder="quizzes"
+                placeholder="Drop image here or click to upload"
+              />
 
               {/* Toggles */}
               <div className="flex flex-wrap gap-6">

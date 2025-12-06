@@ -56,6 +56,7 @@ function Layout() {
     '/sessions': 'sessions',
     '/quizes': 'quizes',
     '/challenges': 'challenges',
+    '/polls': 'polls',
   };
 
   const getActiveMenu = () => {

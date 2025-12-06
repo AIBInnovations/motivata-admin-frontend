@@ -15,6 +15,7 @@ import Vouchers from './pages/Vouchers';
 import Sessions from './pages/Sessions';
 import Quizes from './pages/Quizes';
 import Challenges from './pages/Challenges';
+import Polls from './pages/Polls';
 
 function App() {
   return (
@@ -51,6 +52,7 @@ function App() {
             <Route path="/sessions" element={<Sessions />} />
             <Route path="/quizes" element={<Quizes />} />
             <Route path="/challenges" element={<Challenges />} />
+            <Route path="/polls" element={<Polls />} />
           </Route>
 
           {/* Default redirect */}

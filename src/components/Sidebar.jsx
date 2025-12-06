@@ -10,6 +10,7 @@ import {
   Video,
   ClipboardList,
   Trophy,
+  BarChart3,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
@@ -93,6 +94,13 @@ function Sidebar({ activeMenu, collapsed, isOpen, onClose }) {
       icon: Trophy,
       path: "/challenges",
       color: "emerald",
+    },
+    {
+      id: "polls",
+      label: "Polls",
+      icon: BarChart3,
+      path: "/polls",
+      color: "rose",
     },
   ];
 

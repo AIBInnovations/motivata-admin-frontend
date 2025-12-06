@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Loader2, Plus, Trash2, Upload } from 'lucide-react';
+import { Loader2, Plus, Trash2, MapPin } from 'lucide-react';
 import Modal from '../ui/Modal';
+import FileUpload from '../ui/FileUpload';
 import { EVENT_CATEGORIES, EVENT_MODES } from '../../hooks/useEventsManagement';
 
 /**
@@ -16,6 +17,7 @@ const getInitialFormState = (event = null) => ({
   },
   mode: event?.mode || '',
   city: event?.city || '',
+  gmapLink: event?.gmapLink || '',
   category: event?.category || '',
   startDate: event?.startDate ? formatDateTimeForInput(event.startDate) : '',
   endDate: event?.endDate ? formatDateTimeForInput(event.endDate) : '',
@@ -65,6 +67,17 @@ const validateForm = (data) => {
   // City validation (required for OFFLINE or HYBRID)
   if ((data.mode === 'OFFLINE' || data.mode === 'HYBRID') && !data.city.trim()) {
     errors.city = 'City is required for offline or hybrid events';
+  }
+
+  // Google Maps link validation (optional, but must be valid URL if provided)
+  if (data.gmapLink && data.gmapLink.trim()) {
+    const gmapPattern = /^https?:\/\/(www\.)?(google\.[a-z.]+\/maps|maps\.google\.[a-z.]+|goo\.gl\/maps|maps\.app\.goo\.gl)\/.+/i;
+    const generalUrlPattern = /^https?:\/\/.+/;
+    if (!generalUrlPattern.test(data.gmapLink.trim())) {
+      errors.gmapLink = 'Please provide a valid URL';
+    } else if (!gmapPattern.test(data.gmapLink.trim())) {
+      errors.gmapLink = 'Please provide a valid Google Maps link';
+    }
   }
 
   // Category validation
@@ -195,14 +208,12 @@ function EventForm({
   const isEditMode = !!event;
   const [formData, setFormData] = useState(getInitialFormState(event));
   const [errors, setErrors] = useState({});
-  const [newImageUrl, setNewImageUrl] = useState('');
 
   // Reset form when event changes or modal opens/closes
   useEffect(() => {
     if (isOpen) {
       setFormData(getInitialFormState(event));
       setErrors({});
-      setNewImageUrl('');
     }
   }, [isOpen, event]);
 
@@ -241,16 +252,6 @@ function EventForm({
     const errorKey = field === 'imageUrl' ? 'thumbnailImage' : 'thumbnailVideo';
     if (errors[errorKey]) {
       setErrors((prev) => ({ ...prev, [errorKey]: null }));
-    }
-  };
-
-  const handleAddImageUrl = () => {
-    if (newImageUrl.trim()) {
-      setFormData((prev) => ({
-        ...prev,
-        imageUrls: [...prev.imageUrls, newImageUrl.trim()],
-      }));
-      setNewImageUrl('');
     }
   };
 
@@ -335,6 +336,10 @@ function EventForm({
     // Add optional fields
     if (formData.city.trim()) {
       submitData.city = formData.city.trim();
+    }
+
+    if (formData.gmapLink.trim()) {
+      submitData.gmapLink = formData.gmapLink.trim();
     }
 
     if (formData.imageUrls.length > 0) {
@@ -500,25 +505,49 @@ function EventForm({
             </div>
           </div>
 
-          {/* City (shown for OFFLINE or HYBRID) */}
+          {/* City and Google Maps Link (shown for OFFLINE or HYBRID) */}
           {(formData.mode === 'OFFLINE' || formData.mode === 'HYBRID') && (
-            <div>
-              <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-1">
-                City <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                id="city"
-                name="city"
-                value={formData.city}
-                onChange={handleChange}
-                disabled={isLoading}
-                className={`w-full px-3 py-2 border rounded-lg focus:border-gray-800 outline-none disabled:bg-gray-100 ${
-                  errors.city ? 'border-red-500' : 'border-gray-300'
-                }`}
-                placeholder="Enter city"
-              />
-              {errors.city && <p className="mt-1 text-sm text-red-500">{errors.city}</p>}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-1">
+                  City <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  id="city"
+                  name="city"
+                  value={formData.city}
+                  onChange={handleChange}
+                  disabled={isLoading}
+                  className={`w-full px-3 py-2 border rounded-lg focus:border-gray-800 outline-none disabled:bg-gray-100 ${
+                    errors.city ? 'border-red-500' : 'border-gray-300'
+                  }`}
+                  placeholder="Enter city"
+                />
+                {errors.city && <p className="mt-1 text-sm text-red-500">{errors.city}</p>}
+              </div>
+
+              <div>
+                <label htmlFor="gmapLink" className="block text-sm font-medium text-gray-700 mb-1">
+                  <span className="flex items-center gap-1">
+                    <MapPin className="h-4 w-4" />
+                    Google Maps Link
+                  </span>
+                </label>
+                <input
+                  type="url"
+                  id="gmapLink"
+                  name="gmapLink"
+                  value={formData.gmapLink}
+                  onChange={handleChange}
+                  disabled={isLoading}
+                  className={`w-full px-3 py-2 border rounded-lg focus:border-gray-800 outline-none disabled:bg-gray-100 ${
+                    errors.gmapLink ? 'border-red-500' : 'border-gray-300'
+                  }`}
+                  placeholder="https://maps.app.goo.gl/..."
+                />
+                {errors.gmapLink && <p className="mt-1 text-sm text-red-500">{errors.gmapLink}</p>}
+              </div>
             </div>
           )}
         </div>
@@ -814,107 +843,42 @@ function EventForm({
 
           {/* Thumbnail */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Thumbnail Image URL
-              </label>
-              <input
-                type="url"
-                value={formData.thumbnail.imageUrl}
-                onChange={(e) => handleThumbnailChange('imageUrl', e.target.value)}
-                disabled={isLoading}
-                className={`w-full px-3 py-2 border rounded-lg focus:border-gray-800 outline-none disabled:bg-gray-100 ${
-                  errors.thumbnailImage ? 'border-red-500' : 'border-gray-300'
-                }`}
-                placeholder="https://example.com/image.jpg"
-              />
-              {errors.thumbnailImage && (
-                <p className="mt-1 text-sm text-red-500">{errors.thumbnailImage}</p>
-              )}
-            </div>
+            <FileUpload
+              label="Thumbnail Image"
+              value={formData.thumbnail.imageUrl}
+              onUpload={(url) => handleThumbnailChange('imageUrl', url)}
+              disabled={isLoading}
+              error={errors.thumbnailImage}
+              type="image"
+              folder="events/thumbnails"
+              placeholder="Drop image here or click to upload"
+            />
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Thumbnail Video URL
-              </label>
-              <input
-                type="url"
-                value={formData.thumbnail.videoUrl}
-                onChange={(e) => handleThumbnailChange('videoUrl', e.target.value)}
-                disabled={isLoading}
-                className={`w-full px-3 py-2 border rounded-lg focus:border-gray-800 outline-none disabled:bg-gray-100 ${
-                  errors.thumbnailVideo ? 'border-red-500' : 'border-gray-300'
-                }`}
-                placeholder="https://example.com/video.mp4"
-              />
-              {errors.thumbnailVideo && (
-                <p className="mt-1 text-sm text-red-500">{errors.thumbnailVideo}</p>
-              )}
-            </div>
+            <FileUpload
+              label="Thumbnail Video"
+              value={formData.thumbnail.videoUrl}
+              onUpload={(url) => handleThumbnailChange('videoUrl', url)}
+              disabled={isLoading}
+              error={errors.thumbnailVideo}
+              type="video"
+              folder="events/videos"
+              placeholder="Drop video here or click to upload"
+            />
           </div>
 
-          {/* Image URLs */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Image Gallery URLs</label>
-            <div className="flex gap-2 mb-2">
-              <input
-                type="url"
-                value={newImageUrl}
-                onChange={(e) => setNewImageUrl(e.target.value)}
-                disabled={isLoading}
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:border-gray-800 outline-none disabled:bg-gray-100"
-                placeholder="https://example.com/image.jpg"
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    handleAddImageUrl();
-                  }
-                }}
-              />
-              <button
-                type="button"
-                onClick={handleAddImageUrl}
-                disabled={isLoading || !newImageUrl.trim()}
-                className="px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition-colors disabled:opacity-50"
-              >
-                <Plus className="h-4 w-4" />
-              </button>
-            </div>
-
-            {formData.imageUrls.length > 0 && (
-              <div className="space-y-2">
-                {formData.imageUrls.map((url, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg border border-gray-200"
-                  >
-                    <img
-                      src={url}
-                      alt={`Preview ${index + 1}`}
-                      className="w-10 h-10 object-cover rounded"
-                      onError={(e) => {
-                        e.target.style.display = 'none';
-                      }}
-                    />
-                    <span className="flex-1 text-sm text-gray-600 truncate">{url}</span>
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveImageUrl(index)}
-                      disabled={isLoading}
-                      className="p-1 text-red-500 hover:bg-red-50 rounded transition-colors"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-            {errors.imageUrls && (
-              <p className="mt-1 text-sm text-red-500">
-                Some image URLs are invalid. Please check and fix them.
-              </p>
-            )}
-          </div>
+          {/* Image Gallery */}
+          <FileUpload
+            label="Image Gallery"
+            values={formData.imageUrls}
+            onUpload={(urls) => setFormData((prev) => ({ ...prev, imageUrls: urls }))}
+            onRemove={(index) => handleRemoveImageUrl(index)}
+            multiple
+            disabled={isLoading}
+            error={errors.imageUrls ? 'Some image URLs are invalid' : null}
+            type="image"
+            folder="events/gallery"
+            placeholder="Drop images here or click to upload"
+          />
         </div>
 
         {/* Actions */}
