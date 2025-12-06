@@ -19,12 +19,28 @@ function useSessions(initialFilters = {}) {
     search: '',
     isLive: '',
     sessionType: '',
+    category: '',
     sortBy: 'createdAt',
     sortOrder: 'desc',
     ...initialFilters,
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  // Booking state
+  const [bookings, setBookings] = useState([]);
+  const [bookingPagination, setBookingPagination] = useState({
+    currentPage: 1,
+    totalPages: 0,
+    totalCount: 0,
+    limit: 10,
+  });
+  const [bookingFilters, setBookingFilters] = useState({
+    status: '',
+    sessionId: '',
+  });
+  const [isLoadingBookings, setIsLoadingBookings] = useState(false);
+  const [bookingError, setBookingError] = useState(null);
 
   // Debounce timer for search
   const debounceTimerRef = useRef(null);
@@ -47,7 +63,10 @@ function useSessions(initialFilters = {}) {
           ...(filters.search && { search: filters.search }),
           ...(filters.isLive !== '' && { isLive: filters.isLive }),
           ...(filters.sessionType && { sessionType: filters.sessionType }),
+          ...(filters.category && { category: filters.category }),
         };
+
+        console.log('[useSessions] Fetching sessions with params:', params);
 
         const result = await sessionService.getAll(params);
 
@@ -242,6 +261,7 @@ function useSessions(initialFilters = {}) {
       search: '',
       isLive: '',
       sessionType: '',
+      category: '',
       sortBy: 'createdAt',
       sortOrder: 'desc',
       ...initialFilters,
@@ -272,6 +292,127 @@ function useSessions(initialFilters = {}) {
    */
   const clearError = useCallback(() => {
     setError(null);
+  }, []);
+
+  // ============ Booking Methods ============
+
+  /**
+   * Fetch bookings with pagination and filters
+   * @param {number} page - Page number
+   */
+  const fetchBookings = useCallback(
+    async (page = bookingPagination.currentPage) => {
+      setIsLoadingBookings(true);
+      setBookingError(null);
+
+      try {
+        const params = {
+          page,
+          limit: bookingPagination.limit,
+          ...(bookingFilters.status && { status: bookingFilters.status }),
+          ...(bookingFilters.sessionId && { sessionId: bookingFilters.sessionId }),
+        };
+
+        console.log('[useSessions] Fetching bookings with params:', params);
+        const result = await sessionService.getBookings(params);
+
+        if (result.success) {
+          setBookings(result.data.bookings || []);
+          setBookingPagination({
+            currentPage: result.data.pagination?.currentPage || 1,
+            totalPages: result.data.pagination?.totalPages || 0,
+            totalCount: result.data.pagination?.totalCount || 0,
+            limit: result.data.pagination?.limit || 10,
+          });
+          console.log('[useSessions] Fetched bookings:', result.data.bookings?.length);
+        } else {
+          console.error('[useSessions] Failed to fetch bookings:', result.message);
+          setBookingError(result.message || 'Failed to fetch bookings');
+          setBookings([]);
+        }
+      } catch (err) {
+        console.error('[useSessions] Error fetching bookings:', err);
+        setBookingError('Failed to fetch bookings');
+        setBookings([]);
+      } finally {
+        setIsLoadingBookings(false);
+      }
+    },
+    [bookingFilters, bookingPagination.limit]
+  );
+
+  /**
+   * Update a booking's status
+   * @param {string} bookingId - Booking ID
+   * @param {Object} data - { status, scheduledSlot?, adminNotes? }
+   * @returns {Promise<{success: boolean, data?: Object, error?: string}>}
+   */
+  const updateBooking = useCallback(
+    async (bookingId, data) => {
+      try {
+        console.log('[useSessions] Updating booking:', bookingId, 'with data:', data);
+        const result = await sessionService.updateBooking(bookingId, data);
+
+        if (result.success) {
+          console.log('[useSessions] Booking updated successfully');
+          setBookings((prev) =>
+            prev.map((booking) =>
+              booking._id === bookingId ? { ...booking, ...result.data.booking } : booking
+            )
+          );
+          return {
+            success: true,
+            data: result.data,
+          };
+        } else {
+          console.error('[useSessions] Failed to update booking:', result.message);
+          return {
+            success: false,
+            error: result.message,
+          };
+        }
+      } catch (err) {
+        console.error('[useSessions] Error updating booking:', err);
+        return { success: false, error: 'Failed to update booking' };
+      }
+    },
+    []
+  );
+
+  /**
+   * Update booking filters
+   * @param {Object} newFilters - New filter values
+   */
+  const updateBookingFilters = useCallback((newFilters) => {
+    setBookingFilters((prev) => ({ ...prev, ...newFilters }));
+  }, []);
+
+  /**
+   * Reset booking filters
+   */
+  const resetBookingFilters = useCallback(() => {
+    setBookingFilters({
+      status: '',
+      sessionId: '',
+    });
+  }, []);
+
+  /**
+   * Change booking page
+   * @param {number} page - Page number
+   */
+  const changeBookingPage = useCallback(
+    (page) => {
+      fetchBookings(page);
+    },
+    [fetchBookings]
+  );
+
+  /**
+   * Clear booking error
+   */
+  const clearBookingError = useCallback(() => {
+    setBookingError(null);
   }, []);
 
   // Fetch sessions when filters change
@@ -315,6 +456,21 @@ function useSessions(initialFilters = {}) {
 
     // Utilities
     clearError,
+
+    // Booking state
+    bookings,
+    bookingPagination,
+    bookingFilters,
+    isLoadingBookings,
+    bookingError,
+
+    // Booking operations
+    fetchBookings,
+    updateBooking,
+    updateBookingFilters,
+    resetBookingFilters,
+    changeBookingPage,
+    clearBookingError,
   };
 }
 

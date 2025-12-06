@@ -1,6 +1,18 @@
 import { useState, useEffect } from 'react';
-import { Loader2, AlertCircle } from 'lucide-react';
+import { Loader2, AlertCircle, Plus, X } from 'lucide-react';
 import Modal from '../ui/Modal';
+
+/**
+ * Session categories
+ */
+const SESSION_CATEGORIES = [
+  { value: 'therapeutic', label: 'Therapeutic' },
+  { value: 'mental_wellness', label: 'Mental Wellness' },
+  { value: 'career', label: 'Career' },
+  { value: 'relationships', label: 'Relationships' },
+  { value: 'lifestyle', label: 'Lifestyle' },
+  { value: 'other', label: 'Other' },
+];
 
 /**
  * Get initial form state
@@ -14,12 +26,16 @@ const getInitialFormState = () => ({
   compareAtPrice: '',
   duration: '',
   sessionType: 'OTO',
-  isLive: true,
+  category: 'mental_wellness',
+  isLive: false,
   host: '',
+  hostEmail: '',
+  hostPhone: '',
   availableSlots: '',
   calendlyLink: '',
   sessionDate: '',
   imageUrl: '',
+  tags: [],
 });
 
 /**
@@ -46,6 +62,9 @@ function SessionForm({
 
   const isEditMode = !!sessionToEdit;
 
+  // Tag input state
+  const [tagInput, setTagInput] = useState('');
+
   // Reset form when modal opens/closes or session changes
   useEffect(() => {
     if (isOpen) {
@@ -58,19 +77,24 @@ function SessionForm({
           compareAtPrice: sessionToEdit.compareAtPrice?.toString() || '',
           duration: sessionToEdit.duration?.toString() || '',
           sessionType: sessionToEdit.sessionType || 'OTO',
-          isLive: sessionToEdit.isLive ?? true,
+          category: sessionToEdit.category || 'mental_wellness',
+          isLive: sessionToEdit.isLive ?? false,
           host: sessionToEdit.host || '',
+          hostEmail: sessionToEdit.hostEmail || '',
+          hostPhone: sessionToEdit.hostPhone || '',
           availableSlots: sessionToEdit.availableSlots?.toString() || '',
           calendlyLink: sessionToEdit.calendlyLink || '',
           sessionDate: sessionToEdit.sessionDate
             ? new Date(sessionToEdit.sessionDate).toISOString().slice(0, 16)
             : '',
           imageUrl: sessionToEdit.imageUrl || '',
+          tags: sessionToEdit.tags || [],
         });
       } else {
         setFormData(getInitialFormState());
       }
       setErrors({});
+      setTagInput('');
     }
   }, [isOpen, sessionToEdit]);
 
@@ -143,6 +167,24 @@ function SessionForm({
       newErrors.host = 'Host name must be less than 100 characters';
     }
 
+    // Host email validation (optional but must be valid if provided)
+    if (data.hostEmail && data.hostEmail.trim()) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(data.hostEmail.trim())) {
+        newErrors.hostEmail = 'Please provide a valid email address';
+      }
+    }
+
+    // Host phone validation (optional, basic format check)
+    if (data.hostPhone && data.hostPhone.trim()) {
+      const phoneRegex = /^[\d\s+\-()]+$/;
+      if (!phoneRegex.test(data.hostPhone.trim())) {
+        newErrors.hostPhone = 'Please provide a valid phone number';
+      } else if (data.hostPhone.trim().length < 10) {
+        newErrors.hostPhone = 'Phone number must be at least 10 digits';
+      }
+    }
+
     // Available slots validation (for OTM sessions)
     if (data.sessionType === 'OTM' && data.availableSlots) {
       const slotsNum = parseInt(data.availableSlots, 10);
@@ -206,6 +248,7 @@ function SessionForm({
       price: parseFloat(formData.price),
       duration: parseInt(formData.duration, 10),
       sessionType: formData.sessionType,
+      category: formData.category,
       isLive: formData.isLive,
       host: formData.host.trim(),
     };
@@ -225,6 +268,15 @@ function SessionForm({
     }
     if (formData.imageUrl.trim()) {
       submitData.imageUrl = formData.imageUrl.trim();
+    }
+    if (formData.hostEmail.trim()) {
+      submitData.hostEmail = formData.hostEmail.trim();
+    }
+    if (formData.hostPhone.trim()) {
+      submitData.hostPhone = formData.hostPhone.trim();
+    }
+    if (formData.tags.length > 0) {
+      submitData.tags = formData.tags;
     }
 
     const result = await onSubmit(submitData);
@@ -370,7 +422,7 @@ function SessionForm({
           </div>
         </div>
 
-        {/* Session Type and Host - Grid */}
+        {/* Session Type, Category - Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {/* Session Type */}
           <div>
@@ -390,6 +442,30 @@ function SessionForm({
             </select>
           </div>
 
+          {/* Category */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Category <span className="text-red-500">*</span>
+            </label>
+            <select
+              value={formData.category}
+              onChange={(e) => handleChange('category', e.target.value)}
+              disabled={isLoading}
+              className={`w-full px-3 py-2 border rounded-lg focus:border-gray-800 outline-none transition-colors border-gray-300 ${
+                isLoading ? 'bg-gray-100' : ''
+              }`}
+            >
+              {SESSION_CATEGORIES.map((cat) => (
+                <option key={cat.value} value={cat.value}>
+                  {cat.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* Host Name, Email, Phone - Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {/* Host */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -407,6 +483,48 @@ function SessionForm({
             />
             {errors.host && (
               <p className="text-red-600 text-sm mt-1">{errors.host}</p>
+            )}
+          </div>
+
+          {/* Host Email */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Host Email
+              <span className="text-gray-400 font-normal ml-1">(optional)</span>
+            </label>
+            <input
+              type="email"
+              value={formData.hostEmail}
+              onChange={(e) => handleChange('hostEmail', e.target.value)}
+              placeholder="host@example.com"
+              disabled={isLoading}
+              className={`w-full px-3 py-2 border rounded-lg focus:border-gray-800 outline-none transition-colors ${
+                errors.hostEmail ? 'border-red-500' : 'border-gray-300'
+              } ${isLoading ? 'bg-gray-100' : ''}`}
+            />
+            {errors.hostEmail && (
+              <p className="text-red-600 text-sm mt-1">{errors.hostEmail}</p>
+            )}
+          </div>
+
+          {/* Host Phone */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Host Phone
+              <span className="text-gray-400 font-normal ml-1">(optional)</span>
+            </label>
+            <input
+              type="tel"
+              value={formData.hostPhone}
+              onChange={(e) => handleChange('hostPhone', e.target.value)}
+              placeholder="+91 9876543210"
+              disabled={isLoading}
+              className={`w-full px-3 py-2 border rounded-lg focus:border-gray-800 outline-none transition-colors ${
+                errors.hostPhone ? 'border-red-500' : 'border-gray-300'
+              } ${isLoading ? 'bg-gray-100' : ''}`}
+            />
+            {errors.hostPhone && (
+              <p className="text-red-600 text-sm mt-1">{errors.hostPhone}</p>
             )}
           </div>
         </div>
@@ -497,6 +615,75 @@ function SessionForm({
           />
           {errors.imageUrl && (
             <p className="text-red-600 text-sm mt-1">{errors.imageUrl}</p>
+          )}
+        </div>
+
+        {/* Tags */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Tags
+            <span className="text-gray-400 font-normal ml-1">(optional)</span>
+          </label>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={tagInput}
+              onChange={(e) => setTagInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  const tag = tagInput.trim().toLowerCase();
+                  if (tag && !formData.tags.includes(tag)) {
+                    handleChange('tags', [...formData.tags, tag]);
+                    setTagInput('');
+                  }
+                }
+              }}
+              placeholder="Type a tag and press Enter"
+              disabled={isLoading}
+              className={`flex-1 px-3 py-2 border rounded-lg focus:border-gray-800 outline-none transition-colors border-gray-300 ${
+                isLoading ? 'bg-gray-100' : ''
+              }`}
+            />
+            <button
+              type="button"
+              onClick={() => {
+                const tag = tagInput.trim().toLowerCase();
+                if (tag && !formData.tags.includes(tag)) {
+                  handleChange('tags', [...formData.tags, tag]);
+                  setTagInput('');
+                }
+              }}
+              disabled={isLoading || !tagInput.trim()}
+              className="px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50"
+            >
+              <Plus className="h-4 w-4" />
+            </button>
+          </div>
+          {formData.tags.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-2">
+              {formData.tags.map((tag, index) => (
+                <span
+                  key={index}
+                  className="inline-flex items-center gap-1 px-2.5 py-1 bg-gray-100 text-gray-700 rounded-full text-sm"
+                >
+                  {tag}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleChange(
+                        'tags',
+                        formData.tags.filter((_, i) => i !== index)
+                      );
+                    }}
+                    disabled={isLoading}
+                    className="text-gray-500 hover:text-gray-700"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </span>
+              ))}
+            </div>
           )}
         </div>
 

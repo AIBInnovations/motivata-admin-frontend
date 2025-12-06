@@ -9,6 +9,9 @@ const SESSION_ENDPOINTS = {
   DELETED: '/web/sessions/deleted',
   RESTORE: (id) => `/web/sessions/${id}/restore`,
   PERMANENT_DELETE: (id) => `/web/sessions/${id}/permanent`,
+  // Booking endpoints
+  BOOKINGS: '/web/sessions/bookings',
+  UPDATE_BOOKING: (bookingId) => `/web/sessions/bookings/${bookingId}`,
 };
 
 /**
@@ -190,6 +193,57 @@ const sessionService = {
       console.log('[SessionService] Session permanently deleted');
     } else {
       console.error('[SessionService] Failed to permanently delete session:', result.message);
+    }
+
+    return result;
+  },
+
+  // ============ Booking Methods ============
+
+  /**
+   * Get all bookings with pagination and filters
+   * @param {Object} params - { page?, limit?, status?, sessionId? }
+   * @returns {Promise<{success: boolean, data: Object|null, message: string, error: string|null}>}
+   */
+  getBookings: async (params = {}) => {
+    const queryParams = new URLSearchParams();
+
+    if (params.page) queryParams.append('page', params.page);
+    if (params.limit) queryParams.append('limit', params.limit);
+    if (params.status) queryParams.append('status', params.status);
+    if (params.sessionId) queryParams.append('sessionId', params.sessionId);
+
+    const queryString = queryParams.toString();
+    const url = queryString
+      ? `${SESSION_ENDPOINTS.BOOKINGS}?${queryString}`
+      : SESSION_ENDPOINTS.BOOKINGS;
+
+    console.log('[SessionService] Fetching bookings with params:', params);
+    const result = await handleApiResponse(api.get(url));
+
+    if (result.success) {
+      console.log('[SessionService] Fetched bookings:', result.data.bookings?.length);
+    } else {
+      console.error('[SessionService] Failed to fetch bookings:', result.message);
+    }
+
+    return result;
+  },
+
+  /**
+   * Update booking status
+   * @param {string} bookingId - Booking ID
+   * @param {Object} data - { status, scheduledSlot?, adminNotes? }
+   * @returns {Promise<{success: boolean, data: Object|null, message: string, error: string|null}>}
+   */
+  updateBooking: async (bookingId, data) => {
+    console.log('[SessionService] Updating booking:', bookingId, 'with status:', data.status);
+    const result = await handleApiResponse(api.put(SESSION_ENDPOINTS.UPDATE_BOOKING(bookingId), data));
+
+    if (result.success) {
+      console.log('[SessionService] Booking updated successfully');
+    } else {
+      console.error('[SessionService] Failed to update booking:', result.message);
     }
 
     return result;
