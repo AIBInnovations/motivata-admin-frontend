@@ -16,6 +16,7 @@ import Sessions from './pages/Sessions';
 import Quizes from './pages/Quizes';
 import Challenges from './pages/Challenges';
 import Polls from './pages/Polls';
+import Stories from './pages/Stories';
 
 function App() {
   return (
@@ -53,6 +54,7 @@ function App() {
             <Route path="/quizes" element={<Quizes />} />
             <Route path="/challenges" element={<Challenges />} />
             <Route path="/polls" element={<Polls />} />
+            <Route path="/stories" element={<Stories />} />
           </Route>
 
           {/* Default redirect */}

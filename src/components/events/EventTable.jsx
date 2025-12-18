@@ -130,7 +130,15 @@ function EventTable({
                 {/* Event Name & Thumbnail */}
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-4">
-                    <div className="w-16 h-12 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                    <div className="relative w-16 h-12 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                      {/* Featured Ribbon */}
+                      {event.featured && (
+                        <div className="absolute top-0 left-0 z-10">
+                          <div className="bg-purple-600 text-white text-[8px] font-semibold px-1.5 py-0.5 rounded-br-md shadow-sm">
+                            Featured
+                          </div>
+                        </div>
+                      )}
                       {event.thumbnail?.imageUrl || event.imageUrls?.[0] ? (
                         <img
                           src={event.thumbnail?.imageUrl || event.imageUrls?.[0]}
@@ -147,9 +155,16 @@ function EventTable({
                       )}
                     </div>
                     <div className="min-w-0">
-                      <p className="font-medium text-gray-900 truncate max-w-[200px]">
-                        {event.name}
-                      </p>
+                      <div className="flex items-center gap-2">
+                        <p className="font-medium text-gray-900 truncate max-w-[200px]">
+                          {event.name}
+                        </p>
+                        {event.featured && (
+                          <span className="hidden sm:inline-flex px-1.5 py-0.5 rounded text-[10px] font-medium bg-purple-100 text-purple-700">
+                            Featured
+                          </span>
+                        )}
+                      </div>
                       {event.city && (
                         <p className="text-sm text-gray-500 truncate">{event.city}</p>
                       )}

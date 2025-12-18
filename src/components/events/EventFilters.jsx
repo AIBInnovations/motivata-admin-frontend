@@ -39,6 +39,7 @@ function EventFilters({
     filters.mode ||
     filters.city ||
     filters.isLive !== '' ||
+    filters.featured !== '' ||
     filters.minPrice ||
     filters.maxPrice ||
     filters.startDateFrom ||
@@ -112,6 +113,18 @@ function EventFilters({
           <option value="">All Status</option>
           <option value="true">Live Only</option>
           <option value="false">Not Live</option>
+        </select>
+
+        {/* Featured Filter */}
+        <select
+          value={filters.featured}
+          onChange={(e) => handleFilterChange('featured', e.target.value)}
+          disabled={disabled}
+          className="px-4 py-2 border border-gray-300 rounded-lg focus:border-gray-800 outline-none bg-white disabled:bg-gray-100"
+        >
+          <option value="">All Events</option>
+          <option value="true">Featured Only</option>
+          <option value="false">Not Featured</option>
         </select>
 
         {/* Sort By */}

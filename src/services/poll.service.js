@@ -104,6 +104,24 @@ const pollService = {
 
     return result;
   },
+
+  /**
+   * Send push notification to all enrolled users for a poll
+   * @param {string} pollId - Poll ID
+   * @returns {Promise<{success: boolean, data: Object|null, message: string, error: string|null}>}
+   */
+  notifyUsers: async (pollId) => {
+    console.log('[PollService] Sending notification for poll:', pollId);
+    const result = await handleApiResponse(api.post(`${POLL_ENDPOINTS.BASE}/${pollId}/notify`));
+
+    if (result.success) {
+      console.log('[PollService] Notification sent, success:', result.data?.successCount, 'failed:', result.data?.failureCount);
+    } else {
+      console.error('[PollService] Failed to send notification:', result.message);
+    }
+
+    return result;
+  },
 };
 
 export default pollService;

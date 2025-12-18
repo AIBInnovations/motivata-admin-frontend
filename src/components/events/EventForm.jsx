@@ -26,6 +26,8 @@ const getInitialFormState = (event = null) => ({
   availableSeats: event?.availableSeats ?? '',
   usePricingTiers: event?.pricingTiers?.length > 0,
   pricingTiers: event?.pricingTiers || [],
+  isLive: event?.isLive ?? false,
+  featured: event?.featured ?? false,
 });
 
 /**
@@ -375,6 +377,10 @@ function EventForm({
     if (formData.availableSeats !== '') {
       submitData.availableSeats = Number(formData.availableSeats);
     }
+
+    // Add status fields
+    submitData.isLive = formData.isLive;
+    submitData.featured = formData.featured;
 
     await onSubmit(submitData);
   };
@@ -879,6 +885,51 @@ function EventForm({
             folder="events/gallery"
             placeholder="Drop images here or click to upload"
           />
+        </div>
+
+        {/* Status Options */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">Status</h3>
+
+          <div className="flex flex-wrap gap-6">
+            {/* Is Live Toggle */}
+            <label className="flex items-center gap-3 cursor-pointer">
+              <div className="relative">
+                <input
+                  type="checkbox"
+                  checked={formData.isLive}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, isLive: e.target.checked }))}
+                  disabled={isLoading}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:bg-green-500 peer-disabled:opacity-50 transition-colors"></div>
+                <div className="absolute left-0.5 top-0.5 w-5 h-5 bg-white rounded-full shadow peer-checked:translate-x-5 transition-transform"></div>
+              </div>
+              <div>
+                <span className="text-sm font-medium text-gray-900">Live</span>
+                <p className="text-xs text-gray-500">Event is visible to users</p>
+              </div>
+            </label>
+
+            {/* Featured Toggle */}
+            <label className="flex items-center gap-3 cursor-pointer">
+              <div className="relative">
+                <input
+                  type="checkbox"
+                  checked={formData.featured}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, featured: e.target.checked }))}
+                  disabled={isLoading}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:bg-purple-500 peer-disabled:opacity-50 transition-colors"></div>
+                <div className="absolute left-0.5 top-0.5 w-5 h-5 bg-white rounded-full shadow peer-checked:translate-x-5 transition-transform"></div>
+              </div>
+              <div>
+                <span className="text-sm font-medium text-gray-900">Featured</span>
+                <p className="text-xs text-gray-500">Highlight in featured sections</p>
+              </div>
+            </label>
+          </div>
         </div>
 
         {/* Actions */}

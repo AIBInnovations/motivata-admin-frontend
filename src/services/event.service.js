@@ -5,6 +5,7 @@ const EVENT_ENDPOINTS = {
   DROPDOWN: '/web/events/dropdown',
   DELETED: '/web/events/deleted',
   UPDATE_EXPIRED: '/web/events/update-expired',
+  FEATURED: '/web/events/featured',
 };
 
 /**
@@ -45,6 +46,7 @@ const eventService = {
    * @param {string} params.startDateFrom - Start date from (ISO)
    * @param {string} params.startDateTo - Start date to (ISO)
    * @param {string} params.search - Search in name and description
+   * @param {boolean} params.featured - Filter by featured status
    * @returns {Promise<{success: boolean, data: Object|null, message: string, error: string|null}>}
    */
   getAll: async (params = {}) => {
@@ -244,6 +246,27 @@ const eventService = {
       console.log('[EventService] Updated expired events:', result.data.updatedCount);
     } else {
       console.error('[EventService] Failed to update expired events:', result.message);
+    }
+
+    return result;
+  },
+
+  /**
+   * Get featured events (featured: true, isLive: true)
+   * @param {Object} params - { limit? }
+   * @returns {Promise<{success: boolean, data: Object|null, message: string, error: string|null}>}
+   */
+  getFeaturedEvents: async (params = {}) => {
+    const queryString = buildQueryString(params);
+    const url = queryString ? `${EVENT_ENDPOINTS.FEATURED}?${queryString}` : EVENT_ENDPOINTS.FEATURED;
+
+    console.log('[EventService] Fetching featured events');
+    const result = await handleApiResponse(api.get(url));
+
+    if (result.success) {
+      console.log('[EventService] Fetched featured events:', result.data.events?.length);
+    } else {
+      console.error('[EventService] Failed to fetch featured events:', result.message);
     }
 
     return result;

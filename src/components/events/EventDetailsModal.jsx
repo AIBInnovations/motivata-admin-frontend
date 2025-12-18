@@ -135,6 +135,11 @@ function EventDetailsModal({
                   Not Live
                 </span>
               )}
+              {event.featured && (
+                <span className="px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-700">
+                  Featured
+                </span>
+              )}
               {event.isDeleted && (
                 <span className="px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-700">
                   Deleted

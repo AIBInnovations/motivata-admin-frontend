@@ -1,4 +1,4 @@
-import { Calendar, MapPin, Globe, BarChart3, Edit2, Trash2, Plus, Eye, MessageCircle } from 'lucide-react';
+import { Calendar, MapPin, Globe, BarChart3, Edit2, Trash2, Plus, Eye, MessageCircle, Bell } from 'lucide-react';
 
 /**
  * Format date for display
@@ -48,6 +48,7 @@ function PollCard({
   event,
   poll,
   isLoadingPoll = false,
+  isNotifying = false,
   canEdit = true,
   canDelete = true,
   onCreatePoll,
@@ -55,6 +56,7 @@ function PollCard({
   onDeletePoll,
   onViewStats,
   onViewPoll,
+  onNotifyUsers,
 }) {
   const hasPoll = !!poll;
   const ModeIcon = getModeIcon(event.mode);
@@ -196,6 +198,19 @@ function PollCard({
                     </button>
                   )}
                 </div>
+              )}
+
+              {/* Notify Users Button */}
+              {canEdit && (
+                <button
+                  onClick={() => onNotifyUsers(event, poll)}
+                  disabled={isNotifying}
+                  className="w-full flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-medium text-amber-700 bg-amber-50 hover:bg-amber-100 rounded-lg transition-colors border border-amber-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  title="Send push notification to enrolled users"
+                >
+                  <Bell className={`h-4 w-4 ${isNotifying ? 'animate-pulse' : ''}`} />
+                  {isNotifying ? 'Sending...' : 'Notify Users'}
+                </button>
               )}
             </div>
           ) : (

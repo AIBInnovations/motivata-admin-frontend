@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Search, RefreshCw, AlertCircle, Filter, X, LayoutGrid, List } from 'lucide-react';
+import { Search, RefreshCw, AlertCircle, Filter, X, LayoutGrid, List, Bell } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import eventService from '../services/event.service';
 import pollService from '../services/poll.service';
@@ -33,6 +33,7 @@ function Polls() {
   // Polls cache - store fetched polls by event ID
   const [pollsCache, setPollsCache] = useState({});
   const [loadingPolls, setLoadingPolls] = useState({});
+  const [notifyingPolls, setNotifyingPolls] = useState({});
 
   // Filter state
   const [searchQuery, setSearchQuery] = useState('');
@@ -57,6 +58,9 @@ function Polls() {
   // Form states
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState(null);
+
+  // Notification feedback
+  const [notificationSuccess, setNotificationSuccess] = useState(null);
 
   // Search debounce
   const searchDebounceRef = useRef(null);
@@ -235,6 +239,38 @@ function Polls() {
     console.log('[Polls] Opening delete dialog for poll:', poll._id);
   }, []);
 
+  // Handle notify users
+  const handleNotifyUsers = useCallback(async (event, poll) => {
+    if (!poll?._id) return;
+
+    setNotifyingPolls(prev => ({ ...prev, [poll._id]: true }));
+    setNotificationSuccess(null);
+    setError(null);
+
+    try {
+      console.log('[Polls] Sending notification for poll:', poll._id);
+      const result = await pollService.notifyUsers(poll._id);
+
+      if (result.success) {
+        const { successCount, failureCount, message } = result.data || {};
+        if (message) {
+          setNotificationSuccess(message);
+        } else {
+          setNotificationSuccess(`Notification sent to ${successCount} user${successCount !== 1 ? 's' : ''}${failureCount > 0 ? ` (${failureCount} failed)` : ''}`);
+        }
+        console.log('[Polls] Notification sent successfully');
+      } else {
+        setError(result.message || 'Failed to send notification');
+        console.error('[Polls] Failed to send notification:', result.message);
+      }
+    } catch (err) {
+      setError('An unexpected error occurred while sending notification');
+      console.error('[Polls] Error sending notification:', err);
+    } finally {
+      setNotifyingPolls(prev => ({ ...prev, [poll._id]: false }));
+    }
+  }, []);
+
   // Submit create poll
   const handleCreateSubmit = useCallback(async (data) => {
     setIsSubmitting(true);
@@ -381,11 +417,25 @@ function Polls() {
       {/* Error Banner */}
       {error && (
         <div className="flex items-center gap-3 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg">
-          <AlertCircle className="h-5 w-5 flex-shrink-0" />
+          <AlertCircle className="h-5 w-5 shrink-0" />
           <p className="flex-1">{error}</p>
           <button
             onClick={clearError}
             className="text-red-500 hover:text-red-700 font-medium"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
+
+      {/* Success Banner */}
+      {notificationSuccess && (
+        <div className="flex items-center gap-3 p-4 bg-green-50 border border-green-200 text-green-700 rounded-lg">
+          <Bell className="h-5 w-5 shrink-0" />
+          <p className="flex-1">{notificationSuccess}</p>
+          <button
+            onClick={() => setNotificationSuccess(null)}
+            className="text-green-500 hover:text-green-700 font-medium"
           >
             Dismiss
           </button>
@@ -507,6 +557,7 @@ function Polls() {
               event={event}
               poll={pollsCache[event._id]}
               isLoadingPoll={loadingPolls[event._id]}
+              isNotifying={notifyingPolls[pollsCache[event._id]?._id]}
               canEdit={canEdit}
               canDelete={canDelete}
               onCreatePoll={handleCreatePoll}
@@ -514,6 +565,7 @@ function Polls() {
               onDeletePoll={handleDeletePoll}
               onViewStats={handleViewStats}
               onViewPoll={handleViewPoll}
+              onNotifyUsers={handleNotifyUsers}
             />
           ))}
         </div>
@@ -525,7 +577,7 @@ function Polls() {
               className="bg-white rounded-xl border border-gray-200 p-4 flex items-center gap-4"
             >
               {/* Event Image */}
-              <div className="flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden bg-gray-100">
+              <div className="shrink-0 w-20 h-20 rounded-lg overflow-hidden bg-gray-100">
                 {event.thumbnail?.imageUrl || event.imageUrls?.[0] ? (
                   <img
                     src={event.thumbnail?.imageUrl || event.imageUrls?.[0]}
@@ -571,12 +623,23 @@ function Polls() {
                       Stats
                     </button>
                     {canEdit && (
-                      <button
-                        onClick={() => handleEditPoll(event, pollsCache[event._id])}
-                        className="px-3 py-1.5 text-sm text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors"
-                      >
-                        Edit
-                      </button>
+                      <>
+                        <button
+                          onClick={() => handleEditPoll(event, pollsCache[event._id])}
+                          className="px-3 py-1.5 text-sm text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleNotifyUsers(event, pollsCache[event._id])}
+                          disabled={notifyingPolls[pollsCache[event._id]?._id]}
+                          className="flex items-center gap-1 px-3 py-1.5 text-sm text-amber-600 bg-amber-50 hover:bg-amber-100 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          title="Send push notification to enrolled users"
+                        >
+                          <Bell className={`h-4 w-4 ${notifyingPolls[pollsCache[event._id]?._id] ? 'animate-pulse' : ''}`} />
+                          {notifyingPolls[pollsCache[event._id]?._id] ? 'Sending...' : 'Notify'}
+                        </button>
+                      </>
                     )}
                     {canDelete && (
                       <button
