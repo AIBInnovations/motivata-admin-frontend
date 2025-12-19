@@ -101,11 +101,16 @@ function ScanQR() {
   const [errorMessage, setErrorMessage] = useState('');
   const [isHttps, setIsHttps] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
+  const [extractedParams, setExtractedParams] = useState(null);
+  const [isVerified, setIsVerified] = useState(false);
+  const [validationStatus, setValidationStatus] = useState(null); // API validation response
+  const [isValidating, setIsValidating] = useState(false);
 
   const html5QrCodeRef = useRef(null);
   const scannerContainerId = useRef(`qr-scanner-${Date.now()}`).current; // Unique ID per component instance
   const isCleaningUpRef = useRef(false);
   const isMountedRef = useRef(true);
+  const scanAttemptCountRef = useRef(0);
 
   // Log state changes
   useEffect(() => {
@@ -435,9 +440,13 @@ function ScanQR() {
       container.classList.remove('bg-gray-100');
       container.classList.add('bg-black');
 
+      // Reset scan attempt counter
+      scanAttemptCountRef.current = 0;
+
       setIsScanning(true);
       setPermissionStatus('granted');
       toast.info('Scanner started. Point camera at a QR code.');
+      console.log('[startScanner] ✅ Scanner ready - point camera at QR code');
     } catch (error) {
       console.error('Error starting scanner:', error);
 
@@ -544,11 +553,161 @@ function ScanQR() {
   };
 
   /**
+   * Validate ticket with backend API
+   */
+  const validateTicket = async (ticketId) => {
+    setIsValidating(true);
+
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/qr/validate/${ticketId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+
+      const result = await response.json();
+      console.log('[validateTicket] API Response:', result);
+
+      return result;
+    } catch (error) {
+      console.error('[validateTicket] API Error:', error);
+      return {
+        status: 500,
+        message: 'Failed to validate ticket',
+        error: error.message,
+        data: null,
+      };
+    } finally {
+      setIsValidating(false);
+    }
+  };
+
+  /**
    * Handle successful QR scan
    */
-  const onScanSuccess = (decodedText, decodedResult) => {
-    console.log('QR Code scanned:', decodedText);
+  const onScanSuccess = async (decodedText, decodedResult) => {
+    console.log('[onScanSuccess] QR Code scanned:', decodedText);
     setScannedResult(decodedText);
+
+    let parsedData = null;
+
+    // Try to parse as URL and extract parameters
+    try {
+      const url = new URL(decodedText);
+      const params = {};
+
+      // Extract all URL parameters
+      url.searchParams.forEach((value, key) => {
+        params[key] = value;
+      });
+
+      parsedData = {
+        type: 'url',
+        fullUrl: decodedText,
+        protocol: url.protocol,
+        host: url.host,
+        pathname: url.pathname,
+        parameters: params,
+        hash: url.hash || null,
+      };
+
+      console.log('[onScanSuccess] ✅ URL detected!');
+      console.log('[onScanSuccess] Full URL:', decodedText);
+      console.log('[onScanSuccess] Protocol:', url.protocol);
+      console.log('[onScanSuccess] Host:', url.host);
+      console.log('[onScanSuccess] Pathname:', url.pathname);
+      console.log('[onScanSuccess] Parameters:', params);
+
+      // Log each parameter individually
+      if (Object.keys(params).length > 0) {
+        console.log('[onScanSuccess] 📋 Extracted Parameters:');
+        Object.entries(params).forEach(([key, value]) => {
+          console.log(`  ├─ ${key}: ${value}`);
+        });
+      } else {
+        console.log('[onScanSuccess] ℹ️ No parameters found in URL');
+      }
+
+      // Also log hash if present
+      if (url.hash) {
+        console.log('[onScanSuccess] Hash:', url.hash);
+      }
+    } catch (error) {
+      // Not a valid URL - treat as plain text
+      console.log('[onScanSuccess] ℹ️ Not a URL, just plain text:', decodedText);
+      parsedData = {
+        type: 'text',
+        text: decodedText,
+      };
+    }
+
+    // Store extracted data
+    setExtractedParams(parsedData);
+
+    // Validate with API if we have an id parameter
+    let apiResponse = null;
+    if (parsedData.type === 'url' && parsedData.parameters.id) {
+      console.log('[onScanSuccess] Validating ticket with API...');
+      toast.info('🔍 Validating ticket...');
+
+      apiResponse = await validateTicket(parsedData.parameters.id);
+      console.log('[onScanSuccess] Full API Response:', JSON.stringify(apiResponse, null, 2));
+      setValidationStatus(apiResponse);
+
+      // Check if the ticket is valid
+      if (apiResponse.status === 200) {
+        console.log('[onScanSuccess] API Data:', {
+          message: apiResponse.message,
+          isValid: apiResponse.data?.isValid,
+          isAlreadyScanned: apiResponse.data?.isAlreadyScanned,
+          enrollment: apiResponse.data?.enrollment?.name,
+        });
+
+        // Check if already scanned FIRST - check both data field and message
+        const isAlreadyScanned =
+          apiResponse.data?.isAlreadyScanned === true ||
+          apiResponse.message?.toLowerCase().includes('already scanned');
+
+        if (isAlreadyScanned) {
+          console.log('[onScanSuccess] ⚠️ Ticket already scanned!');
+          toast.warning('⚠️ This ticket was already scanned!', { autoClose: 5000 });
+          if (navigator.vibrate) {
+            navigator.vibrate([100, 50, 100, 50, 100]); // Triple short vibration for warning
+          }
+          setIsVerified(true); // Still show the info, but with warning styling
+        } else if (apiResponse.data?.isValid === true) {
+          console.log('[onScanSuccess] ✅ First time scan - Valid!');
+          toast.success('✅ Ticket Verified - First Scan!');
+          if (navigator.vibrate) {
+            navigator.vibrate([200, 100, 200]); // Double vibration for success
+          }
+          setIsVerified(true);
+        } else {
+          console.log('[onScanSuccess] ❌ Invalid ticket!');
+          toast.error('❌ Invalid Ticket!');
+          if (navigator.vibrate) {
+            navigator.vibrate([300, 100, 300]); // Long vibration for error
+          }
+          setIsVerified(false);
+        }
+      } else {
+        console.log('[onScanSuccess] ❌ API Error or Invalid Response');
+        toast.error('❌ Failed to validate ticket!');
+        if (navigator.vibrate) {
+          navigator.vibrate([300, 100, 300]);
+        }
+        setIsVerified(false);
+      }
+    } else {
+      // No API validation needed for non-ticket QR codes
+      setIsVerified(true);
+      toast.success('✅ QR Code Scanned!');
+      if (navigator.vibrate) {
+        navigator.vibrate([200, 100, 200]);
+      }
+    }
 
     // Add to history
     setScanHistory(prev => [{
@@ -559,19 +718,22 @@ function ScanQR() {
 
     // Stop scanning after successful scan
     stopScanner();
-    toast.success('QR Code scanned successfully!');
-
-    // Vibrate on mobile for feedback
-    if (navigator.vibrate) {
-      navigator.vibrate(200);
-    }
   };
 
   /**
    * Handle scan failure (called frequently when no QR is in view)
    */
-  const onScanFailure = () => {
-    // Intentionally empty - this is called frequently when no QR code is in view
+  const onScanFailure = (error) => {
+    // Log every 10th scan attempt to show scanner is working
+    scanAttemptCountRef.current += 1;
+    if (scanAttemptCountRef.current % 10 === 0) {
+      console.log(`[onScanFailure] Scanner active, attempts: ${scanAttemptCountRef.current}`);
+    }
+
+    // Only log actual errors, not "No QR code found" messages
+    if (error && !error.includes('No MultiFormat Readers') && !error.includes('NotFoundException')) {
+      console.log('[onScanFailure] Error:', error);
+    }
   };
 
   /**
@@ -793,53 +955,173 @@ function ScanQR() {
 
         {/* Results Section */}
         <div className="space-y-4 sm:space-y-6">
-          {/* Current Result */}
-          {scannedResult && (
-            <div className="bg-white rounded-xl shadow-sm border border-green-200 p-4 sm:p-6">
-              <div className="flex items-center gap-2 mb-4">
-                <MdCheckCircle className="w-6 h-6 text-green-600" />
-                <h2 className="text-lg font-bold text-gray-900">Scan Result</h2>
-              </div>
+          {/* Verification Screen */}
+          {isVerified && extractedParams && (() => {
+            // Check if already scanned - check both data field and message
+            const isAlreadyScanned =
+              validationStatus?.data?.isAlreadyScanned === true ||
+              validationStatus?.message?.toLowerCase().includes('already scanned');
 
-              <div className="bg-green-50 rounded-lg p-3 sm:p-4 mb-4">
-                <p className="text-gray-900 break-all font-mono text-sm">
-                  {scannedResult}
-                </p>
-              </div>
-
-              <div className="flex flex-wrap gap-2">
-                <button
-                  onClick={() => copyToClipboard(scannedResult)}
-                  className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm"
-                >
-                  <MdContentCopy className="w-4 h-4" />
-                  Copy
-                </button>
-
-                {isUrl(scannedResult) && (
-                  <a
-                    href={scannedResult}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
-                  >
-                    Open Link
-                  </a>
+            return (
+              <div className={`rounded-xl shadow-lg border-2 p-6 sm:p-8 ${
+                isAlreadyScanned
+                  ? 'bg-gradient-to-br from-yellow-50 to-orange-50 border-yellow-400'
+                  : 'bg-gradient-to-br from-green-50 to-emerald-50 border-green-300'
+              }`}>
+                {/* Verified Badge */}
+                <div className="text-center mb-6">
+                  {isAlreadyScanned ? (
+                  <>
+                    <div className="inline-flex items-center justify-center w-20 h-20 bg-yellow-500 rounded-full mb-4 animate-pulse">
+                      <MdWarning className="w-12 h-12 text-white" />
+                    </div>
+                    <h2 className="text-2xl sm:text-3xl font-bold text-yellow-800 mb-2">
+                      ⚠ ALREADY SCANNED
+                    </h2>
+                    <p className="text-yellow-700 font-medium">
+                      This ticket was previously scanned
+                    </p>
+                    {validationStatus.data.scannedAt && (
+                      <p className="text-sm text-yellow-600 mt-2">
+                        Previously scanned: {new Date(validationStatus.data.scannedAt).toLocaleString()}
+                      </p>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <div className="inline-flex items-center justify-center w-20 h-20 bg-green-500 rounded-full mb-4 animate-pulse">
+                      <MdCheckCircle className="w-12 h-12 text-white" />
+                    </div>
+                    <h2 className="text-2xl sm:text-3xl font-bold text-green-800 mb-2">
+                      ✓ VERIFIED - FIRST SCAN
+                    </h2>
+                    <p className="text-green-700 font-medium">
+                      Person is Allowed & Authenticated
+                    </p>
+                  </>
                 )}
+              </div>
 
+              {/* Enrollment Information from API */}
+              {validationStatus?.data?.enrollment && (
+                <div className="bg-white rounded-lg p-4 sm:p-6 mb-4 shadow-sm">
+                  <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                    <MdCheckCircle className="w-5 h-5 text-blue-600" />
+                    Attendee Information
+                  </h3>
+                  <div className="space-y-3">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between p-3 bg-blue-50 rounded-lg">
+                      <span className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-1 sm:mb-0">
+                        Name:
+                      </span>
+                      <span className="text-base sm:text-lg font-bold text-gray-900 bg-white px-4 py-2 rounded border border-blue-200">
+                        {validationStatus.data.enrollment.name}
+                      </span>
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <span className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-1 sm:mb-0">
+                        Phone:
+                      </span>
+                      <span className="text-sm sm:text-base font-mono text-gray-900 bg-white px-3 py-1 rounded border border-gray-200">
+                        {validationStatus.data.enrollment.phone}
+                      </span>
+                    </div>
+                    {validationStatus.data.enrollment.event && (
+                      <>
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between p-3 bg-gray-50 rounded-lg">
+                          <span className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-1 sm:mb-0">
+                            Event:
+                          </span>
+                          <span className="text-sm sm:text-base font-semibold text-gray-900 bg-white px-3 py-1 rounded border border-gray-200">
+                            {validationStatus.data.enrollment.event.name}
+                          </span>
+                        </div>
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between p-3 bg-gray-50 rounded-lg">
+                          <span className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-1 sm:mb-0">
+                            Event Date:
+                          </span>
+                          <span className="text-xs sm:text-sm text-gray-900 bg-white px-3 py-1 rounded border border-gray-200">
+                            {new Date(validationStatus.data.enrollment.event.startDate).toLocaleDateString()} - {new Date(validationStatus.data.enrollment.event.endDate).toLocaleDateString()}
+                          </span>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* URL Parameters (if no API data) */}
+              {!validationStatus?.data?.enrollment && extractedParams.type === 'url' && Object.keys(extractedParams.parameters).length > 0 && (
+                <div className="bg-white rounded-lg p-4 sm:p-6 mb-4 shadow-sm">
+                  <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                    <MdContentCopy className="w-5 h-5 text-blue-600" />
+                    Ticket Information
+                  </h3>
+                  <div className="space-y-3">
+                    {Object.entries(extractedParams.parameters).map(([key, value]) => (
+                      <div
+                        key={key}
+                        className="flex flex-col sm:flex-row sm:items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                      >
+                        <span className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-1 sm:mb-0">
+                          {key.replace(/_/g, ' ')}:
+                        </span>
+                        <span className="text-sm sm:text-base font-mono text-gray-900 bg-white px-3 py-1 rounded border border-gray-200">
+                          {value}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Full URL Display (if URL) */}
+              {extractedParams.type === 'url' && (
+                <div className="bg-blue-50 rounded-lg p-4 mb-4">
+                  <p className="text-xs text-blue-700 font-semibold mb-1">SCANNED URL:</p>
+                  <p className="text-sm text-blue-900 break-all font-mono">
+                    {extractedParams.fullUrl}
+                  </p>
+                </div>
+              )}
+
+              {/* Plain Text Display (if not URL) */}
+              {extractedParams.type === 'text' && (
+                <div className="bg-white rounded-lg p-4 sm:p-6 mb-4 shadow-sm">
+                  <h3 className="text-lg font-bold text-gray-900 mb-3">Scanned Content:</h3>
+                  <p className="text-gray-900 break-all font-mono text-sm bg-gray-50 p-3 rounded border border-gray-200">
+                    {extractedParams.text}
+                  </p>
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              <div className="flex flex-wrap gap-3 justify-center">
                 <button
                   onClick={() => {
                     setScannedResult(null);
+                    setExtractedParams(null);
+                    setIsVerified(false);
+                    setValidationStatus(null);
                     startScanner();
                   }}
-                  className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm"
+                  className="flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all shadow-md hover:shadow-lg font-semibold"
                 >
-                  <MdQrCodeScanner className="w-4 h-4" />
-                  Scan Again
+                  <MdQrCodeScanner className="w-5 h-5" />
+                  Scan Next Person
+                </button>
+
+                <button
+                  onClick={() => copyToClipboard(scannedResult)}
+                  className="flex items-center gap-2 px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors shadow-md"
+                >
+                  <MdContentCopy className="w-5 h-5" />
+                  Copy Data
                 </button>
               </div>
             </div>
-          )}
+            );
+          })()}
 
           {/* Scan History */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
