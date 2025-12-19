@@ -7,8 +7,6 @@ import {
   DollarSign,
   Clock,
   Globe,
-  Ticket,
-  Loader2,
   ExternalLink,
   Play,
 } from 'lucide-react';
@@ -86,9 +84,10 @@ function EventDetailsModal({
   isOpen,
   onClose,
   event,
-  ticketStats,
-  isLoadingStats = false,
-  onFetchStats,
+  // Commented out - ticketStats section is hidden
+  // ticketStats,
+  // isLoadingStats = false,
+  // onFetchStats,
 }) {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
 
@@ -96,11 +95,12 @@ function EventDetailsModal({
   useEffect(() => {
     if (isOpen && event) {
       setActiveImageIndex(0);
-      if (onFetchStats) {
-        onFetchStats(event._id);
-      }
+      // Commented out - ticketStats section is hidden
+      // if (onFetchStats) {
+      //   onFetchStats(event._id);
+      // }
     }
-  }, [isOpen, event, onFetchStats]);
+  }, [isOpen, event]);
 
   if (!event) return null;
 
@@ -298,7 +298,7 @@ function EventDetailsModal({
           )}
         </div>
 
-        {/* Ticket Statistics */}
+        {/* Ticket Statistics - Commented out as ticketsSold is static data
         <div className="p-4 bg-gray-50 rounded-lg">
           <div className="flex items-center gap-2 text-gray-500 mb-3">
             <Ticket className="h-4 w-4" />
@@ -345,6 +345,7 @@ function EventDetailsModal({
             </div>
           )}
         </div>
+        */}
 
         {/* Meta Information */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">

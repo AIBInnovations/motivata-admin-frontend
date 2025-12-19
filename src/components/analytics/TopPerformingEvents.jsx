@@ -109,7 +109,7 @@ const TopPerformingEvents = ({ events, loading }) => {
             </div>
 
             {/* Stats Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-3">
+            <div className="grid grid-cols-2 gap-4 mb-3">
               <div className="bg-blue-50 rounded-lg p-3">
                 <p className="text-xs text-gray-800 font-medium mb-1">Total Revenue</p>
                 <p className="text-lg font-bold text-blue-900">{formatCurrency(event.totalRevenue)}</p>
@@ -118,16 +118,14 @@ const TopPerformingEvents = ({ events, loading }) => {
                 <p className="text-xs text-green-600 font-medium mb-1">Total Tickets</p>
                 <p className="text-lg font-bold text-green-900">{formatNumber(event.totalTickets)}</p>
               </div>
-              <div className="bg-purple-50 rounded-lg p-3">
-                <p className="text-xs text-purple-600 font-medium mb-1">Total Orders</p>
-                <p className="text-lg font-bold text-purple-900">{formatNumber(event.totalOrders)}</p>
-              </div>
+              {/* Commented out - not needed for now
               <div className="bg-orange-50 rounded-lg p-3">
                 <p className="text-xs text-orange-600 font-medium mb-1">Avg Order Value</p>
                 <p className="text-lg font-bold text-orange-900">
                   {formatCurrency(event.totalOrders > 0 ? event.totalRevenue / event.totalOrders : 0)}
                 </p>
               </div>
+              */}
             </div>
 
             {/* Online vs Offline Breakdown */}
@@ -141,10 +139,6 @@ const TopPerformingEvents = ({ events, loading }) => {
                   <div className="flex justify-between">
                     <span className="text-gray-600">Tickets:</span>
                     <span className="font-semibold text-gray-900">{formatNumber(event.onlineTickets)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Orders:</span>
-                    <span className="font-semibold text-gray-900">{formatNumber(event.onlineOrders)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Revenue:</span>
@@ -161,10 +155,6 @@ const TopPerformingEvents = ({ events, loading }) => {
                   <div className="flex justify-between">
                     <span className="text-gray-600">Tickets:</span>
                     <span className="font-semibold text-gray-900">{formatNumber(event.offlineTickets)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Orders:</span>
-                    <span className="font-semibold text-gray-900">{formatNumber(event.offlineOrders)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Revenue:</span>

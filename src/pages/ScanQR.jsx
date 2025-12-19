@@ -553,24 +553,126 @@ function ScanQR() {
   };
 
   /**
-   * Validate ticket with backend API
+   * Validate regular ticket (online purchase)
    */
-  const validateTicket = async (ticketId) => {
-    setIsValidating(true);
+  const validateRegularTicket = async (params) => {
+    const { enrollmentId, eventId, phone, userId } = params;
+    const queryParams = new URLSearchParams({
+      enrollmentId,
+      eventId,
+      phone,
+      ...(userId && { userId }),
+    });
 
-    try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/qr/validate/${ticketId}`, {
-        method: 'POST',
+    const response = await fetch(
+      `${import.meta.env.VITE_API_BASE_URL}/app/tickets/qr-scan?${queryParams}`,
+      {
+        method: 'GET',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
         },
-      });
+      }
+    );
 
-      const result = await response.json();
-      console.log('[validateTicket] API Response:', result);
+    const result = await response.json();
+    console.log('[validateRegularTicket] API Response:', result);
 
-      return result;
+    // For regular tickets, "already scanned" comes as a 400 error with message
+    if (!response.ok) {
+      const isAlreadyScanned = result.message?.toLowerCase().includes('already been scanned');
+      // Try to extract scannedAt timestamp from message like "...scanned at 2023-12-01T10:30:00.000Z"
+      let scannedAt = null;
+      if (isAlreadyScanned && result.message) {
+        const match = result.message.match(/scanned at (.+)$/i);
+        if (match && match[1]) {
+          scannedAt = match[1];
+        }
+      }
+      return {
+        ...result,
+        status: response.status,
+        ticketType: 'regular',
+        data: {
+          ...result.data,
+          isValid: !isAlreadyScanned,
+          isAlreadyScanned,
+          scannedAt,
+        },
+      };
+    }
+
+    return {
+      ...result,
+      status: response.status,
+      ticketType: 'regular',
+      data: {
+        ...result.data,
+        isValid: true,
+        isAlreadyScanned: false,
+      },
+    };
+  };
+
+  /**
+   * Validate cash ticket (kiosk purchase)
+   */
+  const validateCashTicket = async (params) => {
+    const { enrollmentId, eventId, phone, userId } = params;
+    const queryParams = new URLSearchParams({
+      enrollmentId,
+      eventId,
+      phone,
+      ...(userId && { userId }),
+    });
+
+    const response = await fetch(
+      `${import.meta.env.VITE_API_BASE_URL}/app/tickets/cash/qr-scan?${queryParams}`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+      }
+    );
+
+    const result = await response.json();
+    console.log('[validateCashTicket] API Response:', result);
+
+    return {
+      ...result,
+      status: response.status,
+      ticketType: 'cash',
+    };
+  };
+
+  /**
+   * Validate ticket with backend API - tries both regular and cash endpoints
+   */
+  const validateTicket = async (params) => {
+    setIsValidating(true);
+
+    try {
+      // Try regular ticket first
+      console.log('[validateTicket] Trying regular ticket endpoint...');
+      const regularResult = await validateRegularTicket(params);
+
+      // If regular ticket found (status 200 or 400 with "already scanned")
+      if (regularResult.status === 200 || regularResult.data?.isAlreadyScanned) {
+        console.log('[validateTicket] Regular ticket validated');
+        return regularResult;
+      }
+
+      // If not found (404), try cash ticket
+      if (regularResult.status === 404) {
+        console.log('[validateTicket] Regular ticket not found, trying cash ticket...');
+        const cashResult = await validateCashTicket(params);
+        return cashResult;
+      }
+
+      // Return regular result for other errors
+      return regularResult;
     } catch (error) {
       console.error('[validateTicket] API Error:', error);
       return {
@@ -646,29 +748,44 @@ function ScanQR() {
     // Store extracted data
     setExtractedParams(parsedData);
 
-    // Validate with API if we have an id parameter
+    // Validate with API if we have required ticket parameters
+    // Check for enrollmentId (or id), eventId, and phone
     let apiResponse = null;
-    if (parsedData.type === 'url' && parsedData.parameters.id) {
-      console.log('[onScanSuccess] Validating ticket with API...');
+    const params = parsedData.parameters || {};
+    const enrollmentId = params.enrollmentId || params.id;
+    const hasRequiredParams = enrollmentId && params.eventId && params.phone;
+
+    if (parsedData.type === 'url' && hasRequiredParams) {
+      console.log('[onScanSuccess] Validating ticket with API...', {
+        enrollmentId,
+        eventId: params.eventId,
+        phone: params.phone,
+        userId: params.userId,
+      });
       toast.info('🔍 Validating ticket...');
 
-      apiResponse = await validateTicket(parsedData.parameters.id);
+      apiResponse = await validateTicket({
+        enrollmentId,
+        eventId: params.eventId,
+        phone: params.phone,
+        userId: params.userId,
+      });
       console.log('[onScanSuccess] Full API Response:', JSON.stringify(apiResponse, null, 2));
       setValidationStatus(apiResponse);
 
-      // Check if the ticket is valid
-      if (apiResponse.status === 200) {
+      // Check if the ticket is valid (200 for success, or already scanned detection)
+      const isSuccessOrAlreadyScanned = apiResponse.status === 200 || apiResponse.data?.isAlreadyScanned;
+      if (isSuccessOrAlreadyScanned) {
         console.log('[onScanSuccess] API Data:', {
           message: apiResponse.message,
           isValid: apiResponse.data?.isValid,
           isAlreadyScanned: apiResponse.data?.isAlreadyScanned,
+          ticketType: apiResponse.ticketType,
           enrollment: apiResponse.data?.enrollment?.name,
         });
 
-        // Check if already scanned FIRST - check both data field and message
-        const isAlreadyScanned =
-          apiResponse.data?.isAlreadyScanned === true ||
-          apiResponse.message?.toLowerCase().includes('already scanned');
+        // Check if already scanned - data field is now normalized by validateTicket
+        const isAlreadyScanned = apiResponse.data?.isAlreadyScanned === true;
 
         if (isAlreadyScanned) {
           console.log('[onScanSuccess] ⚠️ Ticket already scanned!');
@@ -957,10 +1074,8 @@ function ScanQR() {
         <div className="space-y-4 sm:space-y-6">
           {/* Verification Screen */}
           {isVerified && extractedParams && (() => {
-            // Check if already scanned - check both data field and message
-            const isAlreadyScanned =
-              validationStatus?.data?.isAlreadyScanned === true ||
-              validationStatus?.message?.toLowerCase().includes('already scanned');
+            // Check if already scanned - data is normalized by validateTicket
+            const isAlreadyScanned = validationStatus?.data?.isAlreadyScanned === true;
 
             return (
               <div className={`rounded-xl shadow-lg border-2 p-6 sm:p-8 ${
@@ -1002,56 +1117,83 @@ function ScanQR() {
                 )}
               </div>
 
-              {/* Enrollment Information from API */}
-              {validationStatus?.data?.enrollment && (
-                <div className="bg-white rounded-lg p-4 sm:p-6 mb-4 shadow-sm">
-                  <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                    <MdCheckCircle className="w-5 h-5 text-blue-600" />
-                    Attendee Information
-                  </h3>
-                  <div className="space-y-3">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between p-3 bg-blue-50 rounded-lg">
-                      <span className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-1 sm:mb-0">
-                        Name:
-                      </span>
-                      <span className="text-base sm:text-lg font-bold text-gray-900 bg-white px-4 py-2 rounded border border-blue-200">
-                        {validationStatus.data.enrollment.name}
-                      </span>
-                    </div>
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <span className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-1 sm:mb-0">
-                        Phone:
-                      </span>
-                      <span className="text-sm sm:text-base font-mono text-gray-900 bg-white px-3 py-1 rounded border border-gray-200">
-                        {validationStatus.data.enrollment.phone}
-                      </span>
-                    </div>
-                    {validationStatus.data.enrollment.event && (
-                      <>
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between p-3 bg-gray-50 rounded-lg">
+              {/* Enrollment Information from API - handles both regular and cash tickets */}
+              {validationStatus?.data && (validationStatus.data.user || validationStatus.data.enrollment) && (() => {
+                // Extract data based on ticket type
+                // Regular ticket: user/event at top level
+                // Cash ticket: enrollment contains name/phone/event
+                const isCashTicket = validationStatus.ticketType === 'cash';
+                const attendeeName = isCashTicket
+                  ? validationStatus.data.enrollment?.name
+                  : validationStatus.data.user?.name;
+                const attendeePhone = isCashTicket
+                  ? validationStatus.data.enrollment?.phone
+                  : (validationStatus.data.ticket?.phone || validationStatus.data.user?.phone);
+                const eventData = isCashTicket
+                  ? validationStatus.data.enrollment?.event
+                  : validationStatus.data.event;
+
+                return (
+                  <div className="bg-white rounded-lg p-4 sm:p-6 mb-4 shadow-sm">
+                    <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                      <MdCheckCircle className="w-5 h-5 text-blue-600" />
+                      Attendee Information
+                      {validationStatus.ticketType && (
+                        <span className="text-xs font-normal bg-gray-100 px-2 py-1 rounded">
+                          {validationStatus.ticketType === 'cash' ? 'Cash Ticket' : 'Online Ticket'}
+                        </span>
+                      )}
+                    </h3>
+                    <div className="space-y-3">
+                      {attendeeName && (
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between p-3 bg-blue-50 rounded-lg">
                           <span className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-1 sm:mb-0">
-                            Event:
+                            Name:
                           </span>
-                          <span className="text-sm sm:text-base font-semibold text-gray-900 bg-white px-3 py-1 rounded border border-gray-200">
-                            {validationStatus.data.enrollment.event.name}
+                          <span className="text-base sm:text-lg font-bold text-gray-900 bg-white px-4 py-2 rounded border border-blue-200">
+                            {attendeeName}
                           </span>
                         </div>
+                      )}
+                      {attendeePhone && (
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between p-3 bg-gray-50 rounded-lg">
                           <span className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-1 sm:mb-0">
-                            Event Date:
+                            Phone:
                           </span>
-                          <span className="text-xs sm:text-sm text-gray-900 bg-white px-3 py-1 rounded border border-gray-200">
-                            {new Date(validationStatus.data.enrollment.event.startDate).toLocaleDateString()} - {new Date(validationStatus.data.enrollment.event.endDate).toLocaleDateString()}
+                          <span className="text-sm sm:text-base font-mono text-gray-900 bg-white px-3 py-1 rounded border border-gray-200">
+                            {attendeePhone}
                           </span>
                         </div>
-                      </>
-                    )}
+                      )}
+                      {eventData && (
+                        <>
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <span className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-1 sm:mb-0">
+                              Event:
+                            </span>
+                            <span className="text-sm sm:text-base font-semibold text-gray-900 bg-white px-3 py-1 rounded border border-gray-200">
+                              {eventData.name}
+                            </span>
+                          </div>
+                          {eventData.startDate && eventData.endDate && (
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between p-3 bg-gray-50 rounded-lg">
+                              <span className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-1 sm:mb-0">
+                                Event Date:
+                              </span>
+                              <span className="text-xs sm:text-sm text-gray-900 bg-white px-3 py-1 rounded border border-gray-200">
+                                {new Date(eventData.startDate).toLocaleDateString()} - {new Date(eventData.endDate).toLocaleDateString()}
+                              </span>
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </div>
                   </div>
-                </div>
-              )}
+                );
+              })()}
 
               {/* URL Parameters (if no API data) */}
-              {!validationStatus?.data?.enrollment && extractedParams.type === 'url' && Object.keys(extractedParams.parameters).length > 0 && (
+              {!validationStatus?.data?.enrollment && !validationStatus?.data?.user && extractedParams.type === 'url' && Object.keys(extractedParams.parameters).length > 0 && (
                 <div className="bg-white rounded-lg p-4 sm:p-6 mb-4 shadow-sm">
                   <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
                     <MdContentCopy className="w-5 h-5 text-blue-600" />

@@ -11,7 +11,6 @@ import EventsOverview from '../components/analytics/EventsOverview';
 import AdminPerformanceTable from '../components/analytics/AdminPerformanceTable';
 import TopPerformingEvents from '../components/analytics/TopPerformingEvents';
 import RecentActivity from '../components/analytics/RecentActivity';
-import CouponsVouchers from '../components/analytics/CouponsVouchers';
 
 // Services
 import { getDashboardStatistics } from '../services/analytics.service';
@@ -173,10 +172,6 @@ function Dashboard() {
           <CommunicationStats data={getTimeRangeData(data.communications)} loading={loading} />
         )}
 
-        {/* 🎟️ Coupons & Vouchers - Compact single row */}
-        {(data?.coupons || data?.vouchers) && (
-          <CouponsVouchers couponsData={data.coupons} vouchersData={data.vouchers} loading={loading} />
-        )}
 
         {/* 🏆 Top Performing Events */}
         {data?.topPerformingEvents && data.topPerformingEvents.length > 0 && (

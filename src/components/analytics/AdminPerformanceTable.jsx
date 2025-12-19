@@ -7,7 +7,7 @@ import { formatCurrency, formatNumber } from '../../services/analytics.service';
  * AdminPerformanceTable component displays admin performance metrics
  */
 const AdminPerformanceTable = ({ data, loading }) => {
-  const [sortBy, setSortBy] = useState('totalRevenue'); // totalRevenue, totalTickets, redeemedRecords
+  const [sortBy, setSortBy] = useState('totalRevenue'); // totalRevenue, totalTickets, redeemedTickets
   const [sortOrder, setSortOrder] = useState('desc'); // asc, desc
 
   if (!data || data.length === 0) {
@@ -92,21 +92,21 @@ const AdminPerformanceTable = ({ data, loading }) => {
               </th>
               <th
                 className="text-right py-3 px-4 font-semibold text-gray-700 text-sm cursor-pointer hover:text-gray-800"
-                onClick={() => handleSort('redeemedRecords')}
-                title="Redemption records verified by this admin"
+                onClick={() => handleSort('redeemedTickets')}
+                title="Tickets redeemed by this admin"
               >
                 <div className="flex flex-col items-end">
-                  <span>Redeemed {sortBy === 'redeemedRecords' && (sortOrder === 'asc' ? '↑' : '↓')}</span>
-                  <span className="text-xs font-normal text-gray-400">Records verified</span>
+                  <span>Redeemed {sortBy === 'redeemedTickets' && (sortOrder === 'asc' ? '↑' : '↓')}</span>
+                  <span className="text-xs font-normal text-gray-400">Tickets verified</span>
                 </div>
               </th>
               <th
                 className="text-right py-3 px-4 font-semibold text-gray-700 text-sm"
-                title="Pending redemption records"
+                title="Pending tickets"
               >
                 <div className="flex flex-col items-end">
                   <span>Pending</span>
-                  <span className="text-xs font-normal text-gray-400">Awaiting</span>
+                  <span className="text-xs font-normal text-gray-400">Tickets</span>
                 </div>
               </th>
               <th
@@ -151,14 +151,14 @@ const AdminPerformanceTable = ({ data, loading }) => {
                 </td>
                 <td className="py-4 px-4 text-right">
                   <div>
-                    <span className="font-semibold text-green-600">{formatNumber(admin.redeemedRecords)}</span>
+                    <span className="font-semibold text-green-600">{formatNumber(admin.redeemedTickets)}</span>
                     <p className="text-xs text-gray-500">
-                      {getRedemptionRate(admin.redeemedRecords, admin.totalRecords)}% rate
+                      {getRedemptionRate(admin.redeemedTickets, admin.totalTickets)}% rate
                     </p>
                   </div>
                 </td>
                 <td className="py-4 px-4 text-right">
-                  <span className="font-semibold text-orange-600">{formatNumber(admin.pendingRecords)}</span>
+                  <span className="font-semibold text-orange-600">{formatNumber(admin.pendingTickets)}</span>
                 </td>
                 <td className="py-4 px-4 text-right">
                   <span className="font-bold text-gray-900">{formatCurrency(admin.totalRevenue)}</span>
@@ -194,19 +194,19 @@ const AdminPerformanceTable = ({ data, loading }) => {
 
             {/* Redemption Section */}
             <div className="p-2 bg-gray-50 rounded-lg">
-              <p className="text-xs text-gray-600 font-medium mb-2">Redemption Records</p>
+              <p className="text-xs text-gray-600 font-medium mb-2">Ticket Redemptions</p>
               <div className="grid grid-cols-3 gap-2 text-sm">
                 <div>
-                  <p className="text-xs text-gray-500">Verified</p>
-                  <p className="font-semibold text-green-600">{formatNumber(admin.redeemedRecords)}</p>
+                  <p className="text-xs text-gray-500">Redeemed</p>
+                  <p className="font-semibold text-green-600">{formatNumber(admin.redeemedTickets)}</p>
                 </div>
                 <div>
                   <p className="text-xs text-gray-500">Pending</p>
-                  <p className="font-semibold text-orange-600">{formatNumber(admin.pendingRecords)}</p>
+                  <p className="font-semibold text-orange-600">{formatNumber(admin.pendingTickets)}</p>
                 </div>
                 <div>
                   <p className="text-xs text-gray-500">Rate</p>
-                  <p className="font-semibold text-gray-800">{getRedemptionRate(admin.redeemedRecords, admin.totalRecords)}%</p>
+                  <p className="font-semibold text-gray-800">{getRedemptionRate(admin.redeemedTickets, admin.totalTickets)}%</p>
                 </div>
               </div>
             </div>
