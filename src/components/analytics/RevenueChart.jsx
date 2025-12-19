@@ -38,7 +38,7 @@ const RevenueChart = ({ data, loading }) => {
   // Prepare payment methods data for pie chart
   const paymentMethodsData = paymentMethods.map((method) => ({
     name: method._id,
-    value: method.revenue / 100, // Convert from paise to rupees
+    value: method.revenue,
     count: method.count,
   }));
 
@@ -49,7 +49,7 @@ const RevenueChart = ({ data, loading }) => {
         <div className="bg-white p-3 rounded-lg shadow-lg border border-gray-200">
           <p className="text-sm font-semibold text-gray-900">{payload[0].name}</p>
           <p className="text-sm text-gray-600">
-            Revenue: <span className="font-bold text-green-600">{formatCurrency(payload[0].value * 100)}</span>
+            Revenue: <span className="font-bold text-green-600">{formatCurrency(payload[0].value)}</span>
           </p>
           {payload[0].payload.count && (
             <p className="text-sm text-gray-600">
@@ -90,7 +90,7 @@ const RevenueChart = ({ data, loading }) => {
 
           <StatCard
             title="Average Order Value"
-            value={formatCurrency(averageOrderValue * 100)}
+            value={formatCurrency(averageOrderValue)}
             subtitle="Per transaction"
             icon={<FaTicketAlt className="w-6 h-6" />}
             iconColor="text-purple-600"
@@ -148,7 +148,7 @@ const RevenueChart = ({ data, loading }) => {
                       <span className="font-semibold text-gray-900">{method.name}</span>
                     </div>
                     <div className="text-right">
-                      <p className="font-bold text-gray-900">{formatCurrency(method.value * 100)}</p>
+                      <p className="font-bold text-gray-900">{formatCurrency(method.value)}</p>
                       <p className="text-xs text-gray-500">{method.count} orders</p>
                     </div>
                   </div>

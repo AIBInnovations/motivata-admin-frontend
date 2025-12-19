@@ -43,7 +43,7 @@ export const getCommunicationLogs = async (params = {}) => {
 
 /**
  * Format currency value
- * @param {number} value - Value in paise
+ * @param {number} value - Value in rupees
  * @returns {string} Formatted currency string
  */
 export const formatCurrency = (value) => {
@@ -53,7 +53,7 @@ export const formatCurrency = (value) => {
     currency: 'INR',
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
-  }).format(value / 100);
+  }).format(value);
 };
 
 /**

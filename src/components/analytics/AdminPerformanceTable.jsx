@@ -83,21 +83,41 @@ const AdminPerformanceTable = ({ data, loading }) => {
               <th
                 className="text-right py-3 px-4 font-semibold text-gray-700 text-sm cursor-pointer hover:text-gray-800"
                 onClick={() => handleSort('totalTickets')}
+                title="Total cash tickets issued by this admin"
               >
-                Tickets {sortBy === 'totalTickets' && (sortOrder === 'asc' ? '↑' : '↓')}
+                <div className="flex flex-col items-end">
+                  <span>Tickets Issued {sortBy === 'totalTickets' && (sortOrder === 'asc' ? '↑' : '↓')}</span>
+                  <span className="text-xs font-normal text-gray-400">Cash tickets</span>
+                </div>
               </th>
               <th
                 className="text-right py-3 px-4 font-semibold text-gray-700 text-sm cursor-pointer hover:text-gray-800"
                 onClick={() => handleSort('redeemedRecords')}
+                title="Redemption records verified by this admin"
               >
-                Redeemed {sortBy === 'redeemedRecords' && (sortOrder === 'asc' ? '↑' : '↓')}
+                <div className="flex flex-col items-end">
+                  <span>Redeemed {sortBy === 'redeemedRecords' && (sortOrder === 'asc' ? '↑' : '↓')}</span>
+                  <span className="text-xs font-normal text-gray-400">Records verified</span>
+                </div>
               </th>
-              <th className="text-right py-3 px-4 font-semibold text-gray-700 text-sm">Pending</th>
+              <th
+                className="text-right py-3 px-4 font-semibold text-gray-700 text-sm"
+                title="Pending redemption records"
+              >
+                <div className="flex flex-col items-end">
+                  <span>Pending</span>
+                  <span className="text-xs font-normal text-gray-400">Awaiting</span>
+                </div>
+              </th>
               <th
                 className="text-right py-3 px-4 font-semibold text-gray-700 text-sm cursor-pointer hover:text-gray-800"
                 onClick={() => handleSort('totalRevenue')}
+                title="Revenue from redeemed tickets"
               >
-                Revenue {sortBy === 'totalRevenue' && (sortOrder === 'asc' ? '↑' : '↓')}
+                <div className="flex flex-col items-end">
+                  <span>Revenue {sortBy === 'totalRevenue' && (sortOrder === 'asc' ? '↑' : '↓')}</span>
+                  <span className="text-xs font-normal text-gray-400">From redemptions</span>
+                </div>
               </th>
             </tr>
           </thead>
@@ -127,7 +147,7 @@ const AdminPerformanceTable = ({ data, loading }) => {
                   </span>
                 </td>
                 <td className="py-4 px-4 text-right">
-                  <span className="font-semibold text-gray-900">{formatNumber(admin.totalTickets)}</span>
+                  <span className="font-semibold text-blue-600">{formatNumber(admin.totalTickets)}</span>
                 </td>
                 <td className="py-4 px-4 text-right">
                   <div>
@@ -166,39 +186,38 @@ const AdminPerformanceTable = ({ data, loading }) => {
               </span>
             </div>
 
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <p className="text-gray-600 flex items-center gap-1">
-                  <FaTicketAlt className="text-gray-800" /> Tickets
-                </p>
-                <p className="font-semibold text-gray-900">{formatNumber(admin.totalTickets)}</p>
-              </div>
-              <div>
-                <p className="text-gray-600 flex items-center gap-1">
-                  <MdCheckCircle className="text-green-600" /> Redeemed
-                </p>
-                <p className="font-semibold text-green-600">{formatNumber(admin.redeemedRecords)}</p>
-              </div>
-              <div>
-                <p className="text-gray-600 flex items-center gap-1">
-                  <MdPending className="text-orange-600" /> Pending
-                </p>
-                <p className="font-semibold text-orange-600">{formatNumber(admin.pendingRecords)}</p>
-              </div>
-              <div>
-                <p className="text-gray-600 flex items-center gap-1">
-                  <MdTrendingUp className="text-purple-600" /> Revenue
-                </p>
-                <p className="font-semibold text-gray-900">{formatCurrency(admin.totalRevenue)}</p>
+            {/* Tickets Issued Section */}
+            <div className="mb-3 p-2 bg-blue-50 rounded-lg">
+              <p className="text-xs text-blue-600 font-medium mb-1">Cash Tickets Issued</p>
+              <p className="font-bold text-blue-800 text-lg">{formatNumber(admin.totalTickets)}</p>
+            </div>
+
+            {/* Redemption Section */}
+            <div className="p-2 bg-gray-50 rounded-lg">
+              <p className="text-xs text-gray-600 font-medium mb-2">Redemption Records</p>
+              <div className="grid grid-cols-3 gap-2 text-sm">
+                <div>
+                  <p className="text-xs text-gray-500">Verified</p>
+                  <p className="font-semibold text-green-600">{formatNumber(admin.redeemedRecords)}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500">Pending</p>
+                  <p className="font-semibold text-orange-600">{formatNumber(admin.pendingRecords)}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500">Rate</p>
+                  <p className="font-semibold text-gray-800">{getRedemptionRate(admin.redeemedRecords, admin.totalRecords)}%</p>
+                </div>
               </div>
             </div>
 
+            {/* Revenue Section */}
             <div className="mt-3 pt-3 border-t border-gray-100">
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-gray-600">Redemption Rate</span>
-                <span className="font-semibold text-gray-800">
-                  {getRedemptionRate(admin.redeemedRecords, admin.totalRecords)}%
+              <div className="flex items-center justify-between">
+                <span className="text-gray-600 text-sm flex items-center gap-1">
+                  <MdTrendingUp className="text-purple-600" /> Revenue
                 </span>
+                <span className="font-bold text-gray-900">{formatCurrency(admin.totalRevenue)}</span>
               </div>
             </div>
           </div>
