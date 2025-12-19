@@ -142,9 +142,11 @@ function Dashboard() {
         )}
 
         {/* 🔥 Recent Activity - PRIORITY: Always shows at top */}
+        {/* Commented out - not needed for now
         {data?.recentActivity?.last24Hours && (
           <RecentActivity data={data.recentActivity.last24Hours} loading={loading} />
         )}
+        */}
 
         {/* 💰 Revenue & Payments - IMPORTANT: Business metrics */}
         {data?.payments && (
