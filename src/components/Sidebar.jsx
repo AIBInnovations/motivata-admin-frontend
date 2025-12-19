@@ -12,6 +12,8 @@ import {
   Trophy,
   BarChart3,
   ImagePlay,
+  ScanLine,
+  Share2,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
@@ -109,6 +111,20 @@ function Sidebar({ activeMenu, collapsed, isOpen, onClose }) {
       icon: ImagePlay,
       path: "/stories",
       color: "sky",
+    },
+    {
+      id: "scan-qr",
+      label: "Scan QR",
+      icon: ScanLine,
+      path: "/scan-qr",
+      color: "teal",
+    },
+    {
+      id: "ticket-reshare",
+      label: "Ticket Reshare",
+      icon: Share2,
+      path: "/ticket-reshare",
+      color: "violet",
     },
   ];
 

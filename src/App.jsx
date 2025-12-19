@@ -17,6 +17,8 @@ import Quizes from './pages/Quizes';
 import Challenges from './pages/Challenges';
 import Polls from './pages/Polls';
 import Stories from './pages/Stories';
+import ScanQR from './pages/ScanQR';
+import TicketReshare from './pages/TicketReshare';
 
 function App() {
   return (
@@ -55,6 +57,8 @@ function App() {
             <Route path="/challenges" element={<Challenges />} />
             <Route path="/polls" element={<Polls />} />
             <Route path="/stories" element={<Stories />} />
+            <Route path="/scan-qr" element={<ScanQR />} />
+            <Route path="/ticket-reshare" element={<TicketReshare />} />
           </Route>
 
           {/* Default redirect */}
