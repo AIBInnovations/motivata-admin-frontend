@@ -13,11 +13,16 @@ import {
   Ticket,
   RefreshCw,
   ChevronDown,
+  UserPlus,
+  FileSpreadsheet,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import useCashTickets from '../hooks/useCashTickets';
+import offlineCashService from '../services/offline-cash.service';
 import CashTicketForm from '../components/cashtickets/CashTicketForm';
 import CashTicketDetailsModal from '../components/cashtickets/CashTicketDetailsModal';
+import DirectTicketModal from '../components/cashtickets/DirectTicketModal';
+import DirectTicketBulkModal from '../components/cashtickets/DirectTicketBulkModal';
 import ConfirmDialog from '../components/ui/ConfirmDialog';
 import Pagination from '../components/ui/Pagination';
 
@@ -99,6 +104,8 @@ function CashTickets() {
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isDirectTicketModalOpen, setIsDirectTicketModalOpen] = useState(false);
+  const [isDirectTicketBulkModalOpen, setIsDirectTicketBulkModalOpen] = useState(false);
 
   // Selected record states
   const [selectedRecord, setSelectedRecord] = useState(null);
@@ -108,6 +115,12 @@ function CashTickets() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState(null);
   const [existingLinkData, setExistingLinkData] = useState(null);
+
+  // Direct ticket states
+  const [directTicketLoading, setDirectTicketLoading] = useState(false);
+  const [directTicketError, setDirectTicketError] = useState(null);
+  const [directTicketBulkLoading, setDirectTicketBulkLoading] = useState(false);
+  const [directTicketBulkError, setDirectTicketBulkError] = useState(null);
 
   // Copy state for links
   const [copiedId, setCopiedId] = useState(null);
@@ -130,6 +143,88 @@ function CashTickets() {
     setFormError(null);
     setExistingLinkData(null);
   }, []);
+
+  // Open direct ticket modal
+  const handleOpenDirectTicketModal = useCallback(() => {
+    setDirectTicketError(null);
+    setIsDirectTicketModalOpen(true);
+  }, []);
+
+  // Close direct ticket modal
+  const handleCloseDirectTicketModal = useCallback(() => {
+    setIsDirectTicketModalOpen(false);
+    setDirectTicketError(null);
+  }, []);
+
+  // Handle direct ticket submission
+  const handleDirectTicketSubmit = useCallback(
+    async (formData) => {
+      setDirectTicketLoading(true);
+      setDirectTicketError(null);
+
+      try {
+        const result = await offlineCashService.createDirectTicket(formData);
+
+        if (result.success) {
+          console.log('[CashTickets] Direct ticket created:', result.data?.enrollment?.id);
+          fetchRecords(1);
+          return { success: true, data: result.data };
+        } else {
+          console.error('[CashTickets] Direct ticket failed:', result.message);
+          setDirectTicketError(result.message || 'Failed to create direct ticket');
+          return { success: false };
+        }
+      } catch (err) {
+        console.error('[CashTickets] Direct ticket error:', err);
+        setDirectTicketError('An unexpected error occurred');
+        return { success: false };
+      } finally {
+        setDirectTicketLoading(false);
+      }
+    },
+    [fetchRecords]
+  );
+
+  // Open direct ticket bulk modal
+  const handleOpenDirectTicketBulkModal = useCallback(() => {
+    setDirectTicketBulkError(null);
+    setIsDirectTicketBulkModalOpen(true);
+  }, []);
+
+  // Close direct ticket bulk modal
+  const handleCloseDirectTicketBulkModal = useCallback(() => {
+    setIsDirectTicketBulkModalOpen(false);
+    setDirectTicketBulkError(null);
+  }, []);
+
+  // Handle direct ticket bulk submission
+  const handleDirectTicketBulkSubmit = useCallback(
+    async (file, formData) => {
+      setDirectTicketBulkLoading(true);
+      setDirectTicketBulkError(null);
+
+      try {
+        const result = await offlineCashService.createDirectTicketBulk(file, formData);
+
+        if (result.success) {
+          console.log('[CashTickets] Bulk direct tickets processed:', result.data?.summary);
+          fetchRecords(1);
+          return { success: true, data: result.data };
+        } else {
+          console.error('[CashTickets] Bulk direct tickets failed:', result.message);
+          setDirectTicketBulkError(result.message || 'Failed to process bulk upload');
+          return { success: false };
+        }
+      } catch (err) {
+        console.error('[CashTickets] Bulk direct tickets error:', err);
+        setDirectTicketBulkError('An unexpected error occurred');
+        return { success: false };
+      } finally {
+        setDirectTicketBulkLoading(false);
+      }
+    },
+    [fetchRecords]
+  );
 
   // Handle form submission
   const handleFormSubmit = useCallback(
@@ -295,19 +390,50 @@ function CashTickets() {
             Generate and manage offline cash payment ticket links
           </p>
         </div>
-        <button
-          onClick={handleOpenFormModal}
-          disabled={isOverLimit}
-          className={`flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg transition-colors font-medium ${
-            isOverLimit
-              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-              : 'bg-gray-800 text-white hover:bg-gray-900'
-          }`}
-          title={isOverLimit ? 'Ticket limit reached' : 'Generate new ticket link'}
-        >
-          <Plus className="h-5 w-5" />
-          <span>Generate Link</span>
-        </button>
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={handleOpenFormModal}
+            disabled={isOverLimit}
+            className={`flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg transition-colors font-medium ${
+              isOverLimit
+                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                : 'bg-gray-800 text-white hover:bg-gray-900'
+            }`}
+            title={isOverLimit ? 'Ticket limit reached' : 'Generate new ticket link'}
+          >
+            <Plus className="h-5 w-5" />
+            <span className="hidden sm:inline">Generate Link</span>
+            <span className="sm:hidden">Link</span>
+          </button>
+          <button
+            onClick={handleOpenDirectTicketModal}
+            disabled={isOverLimit}
+            className={`flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg transition-colors font-medium ${
+              isOverLimit
+                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                : 'bg-gray-700 text-white hover:bg-gray-800'
+            }`}
+            title={isOverLimit ? 'Ticket limit reached' : 'Create direct ticket'}
+          >
+            <UserPlus className="h-5 w-5" />
+            <span className="hidden sm:inline">Direct Ticket</span>
+            <span className="sm:hidden">Direct</span>
+          </button>
+          <button
+            onClick={handleOpenDirectTicketBulkModal}
+            disabled={isOverLimit}
+            className={`flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg transition-colors font-medium ${
+              isOverLimit
+                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                : 'bg-gray-600 text-white hover:bg-gray-700'
+            }`}
+            title={isOverLimit ? 'Ticket limit reached' : 'Bulk upload direct tickets'}
+          >
+            <FileSpreadsheet className="h-5 w-5" />
+            <span className="hidden sm:inline">Direct Ticket Bulk</span>
+            <span className="sm:hidden">Bulk</span>
+          </button>
+        </div>
       </div>
 
       {/* Usage Banner for MANAGEMENT_STAFF with limits */}
@@ -880,6 +1006,30 @@ function CashTickets() {
         cancelText="Cancel"
         variant="danger"
         isLoading={isSubmitting}
+      />
+
+      {/* Direct Ticket Modal */}
+      <DirectTicketModal
+        isOpen={isDirectTicketModalOpen}
+        onClose={handleCloseDirectTicketModal}
+        onSubmit={handleDirectTicketSubmit}
+        isLoading={directTicketLoading}
+        serverError={directTicketError}
+        allowedEvents={allowedEvents}
+        eventsLoading={eventsLoading}
+        onSearchEvents={searchEvents}
+      />
+
+      {/* Direct Ticket Bulk Modal */}
+      <DirectTicketBulkModal
+        isOpen={isDirectTicketBulkModalOpen}
+        onClose={handleCloseDirectTicketBulkModal}
+        onSubmit={handleDirectTicketBulkSubmit}
+        isLoading={directTicketBulkLoading}
+        serverError={directTicketBulkError}
+        allowedEvents={allowedEvents}
+        eventsLoading={eventsLoading}
+        onSearchEvents={searchEvents}
       />
     </div>
   );

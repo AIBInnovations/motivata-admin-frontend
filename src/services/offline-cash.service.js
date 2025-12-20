@@ -6,6 +6,8 @@ const OFFLINE_CASH_ENDPOINTS = {
   GET_BY_ID: (id) => `/web/offline-cash/${id}`,
   DELETE: (id) => `/web/offline-cash/${id}`,
   EVENT_ENROLLMENTS: (eventId) => `/web/offline-cash/event/${eventId}/enrollments`,
+  DIRECT_TICKET: '/web/offline-cash/direct-ticket',
+  DIRECT_TICKET_BULK: '/web/offline-cash/direct-ticket-bulk',
 };
 
 /**
@@ -153,6 +155,77 @@ const offlineCashService = {
     }
 
     return result;
+  },
+
+  /**
+   * Create direct ticket (single) - bypasses redemption flow
+   * @param {Object} data - { eventId, phone, name, priceCharged?, notes? }
+   * @returns {Promise<{success: boolean, data: Object|null, message: string, error: string|null}>}
+   */
+  createDirectTicket: async (data) => {
+    console.log('[OfflineCashService] Creating direct ticket for phone:', data.phone);
+    const result = await handleApiResponse(api.post(OFFLINE_CASH_ENDPOINTS.DIRECT_TICKET, data));
+
+    if (result.success) {
+      console.log('[OfflineCashService] Direct ticket created:', result.data.enrollment?.id);
+    } else {
+      console.error('[OfflineCashService] Failed to create direct ticket:', result.message);
+    }
+
+    return result;
+  },
+
+  /**
+   * Create direct tickets in bulk from Excel file
+   * @param {File} file - Excel file with phone and name columns
+   * @param {Object} data - { eventId, priceCharged?, notes? }
+   * @returns {Promise<{success: boolean, data: Object|null, message: string, error: string|null}>}
+   */
+  createDirectTicketBulk: async (file, data) => {
+    console.log('[OfflineCashService] Creating bulk direct tickets for event:', data.eventId);
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('eventId', data.eventId);
+    if (data.priceCharged !== undefined && data.priceCharged !== '') {
+      formData.append('priceCharged', data.priceCharged);
+    }
+    if (data.notes) {
+      formData.append('notes', data.notes);
+    }
+
+    try {
+      const response = await api.post(OFFLINE_CASH_ENDPOINTS.DIRECT_TICKET_BULK, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      console.log('[OfflineCashService] Bulk direct tickets result:', {
+        total: response.data?.data?.summary?.total,
+        successful: response.data?.data?.summary?.successful,
+        rejected: response.data?.data?.summary?.rejected,
+      });
+
+      return {
+        success: true,
+        data: response.data.data,
+        message: response.data.message,
+        error: null,
+        status: response.data.status || response.status,
+      };
+    } catch (error) {
+      const errorResponse = {
+        success: false,
+        data: null,
+        message: error.response?.data?.message || 'Failed to process bulk direct tickets',
+        error: error.response?.data?.error || error.message,
+        status: error.response?.status || 500,
+      };
+
+      console.error('[OfflineCashService] Bulk direct tickets failed:', errorResponse);
+      return errorResponse;
+    }
   },
 };
 
