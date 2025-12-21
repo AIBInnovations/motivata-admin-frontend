@@ -1192,44 +1192,56 @@ function ScanQR() {
                 );
               })()}
 
-              {/* Voucher Information (if redeemed) */}
-              {validationStatus?.data?.voucher && (
-                <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-4 sm:p-6 mb-4 shadow-sm border border-purple-200">
-                  <h3 className="text-lg font-bold text-purple-900 mb-4 flex items-center gap-2">
-                    <MdCardGiftcard className="w-5 h-5 text-purple-600" />
-                    Redeemed Voucher
-                  </h3>
-                  <div className="space-y-3">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between p-3 bg-white rounded-lg border border-purple-100">
-                      <span className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-1 sm:mb-0">
-                        Voucher Code:
-                      </span>
-                      <span className="text-base sm:text-lg font-bold text-purple-700 bg-purple-100 px-4 py-2 rounded border border-purple-200 font-mono">
-                        {validationStatus.data.voucher.code}
-                      </span>
-                    </div>
-                    {validationStatus.data.voucher.title && (
+              {/* Voucher Information */}
+              {validationStatus?.data && (
+                validationStatus.data.voucher ? (
+                  <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-4 sm:p-6 mb-4 shadow-sm border border-purple-200">
+                    <h3 className="text-lg font-bold text-purple-900 mb-4 flex items-center gap-2">
+                      <MdCardGiftcard className="w-5 h-5 text-purple-600" />
+                      Redeemed Voucher
+                    </h3>
+                    <div className="space-y-3">
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between p-3 bg-white rounded-lg border border-purple-100">
                         <span className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-1 sm:mb-0">
-                          Title:
+                          Voucher Code:
                         </span>
-                        <span className="text-sm sm:text-base font-semibold text-gray-900">
-                          {validationStatus.data.voucher.title}
+                        <span className="text-base sm:text-lg font-bold text-purple-700 bg-purple-100 px-4 py-2 rounded border border-purple-200 font-mono">
+                          {validationStatus.data.voucher.code}
                         </span>
                       </div>
-                    )}
-                    {validationStatus.data.voucher.description && (
-                      <div className="p-3 bg-white rounded-lg border border-purple-100">
-                        <span className="text-sm font-semibold text-gray-700 uppercase tracking-wide block mb-2">
-                          Description:
-                        </span>
-                        <p className="text-sm text-gray-700">
-                          {validationStatus.data.voucher.description}
-                        </p>
-                      </div>
-                    )}
+                      {validationStatus.data.voucher.title && (
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between p-3 bg-white rounded-lg border border-purple-100">
+                          <span className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-1 sm:mb-0">
+                            Title:
+                          </span>
+                          <span className="text-sm sm:text-base font-semibold text-gray-900">
+                            {validationStatus.data.voucher.title}
+                          </span>
+                        </div>
+                      )}
+                      {validationStatus.data.voucher.description && (
+                        <div className="p-3 bg-white rounded-lg border border-purple-100">
+                          <span className="text-sm font-semibold text-gray-700 uppercase tracking-wide block mb-2">
+                            Description:
+                          </span>
+                          <p className="text-sm text-gray-700">
+                            {validationStatus.data.voucher.description}
+                          </p>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  <div className="bg-gray-50 rounded-lg p-4 sm:p-6 mb-4 shadow-sm border border-gray-200">
+                    <div className="flex items-center gap-3">
+                      <MdCardGiftcard className="w-6 h-6 text-gray-400" />
+                      <div>
+                        <h3 className="text-base font-semibold text-gray-600">No Food Voucher</h3>
+                        <p className="text-sm text-gray-500">This attendee has not redeemed any voucher</p>
+                      </div>
+                    </div>
+                  </div>
+                )
               )}
 
               {/* URL Parameters (if no API data) */}
