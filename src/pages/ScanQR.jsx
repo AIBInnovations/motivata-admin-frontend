@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, Component, memo } from 'react';
 import { createPortal } from 'react-dom';
 import { Html5Qrcode } from 'html5-qrcode';
 import { toast } from 'react-toastify';
-import { MdQrCodeScanner, MdCameraswitch, MdClose, MdCheckCircle, MdContentCopy, MdWarning } from 'react-icons/md';
+import { MdQrCodeScanner, MdCameraswitch, MdClose, MdCheckCircle, MdContentCopy, MdWarning, MdCardGiftcard } from 'react-icons/md';
 import { FaCamera, FaCameraRetro } from 'react-icons/fa';
 
 /**
@@ -1191,6 +1191,46 @@ function ScanQR() {
                   </div>
                 );
               })()}
+
+              {/* Voucher Information (if redeemed) */}
+              {validationStatus?.data?.voucher && (
+                <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-4 sm:p-6 mb-4 shadow-sm border border-purple-200">
+                  <h3 className="text-lg font-bold text-purple-900 mb-4 flex items-center gap-2">
+                    <MdCardGiftcard className="w-5 h-5 text-purple-600" />
+                    Redeemed Voucher
+                  </h3>
+                  <div className="space-y-3">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between p-3 bg-white rounded-lg border border-purple-100">
+                      <span className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-1 sm:mb-0">
+                        Voucher Code:
+                      </span>
+                      <span className="text-base sm:text-lg font-bold text-purple-700 bg-purple-100 px-4 py-2 rounded border border-purple-200 font-mono">
+                        {validationStatus.data.voucher.code}
+                      </span>
+                    </div>
+                    {validationStatus.data.voucher.title && (
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between p-3 bg-white rounded-lg border border-purple-100">
+                        <span className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-1 sm:mb-0">
+                          Title:
+                        </span>
+                        <span className="text-sm sm:text-base font-semibold text-gray-900">
+                          {validationStatus.data.voucher.title}
+                        </span>
+                      </div>
+                    )}
+                    {validationStatus.data.voucher.description && (
+                      <div className="p-3 bg-white rounded-lg border border-purple-100">
+                        <span className="text-sm font-semibold text-gray-700 uppercase tracking-wide block mb-2">
+                          Description:
+                        </span>
+                        <p className="text-sm text-gray-700">
+                          {validationStatus.data.voucher.description}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
 
               {/* URL Parameters (if no API data) */}
               {!validationStatus?.data?.enrollment && !validationStatus?.data?.user && extractedParams.type === 'url' && Object.keys(extractedParams.parameters).length > 0 && (
