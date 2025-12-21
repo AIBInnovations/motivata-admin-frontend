@@ -67,8 +67,8 @@ const ScannerContainer = memo(({ scannerContainerId }) => {
     <div
       id={scannerContainerId}
       ref={containerRef}
-      className="relative w-full aspect-square max-w-[320px] sm:max-w-md mx-auto rounded-xl overflow-hidden bg-gray-100 border-2 border-dashed border-gray-300"
-      style={{ minHeight: '320px' }}
+      className="relative w-full aspect-square max-w-[90vw] sm:max-w-lg lg:max-w-xl mx-auto rounded-xl overflow-hidden bg-gray-100 border-2 border-dashed border-gray-300"
+      style={{ minHeight: 'min(80vw, 400px)' }}
     >
       {/* Placeholder - will be shown/hidden via direct DOM manipulation */}
       <div
