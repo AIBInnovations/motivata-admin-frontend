@@ -5,6 +5,7 @@ import useEventsManagement from '../hooks/useEventsManagement';
 import { EventForm, EventDetailsModal, EventFilters, EventTable } from '../components/events';
 import ConfirmDialog from '../components/ui/ConfirmDialog';
 import Pagination from '../components/ui/Pagination';
+import seatArrangementService from '../services/seatArrangement.service';
 
 function Events() {
   const { hasRole } = useAuth();
@@ -49,6 +50,7 @@ function Events() {
 
   // Selected event for operations
   const [selectedEvent, setSelectedEvent] = useState(null);
+  const [selectedSeatArrangement, setSelectedSeatArrangement] = useState(null);
   const [ticketStats, setTicketStats] = useState(null);
   const [isLoadingStats, setIsLoadingStats] = useState(false);
 
@@ -85,6 +87,20 @@ function Events() {
       setSelectedEvent(result.data);
       setFormError(null);
       setValidationErrors(null);
+
+      // Fetch existing seat arrangement if any
+      try {
+        const seatResult = await seatArrangementService.getSeatArrangement(event._id);
+        if (seatResult.success && seatResult.data?.arrangement) {
+          // Backend returns { data: { arrangement: {...} } }
+          setSelectedSeatArrangement(seatResult.data.arrangement);
+        } else {
+          setSelectedSeatArrangement(null);
+        }
+      } catch {
+        setSelectedSeatArrangement(null);
+      }
+
       setShowEditModal(true);
     } else {
       setFormError(result.error);
@@ -123,10 +139,33 @@ function Events() {
     setFormError(null);
     setValidationErrors(null);
 
+    // Extract seat arrangement data before creating event
+    const { seatArrangement, ...eventData } = data;
+
     try {
-      const result = await createEvent(data);
+      const result = await createEvent(eventData);
 
       if (result.success) {
+        // If seat arrangement data is provided, create it
+        if (seatArrangement && seatArrangement.seats?.length > 0) {
+          const eventId = result.data._id;
+          const seatData = {
+            imageUrl: seatArrangement.imageUrl,
+            // Backend only accepts label, not isAvailable (it sets availability automatically)
+            seats: seatArrangement.seats.map(seat => ({
+              label: seat.label,
+            })),
+          };
+
+          const seatResult = await seatArrangementService.createSeatArrangement(eventId, seatData);
+          if (!seatResult.success) {
+            console.error('Failed to create seat arrangement:', seatResult.error);
+            // Event was created successfully, but seat arrangement failed
+            // Show a warning but still close the modal
+            setFormError(`Event created, but seat arrangement failed: ${seatResult.error}`);
+          }
+        }
+
         setShowCreateModal(false);
       } else {
         setFormError(result.error);
@@ -145,12 +184,54 @@ function Events() {
     setFormError(null);
     setValidationErrors(null);
 
+    // Extract seat arrangement data before updating event
+    const { seatArrangement, ...eventData } = data;
+
     try {
-      const result = await updateEvent(selectedEvent._id, data);
+      const result = await updateEvent(selectedEvent._id, eventData);
 
       if (result.success) {
+        // Handle seat arrangement
+        const hasSeatArrangement = seatArrangement && seatArrangement.seats?.length > 0;
+        const hadSeatArrangement = !!selectedSeatArrangement;
+
+        if (hasSeatArrangement && !hadSeatArrangement) {
+          // Create new seat arrangement
+          const seatData = {
+            imageUrl: seatArrangement.imageUrl,
+            // Backend only accepts label, not isAvailable (it sets availability automatically)
+            seats: seatArrangement.seats.map(seat => ({
+              label: seat.label,
+            })),
+          };
+          const seatResult = await seatArrangementService.createSeatArrangement(selectedEvent._id, seatData);
+          if (!seatResult.success) {
+            console.error('Failed to create seat arrangement:', seatResult.error);
+          }
+        } else if (hasSeatArrangement && hadSeatArrangement) {
+          // Update existing seat arrangement
+          const seatData = {
+            imageUrl: seatArrangement.imageUrl,
+            // Backend only accepts label for seats
+            seats: seatArrangement.seats.map(seat => ({
+              label: seat.label,
+            })),
+          };
+          const seatResult = await seatArrangementService.updateSeatArrangement(selectedEvent._id, seatData);
+          if (!seatResult.success) {
+            console.error('Failed to update seat arrangement:', seatResult.error);
+          }
+        } else if (!hasSeatArrangement && hadSeatArrangement) {
+          // Delete seat arrangement
+          const seatResult = await seatArrangementService.deleteSeatArrangement(selectedEvent._id);
+          if (!seatResult.success) {
+            console.error('Failed to delete seat arrangement:', seatResult.error);
+          }
+        }
+
         setShowEditModal(false);
         setSelectedEvent(null);
+        setSelectedSeatArrangement(null);
       } else {
         setFormError(result.error);
         setValidationErrors(result.validationErrors);
@@ -158,7 +239,7 @@ function Events() {
     } finally {
       setIsSubmitting(false);
     }
-  }, [selectedEvent, updateEvent]);
+  }, [selectedEvent, selectedSeatArrangement, updateEvent]);
 
   // Confirm delete event
   const handleConfirmDelete = useCallback(async () => {
@@ -335,9 +416,11 @@ function Events() {
         onClose={() => {
           setShowEditModal(false);
           setSelectedEvent(null);
+          setSelectedSeatArrangement(null);
         }}
         onSubmit={handleUpdateSubmit}
         event={selectedEvent}
+        seatArrangement={selectedSeatArrangement}
         isLoading={isSubmitting}
         serverError={formError}
         validationErrors={validationErrors}

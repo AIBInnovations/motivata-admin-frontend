@@ -57,6 +57,12 @@ function Layout() {
     '/quizes': 'quizes',
     '/challenges': 'challenges',
     '/polls': 'polls',
+    '/stories': 'stories',
+    '/memberships': 'memberships',
+    '/settings': 'settings',
+    '/clubs': 'clubs',
+    '/scan-qr': 'scan-qr',
+    '/ticket-reshare': 'ticket-reshare',
   };
 
   const getActiveMenu = () => {

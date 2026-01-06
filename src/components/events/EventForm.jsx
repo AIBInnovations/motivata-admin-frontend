@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react';
-import { Loader2, Plus, Trash2, MapPin } from 'lucide-react';
+import { Loader2, Plus, Trash2, MapPin, Armchair, X, Info } from 'lucide-react';
 import Modal from '../ui/Modal';
 import FileUpload from '../ui/FileUpload';
 import { EVENT_CATEGORIES, EVENT_MODES } from '../../hooks/useEventsManagement';
+import seatArrangementService from '../../services/seatArrangement.service';
 
 /**
  * Initial form state for creating/editing events
  */
-const getInitialFormState = (event = null) => ({
+const getInitialFormState = (event = null, seatArrangement = null) => ({
   name: event?.name || '',
   description: event?.description || '',
   imageUrls: event?.imageUrls || [],
@@ -28,6 +29,13 @@ const getInitialFormState = (event = null) => ({
   pricingTiers: event?.pricingTiers || [],
   isLive: event?.isLive ?? false,
   featured: event?.featured ?? false,
+  // Seat Arrangement
+  useSeatArrangement: !!seatArrangement,
+  seatArrangement: {
+    imageUrl: seatArrangement?.imageUrl || '',
+    seatLabelsInput: seatArrangement?.seats?.map(s => s.label).join(', ') || '',
+    seats: seatArrangement?.seats || [],
+  },
 });
 
 /**
@@ -42,9 +50,10 @@ function formatDateTimeForInput(isoDate) {
 /**
  * Validate form data
  * @param {Object} data - Form data
+ * @param {boolean} isEditMode - Whether the form is in edit mode
  * @returns {Object} - { isValid: boolean, errors: Object }
  */
-const validateForm = (data) => {
+const validateForm = (data, isEditMode = false) => {
   const errors = {};
 
   // Name validation
@@ -90,7 +99,8 @@ const validateForm = (data) => {
   // Start date validation
   if (!data.startDate) {
     errors.startDate = 'Start date is required';
-  } else {
+  } else if (!isEditMode) {
+    // Only validate future date for new events, not when editing
     const startDate = new Date(data.startDate);
     if (startDate <= new Date()) {
       errors.startDate = 'Start date must be in the future';
@@ -176,6 +186,18 @@ const validateForm = (data) => {
     errors.thumbnailVideo = 'Invalid thumbnail video URL';
   }
 
+  // Seat arrangement validation (only for OFFLINE or HYBRID events)
+  if (data.useSeatArrangement && (data.mode === 'OFFLINE' || data.mode === 'HYBRID')) {
+    if (!data.seatArrangement.imageUrl) {
+      errors['seatArrangement.imageUrl'] = 'Seating map image is required';
+    } else if (!/^https?:\/\/.+/.test(data.seatArrangement.imageUrl)) {
+      errors['seatArrangement.imageUrl'] = 'Invalid seating map image URL';
+    }
+    if (!data.seatArrangement.seats || data.seatArrangement.seats.length === 0) {
+      errors['seatArrangement.seats'] = 'At least one seat must be defined';
+    }
+  }
+
   return {
     isValid: Object.keys(errors).length === 0,
     errors,
@@ -203,21 +225,22 @@ function EventForm({
   onClose,
   onSubmit,
   event = null,
+  seatArrangement = null,
   isLoading = false,
   serverError = null,
   validationErrors = null,
 }) {
   const isEditMode = !!event;
-  const [formData, setFormData] = useState(getInitialFormState(event));
+  const [formData, setFormData] = useState(getInitialFormState(event, seatArrangement));
   const [errors, setErrors] = useState({});
 
   // Reset form when event changes or modal opens/closes
   useEffect(() => {
     if (isOpen) {
-      setFormData(getInitialFormState(event));
+      setFormData(getInitialFormState(event, seatArrangement));
       setErrors({});
     }
-  }, [isOpen, event]);
+  }, [isOpen, event, seatArrangement]);
 
   // Map server validation errors to form fields
   useEffect(() => {
@@ -315,11 +338,61 @@ function EventForm({
     }
   };
 
+  // Seat Arrangement Handlers
+  const handleToggleSeatArrangement = () => {
+    setFormData((prev) => ({
+      ...prev,
+      useSeatArrangement: !prev.useSeatArrangement,
+      seatArrangement: !prev.useSeatArrangement
+        ? { imageUrl: '', seatLabelsInput: '', seats: [] }
+        : prev.seatArrangement,
+    }));
+  };
+
+  const handleSeatArrangementChange = (field, value) => {
+    setFormData((prev) => ({
+      ...prev,
+      seatArrangement: { ...prev.seatArrangement, [field]: value },
+    }));
+
+    // Clear error
+    if (errors[`seatArrangement.${field}`]) {
+      setErrors((prev) => ({ ...prev, [`seatArrangement.${field}`]: null }));
+    }
+  };
+
+  const handleParseSeatLabels = () => {
+    const input = formData.seatArrangement.seatLabelsInput;
+    if (!input.trim()) {
+      setFormData((prev) => ({
+        ...prev,
+        seatArrangement: { ...prev.seatArrangement, seats: [] },
+      }));
+      return;
+    }
+
+    const seats = seatArrangementService.parseSeatLabels(input);
+    setFormData((prev) => ({
+      ...prev,
+      seatArrangement: { ...prev.seatArrangement, seats },
+    }));
+  };
+
+  const handleRemoveSeat = (index) => {
+    setFormData((prev) => ({
+      ...prev,
+      seatArrangement: {
+        ...prev.seatArrangement,
+        seats: prev.seatArrangement.seats.filter((_, i) => i !== index),
+      },
+    }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validate form
-    const validation = validateForm(formData);
+    // Validate form (pass isEditMode to allow past dates when editing)
+    const validation = validateForm(formData, isEditMode);
     if (!validation.isValid) {
       setErrors(validation.errors);
       return;
@@ -378,9 +451,19 @@ function EventForm({
       submitData.availableSeats = Number(formData.availableSeats);
     }
 
-    // Add status fields
-    submitData.isLive = formData.isLive;
-    submitData.featured = formData.featured;
+    // Add status fields (only for edit mode - backend doesn't allow these during creation)
+    if (isEditMode) {
+      submitData.isLive = formData.isLive;
+      submitData.featured = formData.featured;
+    }
+
+    // Add seat arrangement data if enabled
+    if (formData.useSeatArrangement) {
+      submitData.seatArrangement = {
+        imageUrl: formData.seatArrangement.imageUrl,
+        seats: formData.seatArrangement.seats,
+      };
+    }
 
     await onSubmit(submitData);
   };
@@ -886,6 +969,129 @@ function EventForm({
             placeholder="Drop images here or click to upload"
           />
         </div>
+
+        {/* Seat Arrangement (for OFFLINE or HYBRID events) */}
+        {(formData.mode === 'OFFLINE' || formData.mode === 'HYBRID') && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between border-b pb-2">
+              <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                <Armchair className="h-5 w-5" />
+                Seat Arrangement
+              </h3>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={formData.useSeatArrangement}
+                  onChange={handleToggleSeatArrangement}
+                  disabled={isLoading}
+                  className="w-4 h-4 text-gray-800 rounded focus:ring-0"
+                />
+                <span className="text-sm text-gray-600">Enable seat selection</span>
+              </label>
+            </div>
+
+            {formData.useSeatArrangement && (
+              <div className="space-y-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                {/* Info message */}
+                <div className="flex items-start gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <Info className="h-4 w-4 text-blue-500 mt-0.5 flex-shrink-0" />
+                  <div className="text-sm text-blue-700">
+                    <p className="font-medium">Seat arrangement will be created after the event is saved.</p>
+                    <p className="text-xs mt-1">Upload a seating map image and define seat labels using patterns like "A1-A10" or "1-50", separated by commas.</p>
+                  </div>
+                </div>
+
+                {/* Seat Map Image */}
+                <FileUpload
+                  label="Seating Map Image"
+                  value={formData.seatArrangement.imageUrl}
+                  onUpload={(url) => handleSeatArrangementChange('imageUrl', url)}
+                  disabled={isLoading}
+                  error={errors['seatArrangement.imageUrl']}
+                  type="image"
+                  folder="events/seat-maps"
+                  placeholder="Upload seating arrangement diagram"
+                  required
+                />
+
+                {/* Seat Labels Input */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Seat Labels <span className="text-red-500">*</span>
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={formData.seatArrangement.seatLabelsInput}
+                      onChange={(e) => handleSeatArrangementChange('seatLabelsInput', e.target.value)}
+                      disabled={isLoading}
+                      className={`flex-1 px-3 py-2 border rounded-lg focus:border-gray-800 outline-none disabled:bg-gray-100 ${
+                        errors['seatArrangement.seats'] ? 'border-red-500' : 'border-gray-300'
+                      }`}
+                      placeholder="A1-A10, B1-B10, 1-50"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleParseSeatLabels}
+                      disabled={isLoading || !formData.seatArrangement.seatLabelsInput.trim()}
+                      className="px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition-colors disabled:opacity-50"
+                    >
+                      Generate
+                    </button>
+                  </div>
+                  <p className="mt-1 text-xs text-gray-500">
+                    Use patterns: "A1-A10" for A1, A2...A10 | "1-50" for 1, 2...50 | Comma separated for multiple ranges
+                  </p>
+                  {errors['seatArrangement.seats'] && (
+                    <p className="mt-1 text-sm text-red-500">{errors['seatArrangement.seats']}</p>
+                  )}
+                </div>
+
+                {/* Generated Seats Preview */}
+                {formData.seatArrangement.seats.length > 0 && (
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <label className="block text-sm font-medium text-gray-700">
+                        Generated Seats ({formData.seatArrangement.seats.length})
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => setFormData(prev => ({
+                          ...prev,
+                          seatArrangement: { ...prev.seatArrangement, seats: [], seatLabelsInput: '' }
+                        }))}
+                        disabled={isLoading}
+                        className="text-xs text-red-500 hover:text-red-700"
+                      >
+                        Clear all
+                      </button>
+                    </div>
+                    <div className="max-h-40 overflow-y-auto p-3 bg-white border border-gray-200 rounded-lg">
+                      <div className="flex flex-wrap gap-2">
+                        {formData.seatArrangement.seats.map((seat, index) => (
+                          <span
+                            key={index}
+                            className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 text-gray-700 text-sm rounded-md border border-gray-200"
+                          >
+                            {seat.label}
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveSeat(index)}
+                              disabled={isLoading}
+                              className="text-gray-400 hover:text-red-500"
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Status Options */}
         <div className="space-y-4">

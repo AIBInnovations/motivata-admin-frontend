@@ -207,7 +207,8 @@ function useEventsManagement(initialFilters = {}) {
         return {
           success: false,
           error: result.message,
-          validationErrors: result.data?.errors,
+          // Backend returns validation errors in result.error as an array
+          validationErrors: Array.isArray(result.error) ? result.error : result.data?.errors,
         };
       }
     } catch (err) {
@@ -242,7 +243,8 @@ function useEventsManagement(initialFilters = {}) {
         return {
           success: false,
           error: result.message,
-          validationErrors: result.data?.errors,
+          // Backend returns validation errors in result.error as an array
+          validationErrors: Array.isArray(result.error) ? result.error : result.data?.errors,
         };
       }
     } catch (err) {

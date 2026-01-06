@@ -14,6 +14,9 @@ import {
   ImagePlay,
   ScanLine,
   Share2,
+  Crown,
+  UsersRound,
+  Settings,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
@@ -111,6 +114,27 @@ function Sidebar({ activeMenu, collapsed, isOpen, onClose }) {
       icon: ImagePlay,
       path: "/stories",
       color: "sky",
+    },
+    {
+      id: "memberships",
+      label: "Memberships",
+      icon: Crown,
+      path: "/memberships",
+      color: "slate",
+    },
+    {
+      id: "settings",
+      label: "Settings",
+      icon: Settings,
+      path: "/settings",
+      color: "gray",
+    },
+    {
+      id: "clubs",
+      label: "Clubs",
+      icon: UsersRound,
+      path: "/clubs",
+      color: "fuchsia",
     },
     {
       id: "scan-qr",
