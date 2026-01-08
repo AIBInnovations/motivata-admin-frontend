@@ -22,6 +22,10 @@ import TicketReshare from './pages/TicketReshare';
 import Memberships from './pages/Memberships';
 import Clubs from './pages/Clubs';
 import Settings from './pages/Settings';
+import Services from './pages/Services';
+import ServiceOrders from './pages/ServiceOrders';
+import ServiceRequests from './pages/ServiceRequests';
+import UserSubscriptions from './pages/UserSubscriptions';
 
 function App() {
   return (
@@ -65,6 +69,10 @@ function App() {
             <Route path="/clubs" element={<Clubs />} />
             <Route path="/scan-qr" element={<ScanQR />} />
             <Route path="/ticket-reshare" element={<TicketReshare />} />
+            <Route path="/services" element={<Services />} />
+            <Route path="/service-orders" element={<ServiceOrders />} />
+            <Route path="/service-requests" element={<ServiceRequests />} />
+            <Route path="/user-subscriptions" element={<UserSubscriptions />} />
           </Route>
 
           {/* Default redirect */}

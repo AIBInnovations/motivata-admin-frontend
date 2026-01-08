@@ -17,6 +17,10 @@ import {
   Crown,
   UsersRound,
   Settings,
+  Briefcase,
+  CreditCard,
+  FileText,
+  UserCheck,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
@@ -149,6 +153,34 @@ function Sidebar({ activeMenu, collapsed, isOpen, onClose }) {
       icon: Share2,
       path: "/ticket-reshare",
       color: "violet",
+    },
+    {
+      id: "services",
+      label: "Services",
+      icon: Briefcase,
+      path: "/services",
+      color: "blue",
+    },
+    {
+      id: "service-orders",
+      label: "Service Orders",
+      icon: CreditCard,
+      path: "/service-orders",
+      color: "green",
+    },
+    {
+      id: "service-requests",
+      label: "Service Requests",
+      icon: FileText,
+      path: "/service-requests",
+      color: "amber",
+    },
+    {
+      id: "user-subscriptions",
+      label: "Subscriptions",
+      icon: UserCheck,
+      path: "/user-subscriptions",
+      color: "purple",
     },
   ];
 

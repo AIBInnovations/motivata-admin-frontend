@@ -52,7 +52,7 @@ function Memberships() {
   const { hasRole } = useAuth();
   const canManage = hasRole(['SUPER_ADMIN', 'ADMIN']);
 
-  const [activeTab, setActiveTab] = useState('plans');
+  const [activeTab, setActiveTab] = useState('memberships');
 
   // Plans
   const [plans, setPlans] = useState([]);
@@ -387,6 +387,7 @@ function Memberships() {
         </button>
       </div>
 
+      {/* Tab switcher - hidden, showing only memberships
       <div className="bg-white border border-gray-200 rounded-xl p-2 shadow-sm flex gap-2">
         <button
           onClick={() => setActiveTab('plans')}
@@ -405,10 +406,11 @@ function Memberships() {
           Member Subscriptions
         </button>
       </div>
+      */}
 
-      {activeTab === 'plans' ? (
+      {/* Plans section - hidden
+      {activeTab === 'plans' && (
         <div className="space-y-6" id="plans-tab-content">
-          {/* Plan creation */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <div className="flex items-start justify-between gap-3">
               <div>
@@ -557,7 +559,6 @@ function Memberships() {
             </form>
           </div>
 
-          {/* Plan list */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200">
             <div className="p-4 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
               <div className="flex-1 relative">
@@ -689,8 +690,11 @@ function Memberships() {
             )}
           </div>
         </div>
-      ) : (
-        <div className="space-y-6" id="memberships-tab-content">
+      )}
+      */}
+
+      {/* Member Subscriptions section */}
+      <div className="space-y-6" id="memberships-tab-content">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-3">
               <div className="flex items-center gap-2">
@@ -988,8 +992,7 @@ function Memberships() {
               />
             )}
           </div>
-        </div>
-      )}
+      </div>
 
       {/* Edit plan modal */}
       <Modal

@@ -63,6 +63,10 @@ function Layout() {
     '/clubs': 'clubs',
     '/scan-qr': 'scan-qr',
     '/ticket-reshare': 'ticket-reshare',
+    '/services': 'services',
+    '/service-orders': 'service-orders',
+    '/service-requests': 'service-requests',
+    '/user-subscriptions': 'user-subscriptions',
   };
 
   const getActiveMenu = () => {
