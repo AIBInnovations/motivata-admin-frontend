@@ -74,6 +74,7 @@ function ServiceTable({
               <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Category</th>
               <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Price</th>
               <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Duration</th>
+              <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Purchase Type</th>
               <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Subscriptions</th>
               <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Status</th>
               <th className="text-right px-6 py-4 text-sm font-medium text-gray-600">Actions</th>
@@ -163,6 +164,19 @@ function ServiceTable({
                   <span className="text-sm text-gray-600">
                     {service.durationInDays} days
                   </span>
+                </td>
+
+                {/* Purchase Type */}
+                <td className="px-6 py-4">
+                  {service.requiresApproval ? (
+                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-700">
+                      🔒 Approval Required
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                      🚀 Direct Purchase
+                    </span>
+                  )}
                 </td>
 
                 {/* Subscriptions */}

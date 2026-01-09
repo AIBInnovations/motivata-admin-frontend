@@ -21,11 +21,15 @@ import ScanQR from './pages/ScanQR';
 import TicketReshare from './pages/TicketReshare';
 import Memberships from './pages/Memberships';
 import Clubs from './pages/Clubs';
+import ClubJoinRequests from './pages/ClubJoinRequests';
+import AdminClubPosts from './pages/AdminClubPosts';
 import Settings from './pages/Settings';
+import FeatureAccess from './pages/FeatureAccess';
 import Services from './pages/Services';
 import ServiceOrders from './pages/ServiceOrders';
 import ServiceRequests from './pages/ServiceRequests';
 import UserSubscriptions from './pages/UserSubscriptions';
+import TestServices from './pages/TestServices';
 
 function App() {
   return (
@@ -66,13 +70,17 @@ function App() {
             <Route path="/stories" element={<Stories />} />
             <Route path="/memberships" element={<Memberships />} />
             <Route path="/settings" element={<Settings />} />
+            <Route path="/feature-access" element={<FeatureAccess />} />
             <Route path="/clubs" element={<Clubs />} />
+            <Route path="/club-join-requests" element={<ClubJoinRequests />} />
+            <Route path="/admin-club-posts" element={<AdminClubPosts />} />
             <Route path="/scan-qr" element={<ScanQR />} />
             <Route path="/ticket-reshare" element={<TicketReshare />} />
             <Route path="/services" element={<Services />} />
             <Route path="/service-orders" element={<ServiceOrders />} />
             <Route path="/service-requests" element={<ServiceRequests />} />
             <Route path="/user-subscriptions" element={<UserSubscriptions />} />
+            <Route path="/test-services" element={<TestServices />} />
           </Route>
 
           {/* Default redirect */}

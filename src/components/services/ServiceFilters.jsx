@@ -33,7 +33,8 @@ function ServiceFilters({
   const hasActiveFilters =
     filters.category ||
     filters.isActive !== '' ||
-    filters.isFeatured !== '';
+    filters.isFeatured !== '' ||
+    filters.requiresApproval !== '';
 
   return (
     <div className="bg-white rounded-xl shadow-sm p-4 space-y-4">
@@ -99,6 +100,18 @@ function ServiceFilters({
           <option value="">All Services</option>
           <option value="true">Featured Only</option>
           <option value="false">Not Featured</option>
+        </select>
+
+        {/* Purchase Type Filter */}
+        <select
+          value={filters.requiresApproval}
+          onChange={(e) => handleFilterChange('requiresApproval', e.target.value)}
+          disabled={disabled}
+          className="px-4 py-2 border border-gray-300 rounded-lg focus:border-gray-800 outline-none bg-white disabled:bg-gray-100"
+        >
+          <option value="">All Purchase Types</option>
+          <option value="true">Approval Required</option>
+          <option value="false">Direct Purchase</option>
         </select>
 
         {/* Sort By */}

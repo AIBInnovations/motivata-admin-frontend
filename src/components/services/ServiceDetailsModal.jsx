@@ -182,6 +182,32 @@ function ServiceDetailsModal({ isOpen, onClose, service }) {
           </div>
         )}
 
+        {/* Purchase Type */}
+        <div className="border-t border-gray-200 pt-4">
+          <h3 className="text-sm font-medium text-gray-700 mb-3">Purchase Flow</h3>
+          <div className={`p-4 rounded-lg border ${
+            service.requiresApproval
+              ? 'bg-amber-50 border-amber-200'
+              : 'bg-green-50 border-green-200'
+          }`}>
+            <div className="flex items-start gap-3">
+              <div className="text-2xl">
+                {service.requiresApproval ? '🔒' : '🚀'}
+              </div>
+              <div>
+                <p className="font-medium text-gray-900 mb-1">
+                  {service.requiresApproval ? 'Admin Approval Required' : 'Direct Purchase Enabled'}
+                </p>
+                <p className="text-sm text-gray-700">
+                  {service.requiresApproval
+                    ? 'Users must request this service. Admin will review requests and send payment links upon approval.'
+                    : 'Users can purchase this service directly with immediate payment processing through Razorpay.'}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Meta Info */}
         <div className="border-t border-gray-200 pt-4">
           <div className="grid grid-cols-2 gap-4 text-sm">

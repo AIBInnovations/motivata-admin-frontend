@@ -32,6 +32,7 @@ const DEFAULT_FILTERS = {
   category: '',
   isActive: '',
   isFeatured: '',
+  requiresApproval: '',
   sortBy: 'displayOrder',
   sortOrder: 'asc',
 };
@@ -80,6 +81,7 @@ function useServices(initialFilters = {}) {
           ...(filters.category && { category: filters.category }),
           ...(filters.isActive !== '' && { isActive: filters.isActive }),
           ...(filters.isFeatured !== '' && { isFeatured: filters.isFeatured }),
+          ...(filters.requiresApproval !== '' && { requiresApproval: filters.requiresApproval }),
         };
 
         const result = await serviceService.getAll(params);

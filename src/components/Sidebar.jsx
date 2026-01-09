@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   LayoutDashboard,
   Calendar,
@@ -17,170 +18,229 @@ import {
   Crown,
   UsersRound,
   Settings,
+  Shield,
   Briefcase,
   CreditCard,
   FileText,
   UserCheck,
+  UserPlus,
+  PenSquare,
+  ChevronDown,
+  ChevronRight,
 } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import MotivataLogo from "../assets/logo/Motivata.png";
 import MotivataLogoSmall from "../assets/logo/logo2.png";
 
 /**
  * Sidebar Component
- * Modern, responsive sidebar with profile section above logout
- * Implements CRAP principles: Contrast, Repetition, Alignment, Proximity
+ * Modern, responsive sidebar with nested menu structure
  */
-function Sidebar({ activeMenu, collapsed, isOpen, onClose }) {
+function Sidebar({ collapsed, isOpen, onClose }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const { logout, admin } = useAuth();
+  const [expandedSections, setExpandedSections] = useState({
+    clubs: true,
+    services: true,
+    engagement: true,
+  });
 
   const handleLogout = () => {
     logout();
     navigate("/login");
   };
 
-  const menuItems = [
+  const toggleSection = (sectionId) => {
+    setExpandedSections((prev) => ({
+      ...prev,
+      [sectionId]: !prev[sectionId],
+    }));
+  };
+
+  // Check if path is active
+  const isActivePath = (path) => location.pathname === path;
+
+  // Check if any child in section is active
+  const isSectionActive = (children) => {
+    return children?.some((child) => isActivePath(child.path));
+  };
+
+  const menuStructure = [
     {
       id: "dashboard",
       label: "Dashboard",
       icon: LayoutDashboard,
       path: "/dashboard",
-      color: "blue",
+      type: "single",
     },
     {
       id: "events",
       label: "Events",
       icon: Calendar,
       path: "/events",
-      color: "purple",
+      type: "single",
     },
     {
       id: "users",
       label: "Users",
       icon: UserCog,
       path: "/users",
-      color: "green",
+      type: "single",
     },
     {
       id: "admins",
       label: "Admins",
       icon: ShieldCheck,
       path: "/admins",
-      color: "orange",
+      type: "single",
     },
     {
-      id: "cashtickets",
-      label: "Cash Tickets",
-      icon: Banknote,
-      path: "/cash-tickets",
-      color: "cyan",
+      id: "clubs",
+      label: "Clubs & Connect",
+      icon: UsersRound,
+      type: "section",
+      children: [
+        {
+          id: "clubs-manage",
+          label: "Manage Clubs",
+          icon: UsersRound,
+          path: "/clubs",
+        },
+        {
+          id: "club-join-requests",
+          label: "Join Requests",
+          icon: UserPlus,
+          path: "/club-join-requests",
+        },
+        {
+          id: "admin-club-posts",
+          label: "Create Post",
+          icon: PenSquare,
+          path: "/admin-club-posts",
+        },
+      ],
     },
     {
-      id: "vouchers",
-      label: "Vouchers",
-      icon: Gift,
-      path: "/vouchers",
-      color: "pink",
-    },
-    {
-      id: "sessions",
-      label: "Sessions",
-      icon: Video,
-      path: "/sessions",
-      color: "indigo",
-    },
-    {
-      id: "quizes",
-      label: "Quizes",
-      icon: ClipboardList,
-      path: "/quizes",
-      color: "amber",
-    },
-    {
-      id: "challenges",
-      label: "Challenges",
-      icon: Trophy,
-      path: "/challenges",
-      color: "emerald",
-    },
-    {
-      id: "polls",
-      label: "Polls",
+      id: "engagement",
+      label: "Engagement",
       icon: BarChart3,
-      path: "/polls",
-      color: "rose",
+      type: "section",
+      children: [
+        {
+          id: "sessions",
+          label: "Sessions",
+          icon: Video,
+          path: "/sessions",
+        },
+        {
+          id: "quizes",
+          label: "Quizes",
+          icon: ClipboardList,
+          path: "/quizes",
+        },
+        {
+          id: "challenges",
+          label: "Challenges",
+          icon: Trophy,
+          path: "/challenges",
+        },
+        {
+          id: "polls",
+          label: "Polls",
+          icon: BarChart3,
+          path: "/polls",
+        },
+        {
+          id: "stories",
+          label: "Stories",
+          icon: ImagePlay,
+          path: "/stories",
+        },
+      ],
     },
     {
-      id: "stories",
-      label: "Stories",
-      icon: ImagePlay,
-      path: "/stories",
-      color: "sky",
+      id: "services",
+      label: "Services",
+      icon: Briefcase,
+      type: "section",
+      children: [
+        {
+          id: "services-manage",
+          label: "Manage Services",
+          icon: Briefcase,
+          path: "/services",
+        },
+        {
+          id: "service-orders",
+          label: "Orders",
+          icon: CreditCard,
+          path: "/service-orders",
+        },
+        {
+          id: "service-requests",
+          label: "Requests",
+          icon: FileText,
+          path: "/service-requests",
+        },
+      ],
     },
     {
       id: "memberships",
       label: "Memberships",
       icon: Crown,
       path: "/memberships",
-      color: "slate",
-    },
-    {
-      id: "settings",
-      label: "Settings",
-      icon: Settings,
-      path: "/settings",
-      color: "gray",
-    },
-    {
-      id: "clubs",
-      label: "Clubs",
-      icon: UsersRound,
-      path: "/clubs",
-      color: "fuchsia",
-    },
-    {
-      id: "scan-qr",
-      label: "Scan QR",
-      icon: ScanLine,
-      path: "/scan-qr",
-      color: "teal",
-    },
-    {
-      id: "ticket-reshare",
-      label: "Ticket Reshare",
-      icon: Share2,
-      path: "/ticket-reshare",
-      color: "violet",
-    },
-    {
-      id: "services",
-      label: "Services",
-      icon: Briefcase,
-      path: "/services",
-      color: "blue",
-    },
-    {
-      id: "service-orders",
-      label: "Service Orders",
-      icon: CreditCard,
-      path: "/service-orders",
-      color: "green",
-    },
-    {
-      id: "service-requests",
-      label: "Service Requests",
-      icon: FileText,
-      path: "/service-requests",
-      color: "amber",
+      type: "single",
     },
     {
       id: "user-subscriptions",
       label: "Subscriptions",
       icon: UserCheck,
       path: "/user-subscriptions",
-      color: "purple",
+      type: "single",
+    },
+    {
+      id: "cashtickets",
+      label: "Cash Tickets",
+      icon: Banknote,
+      path: "/cash-tickets",
+      type: "single",
+    },
+    {
+      id: "vouchers",
+      label: "Vouchers",
+      icon: Gift,
+      path: "/vouchers",
+      type: "single",
+    },
+    {
+      id: "scan-qr",
+      label: "Scan QR",
+      icon: ScanLine,
+      path: "/scan-qr",
+      type: "single",
+    },
+    {
+      id: "ticket-reshare",
+      label: "Ticket Reshare",
+      icon: Share2,
+      path: "/ticket-reshare",
+      type: "single",
+    },
+    {
+      id: "feature-access",
+      label: "Feature Access",
+      icon: Shield,
+      path: "/feature-access",
+      type: "single",
+    },
+    {
+      id: "settings",
+      label: "Settings",
+      icon: Settings,
+      path: "/settings",
+      type: "single",
     },
   ];
 
@@ -197,6 +257,111 @@ function Sidebar({ activeMenu, collapsed, isOpen, onClose }) {
       .join("")
       .toUpperCase()
       .slice(0, 2);
+  };
+
+  const renderMenuItem = (item) => {
+    if (item.type === "single") {
+      const isActive = isActivePath(item.path);
+      return (
+        <li key={item.id}>
+          <Link
+            to={item.path}
+            className={`
+              w-full flex items-center gap-3 px-3 py-2.5 rounded-lg
+              transition-all duration-200 group relative
+              ${
+                isActive
+                  ? "bg-gray-900 text-white shadow-md"
+                  : "text-gray-700 hover:bg-gray-100"
+              }
+              ${collapsed ? "lg:justify-center lg:px-2" : ""}
+            `}
+            title={collapsed ? item.label : ""}
+          >
+            <item.icon
+              className={`
+                h-4 w-4 shrink-0 transition-transform duration-200
+                ${isActive ? "scale-110" : "group-hover:scale-105"}
+              `}
+            />
+            {!collapsed && (
+              <span className="font-medium text-sm truncate">
+                {item.label}
+              </span>
+            )}
+          </Link>
+        </li>
+      );
+    }
+
+    if (item.type === "section") {
+      const isExpanded = expandedSections[item.id];
+      const hasActiveChild = isSectionActive(item.children);
+
+      return (
+        <li key={item.id} className="space-y-1">
+          {/* Section Header */}
+          <button
+            onClick={() => toggleSection(item.id)}
+            className={`
+              w-full flex items-center gap-3 px-3 py-2.5 rounded-lg
+              transition-all duration-200 group
+              ${
+                hasActiveChild
+                  ? "bg-gray-100 text-gray-900"
+                  : "text-gray-700 hover:bg-gray-50"
+              }
+              ${collapsed ? "lg:justify-center lg:px-2" : ""}
+            `}
+            title={collapsed ? item.label : ""}
+          >
+            <item.icon className="h-4 w-4 shrink-0" />
+            {!collapsed && (
+              <>
+                <span className="font-semibold text-sm truncate flex-1 text-left">
+                  {item.label}
+                </span>
+                {isExpanded ? (
+                  <ChevronDown className="h-4 w-4 shrink-0" />
+                ) : (
+                  <ChevronRight className="h-4 w-4 shrink-0" />
+                )}
+              </>
+            )}
+          </button>
+
+          {/* Section Children */}
+          {!collapsed && isExpanded && (
+            <ul className="ml-3 pl-3 border-l-2 border-gray-200 space-y-1">
+              {item.children.map((child) => {
+                const isActive = isActivePath(child.path);
+                return (
+                  <li key={child.id}>
+                    <Link
+                      to={child.path}
+                      className={`
+                        w-full flex items-center gap-3 px-3 py-2 rounded-lg
+                        transition-all duration-200 group
+                        ${
+                          isActive
+                            ? "bg-gray-900 text-white shadow-md"
+                            : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                        }
+                      `}
+                    >
+                      <child.icon className="h-4 w-4 shrink-0" />
+                      <span className="font-medium text-sm truncate">
+                        {child.label}
+                      </span>
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </li>
+      );
+    }
   };
 
   return (
@@ -218,14 +383,20 @@ function Sidebar({ activeMenu, collapsed, isOpen, onClose }) {
       {/* Header with Logo and Close Button */}
       <div className="p-5 lg:p-6 border-b border-gray-200/80 shrink-0 bg-white/80 backdrop-blur-sm">
         <div className="flex items-start justify-between">
-          <div className={`flex flex-col ${collapsed ? 'items-center' : 'items-start'} min-w-0 flex-1`}>
+          <div
+            className={`flex flex-col ${
+              collapsed ? "items-center" : "items-start"
+            } min-w-0 flex-1`}
+          >
             <img
               src={collapsed ? MotivataLogoSmall : MotivataLogo}
               alt="Motivata"
-              className={`${collapsed ? 'h-12 w-12' : 'h-16'} object-contain`}
+              className={`${collapsed ? "h-12 w-12" : "h-16"} object-contain`}
             />
             {!collapsed && (
-              <p className="text-xs text-gray-500 font-medium -mt-1 ml-4">Admin Panel</p>
+              <p className="text-xs text-gray-500 font-medium -mt-1 ml-4">
+                Admin Panel
+              </p>
             )}
           </div>
 
@@ -243,45 +414,13 @@ function Sidebar({ activeMenu, collapsed, isOpen, onClose }) {
       {/* Navigation - Scrollable */}
       <nav className="flex-1 p-3 lg:p-4 overflow-y-auto overflow-x-hidden custom-scrollbar">
         <ul className="space-y-1">
-          {menuItems.map((item) => {
-            const isActive = activeMenu === item.id;
-            return (
-              <li key={item.id}>
-                <Link
-                  to={item.path}
-                  className={`
-                    w-full flex items-center gap-3 px-3 py-3 rounded-xl
-                    transition-all duration-200 group relative
-                    ${
-                      isActive
-                        ? "bg-gradient-to-r from-gray-800 to-gray-900 text-white shadow-lg shadow-gray-500/30"
-                        : "text-gray-700 hover:bg-gray-100/80 hover:translate-x-1"
-                    }
-                    ${collapsed ? "lg:justify-center lg:px-2" : ""}
-                  `}
-                  title={collapsed ? item.label : ""}
-                >
-                  <item.icon
-                    className={`
-                      h-5 w-5 shrink-0 transition-transform duration-200
-                      ${isActive ? "scale-110" : "group-hover:scale-110"}
-                    `}
-                  />
-                  {!collapsed && (
-                    <span className="font-semibold text-sm truncate">
-                      {item.label}
-                    </span>
-                  )}
-                </Link>
-              </li>
-            );
-          })}
+          {menuStructure.map((item) => renderMenuItem(item))}
         </ul>
       </nav>
 
       {/* Profile & Logout Section - Fixed at bottom */}
       <div className="border-t border-gray-200/80 shrink-0 bg-white/50 backdrop-blur-sm">
-        {/* Profile Section - Now ABOVE logout */}
+        {/* Profile Section */}
         <div className={`p-4 ${collapsed ? "lg:p-2" : ""}`}>
           <div
             className={`
@@ -318,7 +457,7 @@ function Sidebar({ activeMenu, collapsed, isOpen, onClose }) {
           </div>
         </div>
 
-        {/* Logout Button - Now BELOW profile */}
+        {/* Logout Button */}
         <div className="p-4 pt-0">
           <button
             onClick={handleLogout}

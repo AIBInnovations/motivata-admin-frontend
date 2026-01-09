@@ -11,6 +11,9 @@ import {
   BarChart3,
   MessageSquare,
   ArrowLeft,
+  Globe,
+  UsersRound,
+  ShieldCheck,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import clubsService from '../services/clubs.service';
@@ -18,11 +21,15 @@ import Modal from '../components/ui/Modal';
 import FileUpload from '../components/ui/FileUpload';
 import Pagination from '../components/ui/Pagination';
 import ConfirmDialog from '../components/ui/ConfirmDialog';
+import PostPermissionsSelector from '../components/PostPermissionsSelector';
+import PostPermissionBadges from '../components/PostPermissionBadges';
 
 const defaultClubForm = {
   name: '',
   description: '',
   thumbnail: '',
+  requiresApproval: false,
+  postPermissions: ['MEMBERS'],
 };
 
 const defaultPagination = {
@@ -169,6 +176,8 @@ function Clubs() {
       name: clubForm.name.trim(),
       description: clubForm.description.trim(),
       thumbnail: clubForm.thumbnail.trim() || undefined,
+      requiresApproval: clubForm.requiresApproval,
+      postPermissions: clubForm.postPermissions,
     };
 
     const result = await clubsService.createClub(payload);
@@ -187,6 +196,8 @@ function Clubs() {
       name: club.name || '',
       description: club.description || '',
       thumbnail: club.thumbnail || '',
+      requiresApproval: club.requiresApproval || false,
+      postPermissions: club.postPermissions || ['MEMBERS'],
     });
     setShowClubModal(true);
   };
@@ -201,6 +212,8 @@ function Clubs() {
       name: clubForm.name.trim(),
       description: clubForm.description.trim(),
       thumbnail: clubForm.thumbnail.trim() || undefined,
+      requiresApproval: clubForm.requiresApproval,
+      postPermissions: clubForm.postPermissions,
     };
 
     const result = await clubsService.updateClub(editingClub._id, payload);
@@ -362,6 +375,30 @@ function Clubs() {
                 placeholder="Drop club thumbnail here or click to upload"
                 disabled={isSubmittingClub}
               />
+              <div className="flex items-center gap-3 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+                <div className="flex-1">
+                  <label className="text-sm font-semibold text-gray-900">Requires Approval</label>
+                  <p className="text-xs text-gray-500 mt-0.5">Users must be approved by admin before joining this club</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setClubForm({ ...clubForm, requiresApproval: !clubForm.requiresApproval })}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                    clubForm.requiresApproval ? 'bg-gray-900' : 'bg-gray-300'
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      clubForm.requiresApproval ? 'translate-x-6' : 'translate-x-1'
+                    }`}
+                  />
+                </button>
+              </div>
+              <PostPermissionsSelector
+                value={clubForm.postPermissions}
+                onChange={(newPermissions) => setClubForm({ ...clubForm, postPermissions: newPermissions })}
+                disabled={isSubmittingClub}
+              />
               <div className="flex justify-end">
                 <button
                   type="submit"
@@ -433,6 +470,15 @@ function Clubs() {
                           Deleted
                         </span>
                       )}
+                      {!club.isDeleted && (
+                        <span className={`absolute top-2 right-2 px-2 py-0.5 text-xs font-semibold rounded-full ${
+                          club.requiresApproval
+                            ? 'bg-orange-100 text-orange-700 border border-orange-300'
+                            : 'bg-green-100 text-green-700 border border-green-300'
+                        }`}>
+                          {club.requiresApproval ? 'Approval Required' : 'Open to All'}
+                        </span>
+                      )}
                     </div>
 
                     {/* Content */}
@@ -452,6 +498,9 @@ function Clubs() {
                           {club.postCount || 0} posts
                         </span>
                       </div>
+
+                      {/* Post Permission Badges */}
+                      <PostPermissionBadges permissions={club.postPermissions || ['MEMBERS']} />
 
                       <div className="flex items-center gap-2 pt-2 border-t border-gray-100">
                         <button
@@ -592,6 +641,30 @@ function Clubs() {
             folder="clubs"
             type="image"
             placeholder="Drop club thumbnail here or click to upload"
+            disabled={isSubmittingClub}
+          />
+          <div className="flex items-center gap-3 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+            <div className="flex-1">
+              <label className="text-sm font-semibold text-gray-900">Requires Approval</label>
+              <p className="text-xs text-gray-500 mt-0.5">Users must be approved by admin before joining this club</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setClubForm({ ...clubForm, requiresApproval: !clubForm.requiresApproval })}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                clubForm.requiresApproval ? 'bg-gray-900' : 'bg-gray-300'
+              }`}
+            >
+              <span
+                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                  clubForm.requiresApproval ? 'translate-x-6' : 'translate-x-1'
+                }`}
+              />
+            </button>
+          </div>
+          <PostPermissionsSelector
+            value={clubForm.postPermissions}
+            onChange={(newPermissions) => setClubForm({ ...clubForm, postPermissions: newPermissions })}
             disabled={isSubmittingClub}
           />
           <div className="flex items-center justify-end gap-2">

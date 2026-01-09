@@ -23,6 +23,7 @@ function getInitialFormState(service = null) {
       displayOrder: service.displayOrder || 0,
       isFeatured: service.isFeatured || false,
       isActive: service.isActive !== undefined ? service.isActive : true,
+      requiresApproval: service.requiresApproval !== undefined ? service.requiresApproval : true,
       metadata: service.metadata || {},
     };
   }
@@ -41,6 +42,7 @@ function getInitialFormState(service = null) {
     displayOrder: 0,
     isFeatured: false,
     isActive: true,
+    requiresApproval: true,
     metadata: {},
   };
 }
@@ -152,6 +154,7 @@ function ServiceForm({
       displayOrder: Number(formData.displayOrder) || 0,
       isFeatured: formData.isFeatured,
       isActive: formData.isActive,
+      requiresApproval: formData.requiresApproval,
     };
 
     if (formData.imageUrl) {
@@ -448,6 +451,29 @@ function ServiceForm({
               />
               <span className="text-sm text-gray-700">Active</span>
             </label>
+
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={formData.requiresApproval}
+                onChange={(e) => handleChange('requiresApproval', e.target.checked)}
+                className="w-4 h-4 text-gray-800 rounded focus:ring-0"
+              />
+              <span className="text-sm text-gray-700">Requires Admin Approval</span>
+            </label>
+          </div>
+
+          {/* Purchase Flow Info */}
+          <div className={`p-3 rounded-lg border ${
+            formData.requiresApproval
+              ? 'bg-amber-50 border-amber-200'
+              : 'bg-green-50 border-green-200'
+          }`}>
+            <p className="text-sm text-gray-700">
+              {formData.requiresApproval
+                ? '🔒 Users must request approval. Admin will review and send payment link.'
+                : '🚀 Users can purchase directly with immediate payment.'}
+            </p>
           </div>
         </div>
 
