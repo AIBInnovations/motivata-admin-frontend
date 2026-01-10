@@ -9,8 +9,11 @@ import {
   Globe,
   ExternalLink,
   Play,
+  Ticket,
 } from 'lucide-react';
 import Modal from '../ui/Modal';
+import { getEventStatus, getStatusColor } from '../../utils/eventStatus';
+import TimelinePreview from './TimelinePreview';
 
 /**
  * Format date for display
@@ -212,23 +215,69 @@ function EventDetailsModal({
           <p className="text-gray-700 whitespace-pre-wrap">{event.description}</p>
         </div>
 
+        {/* Event Status Badge */}
+        <div className="flex items-center gap-2 mb-4">
+          {(() => {
+            const status = getEventStatus(event);
+            const colors = getStatusColor(status);
+            return (
+              <span className={`inline-flex px-3 py-1.5 rounded-full text-sm font-medium border ${colors.bg} ${colors.text} ${colors.border}`}>
+                {status}
+              </span>
+            );
+          })()}
+          {event.isLive && (
+            <span className="inline-flex px-3 py-1.5 rounded-full text-sm font-medium bg-purple-100 text-purple-700 border border-purple-300">
+              Visible to Users
+            </span>
+          )}
+        </div>
+
+        {/* Timeline Preview */}
+        <div className="mb-6">
+          <TimelinePreview
+            startDate={event.startDate}
+            endDate={event.endDate}
+            bookingStartDate={event.bookingStartDate}
+            bookingEndDate={event.bookingEndDate}
+          />
+        </div>
+
         {/* Event Details Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Date & Time */}
+          {/* Event Schedule */}
           <div className="p-4 bg-gray-50 rounded-lg">
-            <div className="flex items-center gap-2 text-gray-500 mb-2">
+            <div className="flex items-center gap-2 text-gray-500 mb-3">
               <Calendar className="h-4 w-4" />
-              <span className="text-sm font-medium">Date & Time</span>
+              <span className="text-sm font-medium">Event Schedule</span>
             </div>
-            <div className="space-y-1">
-              <p className="text-sm">
-                <span className="text-gray-500">Starts:</span>{' '}
-                <span className="text-gray-900 font-medium">{formatDate(event.startDate)}</span>
-              </p>
-              <p className="text-sm">
-                <span className="text-gray-500">Ends:</span>{' '}
-                <span className="text-gray-900 font-medium">{formatDate(event.endDate)}</span>
-              </p>
+            <div className="space-y-2">
+              <div>
+                <p className="text-xs text-gray-500 font-medium">Event Starts</p>
+                <p className="text-sm text-gray-900 font-medium">{formatDate(event.startDate)}</p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-500 font-medium">Event Ends</p>
+                <p className="text-sm text-gray-900 font-medium">{formatDate(event.endDate)}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Booking Window */}
+          <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+            <div className="flex items-center gap-2 text-blue-700 mb-3">
+              <Ticket className="h-4 w-4" />
+              <span className="text-sm font-medium">Booking Window</span>
+            </div>
+            <div className="space-y-2">
+              <div>
+                <p className="text-xs text-green-700 font-medium">Booking Opens</p>
+                <p className="text-sm text-gray-900 font-medium">{formatDate(event.bookingStartDate)}</p>
+              </div>
+              <div>
+                <p className="text-xs text-yellow-700 font-medium">Booking Closes</p>
+                <p className="text-sm text-gray-900 font-medium">{formatDate(event.bookingEndDate)}</p>
+              </div>
             </div>
           </div>
 

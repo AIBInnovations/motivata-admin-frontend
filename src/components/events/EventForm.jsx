@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Loader2, Plus, Trash2, MapPin, Armchair, X, Info } from 'lucide-react';
 import Modal from '../ui/Modal';
 import FileUpload from '../ui/FileUpload';
+import TimelinePreview from './TimelinePreview';
 import { EVENT_CATEGORIES, EVENT_MODES } from '../../hooks/useEventsManagement';
 import seatArrangementService from '../../services/seatArrangement.service';
 
@@ -22,6 +23,9 @@ const getInitialFormState = (event = null, seatArrangement = null) => ({
   category: event?.category || '',
   startDate: event?.startDate ? formatDateTimeForInput(event.startDate) : '',
   endDate: event?.endDate ? formatDateTimeForInput(event.endDate) : '',
+  bookingStartDate: event?.bookingStartDate ? formatDateTimeForInput(event.bookingStartDate) : '',
+  bookingEndDate: event?.bookingEndDate ? formatDateTimeForInput(event.bookingEndDate) : '',
+  duration: event?.duration ?? '',
   price: event?.price ?? '',
   compareAtPrice: event?.compareAtPrice ?? '',
   availableSeats: event?.availableSeats ?? '',
@@ -39,12 +43,21 @@ const getInitialFormState = (event = null, seatArrangement = null) => ({
 });
 
 /**
- * Format ISO date to datetime-local input format
+ * Format ISO date to datetime-local input format (in local timezone)
  */
 function formatDateTimeForInput(isoDate) {
   if (!isoDate) return '';
   const date = new Date(isoDate);
-  return date.toISOString().slice(0, 16);
+
+  // Get local time components
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+
+  // Return in datetime-local format: YYYY-MM-DDTHH:mm
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
 }
 
 /**
@@ -115,6 +128,37 @@ const validateForm = (data, isEditMode = false) => {
     const endDate = new Date(data.endDate);
     if (endDate <= startDate) {
       errors.endDate = 'End date must be after start date';
+    }
+  }
+
+  // Booking start date validation
+  if (!data.bookingStartDate) {
+    errors.bookingStartDate = 'Booking start date is required';
+  } else if (data.endDate) {
+    const bookingStartDate = new Date(data.bookingStartDate);
+    const endDate = new Date(data.endDate);
+    if (bookingStartDate >= endDate) {
+      errors.bookingStartDate = 'Booking start must be before event end';
+    }
+  }
+
+  // Booking end date validation
+  if (!data.bookingEndDate) {
+    errors.bookingEndDate = 'Booking end date is required';
+  } else if (data.bookingStartDate) {
+    const bookingStartDate = new Date(data.bookingStartDate);
+    const bookingEndDate = new Date(data.bookingEndDate);
+    if (bookingEndDate <= bookingStartDate) {
+      errors.bookingEndDate = 'Booking end must be after booking start';
+    }
+  }
+
+  // Cross-validation: bookingEndDate cannot be after eventEndDate
+  if (data.bookingEndDate && data.endDate) {
+    const bookingEndDate = new Date(data.bookingEndDate);
+    const eventEndDate = new Date(data.endDate);
+    if (bookingEndDate > eventEndDate) {
+      errors.bookingEndDate = 'Booking end cannot be after event end';
     }
   }
 
@@ -406,6 +450,8 @@ function EventForm({
       category: formData.category,
       startDate: new Date(formData.startDate).toISOString(),
       endDate: new Date(formData.endDate).toISOString(),
+      bookingStartDate: new Date(formData.bookingStartDate).toISOString(),
+      bookingEndDate: new Date(formData.bookingEndDate).toISOString(),
     };
 
     // Add optional fields
@@ -449,6 +495,10 @@ function EventForm({
 
     if (formData.availableSeats !== '') {
       submitData.availableSeats = Number(formData.availableSeats);
+    }
+
+    if (formData.duration !== '' && formData.duration !== null && formData.duration !== undefined) {
+      submitData.duration = Number(formData.duration);
     }
 
     // Add status fields (only for edit mode - backend doesn't allow these during creation)
@@ -643,12 +693,13 @@ function EventForm({
 
         {/* Date and Time */}
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">Date and Time</h3>
+          <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">Event Schedule</h3>
+          <p className="text-sm text-gray-500">When does the event actually happen?</p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label htmlFor="startDate" className="block text-sm font-medium text-gray-700 mb-1">
-                Start Date & Time <span className="text-red-500">*</span>
+                Event Start Date & Time <span className="text-red-500">*</span>
               </label>
               <input
                 type="datetime-local"
@@ -662,11 +713,12 @@ function EventForm({
                 }`}
               />
               {errors.startDate && <p className="mt-1 text-sm text-red-500">{errors.startDate}</p>}
+              <p className="mt-1 text-xs text-gray-500">When does the event begin?</p>
             </div>
 
             <div>
               <label htmlFor="endDate" className="block text-sm font-medium text-gray-700 mb-1">
-                End Date & Time <span className="text-red-500">*</span>
+                Event End Date & Time <span className="text-red-500">*</span>
               </label>
               <input
                 type="datetime-local"
@@ -675,12 +727,89 @@ function EventForm({
                 value={formData.endDate}
                 onChange={handleChange}
                 disabled={isLoading}
+                min={formData.startDate}
                 className={`w-full px-3 py-2 border rounded-lg focus:border-gray-800 outline-none disabled:bg-gray-100 ${
                   errors.endDate ? 'border-red-500' : 'border-gray-300'
                 }`}
               />
               {errors.endDate && <p className="mt-1 text-sm text-red-500">{errors.endDate}</p>}
+              <p className="mt-1 text-xs text-gray-500">When does the event end?</p>
             </div>
+          </div>
+
+          <h3 className="text-lg font-semibold text-gray-900 border-b pb-2 mt-6">Booking Window</h3>
+          <p className="text-sm text-gray-500">When can users book tickets for this event?</p>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="bookingStartDate" className="block text-sm font-medium text-gray-700 mb-1">
+                Booking Start Date & Time <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="datetime-local"
+                id="bookingStartDate"
+                name="bookingStartDate"
+                value={formData.bookingStartDate}
+                onChange={handleChange}
+                disabled={isLoading}
+                max={formData.endDate}
+                className={`w-full px-3 py-2 border rounded-lg focus:border-gray-800 outline-none disabled:bg-gray-100 ${
+                  errors.bookingStartDate ? 'border-red-500' : 'border-gray-300'
+                }`}
+              />
+              {errors.bookingStartDate && <p className="mt-1 text-sm text-red-500">{errors.bookingStartDate}</p>}
+              <p className="mt-1 text-xs text-gray-500">When can users start booking?</p>
+            </div>
+
+            <div>
+              <label htmlFor="bookingEndDate" className="block text-sm font-medium text-gray-700 mb-1">
+                Booking End Date & Time <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="datetime-local"
+                id="bookingEndDate"
+                name="bookingEndDate"
+                value={formData.bookingEndDate}
+                onChange={handleChange}
+                disabled={isLoading}
+                min={formData.bookingStartDate}
+                max={formData.endDate}
+                className={`w-full px-3 py-2 border rounded-lg focus:border-gray-800 outline-none disabled:bg-gray-100 ${
+                  errors.bookingEndDate ? 'border-red-500' : 'border-gray-300'
+                }`}
+              />
+              {errors.bookingEndDate && <p className="mt-1 text-sm text-red-500">{errors.bookingEndDate}</p>}
+              <p className="mt-1 text-xs text-gray-500">When should ticket sales close?</p>
+            </div>
+          </div>
+
+          {/* Optional Duration */}
+          <div className="mt-4">
+            <label htmlFor="duration" className="block text-sm font-medium text-gray-700 mb-1">
+              Duration (minutes) <span className="text-gray-400 text-xs">Optional</span>
+            </label>
+            <input
+              type="number"
+              id="duration"
+              name="duration"
+              value={formData.duration}
+              onChange={handleChange}
+              disabled={isLoading}
+              min="0"
+              placeholder="e.g., 120"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-gray-800 outline-none disabled:bg-gray-100"
+            />
+            <p className="mt-1 text-xs text-gray-500">Event duration in minutes (for reference)</p>
+          </div>
+
+          {/* Timeline Preview */}
+          <div className="mt-6">
+            <TimelinePreview
+              startDate={formData.startDate}
+              endDate={formData.endDate}
+              bookingStartDate={formData.bookingStartDate}
+              bookingEndDate={formData.bookingEndDate}
+            />
           </div>
         </div>
 

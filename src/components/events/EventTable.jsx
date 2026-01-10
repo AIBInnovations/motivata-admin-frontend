@@ -1,4 +1,5 @@
 import { Eye, Edit, Trash2, RotateCcw, Trash, Loader2 } from 'lucide-react';
+import { getEventStatus, getStatusColor, formatDateTime } from '../../utils/eventStatus';
 
 /**
  * Format date for display
@@ -113,7 +114,8 @@ function EventTable({
               <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Event</th>
               <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Category</th>
               <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Mode</th>
-              <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Date</th>
+              <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Event Period</th>
+              <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Booking Window</th>
               <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Price</th>
               <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Status</th>
               <th className="text-right px-6 py-4 text-sm font-medium text-gray-600">Actions</th>
@@ -188,11 +190,23 @@ function EventTable({
                   <span className="text-sm text-gray-600">{event.mode}</span>
                 </td>
 
-                {/* Date */}
+                {/* Event Period */}
                 <td className="px-6 py-4">
                   <div className="text-sm">
-                    <p className="text-gray-900">{formatDate(event.startDate)}</p>
-                    <p className="text-gray-500 text-xs">to {formatDate(event.endDate)}</p>
+                    <p className="text-gray-900 font-medium">Start</p>
+                    <p className="text-gray-600 text-xs">{formatDateTime(event.startDate)}</p>
+                    <p className="text-gray-900 font-medium mt-1">End</p>
+                    <p className="text-gray-600 text-xs">{formatDateTime(event.endDate)}</p>
+                  </div>
+                </td>
+
+                {/* Booking Window */}
+                <td className="px-6 py-4">
+                  <div className="text-sm">
+                    <p className="text-green-700 font-medium">Opens</p>
+                    <p className="text-gray-600 text-xs">{formatDateTime(event.bookingStartDate)}</p>
+                    <p className="text-yellow-700 font-medium mt-1">Closes</p>
+                    <p className="text-gray-600 text-xs">{formatDateTime(event.bookingEndDate)}</p>
                   </div>
                 </td>
 
@@ -205,19 +219,28 @@ function EventTable({
 
                 {/* Status */}
                 <td className="px-6 py-4">
-                  <div className="flex flex-col gap-1">
+                  <div className="flex flex-col gap-1.5">
                     {event.isDeleted ? (
-                      <span className="inline-flex px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700">
+                      <span className="inline-flex px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700 border border-red-300">
                         Deleted
                       </span>
-                    ) : event.isLive ? (
-                      <span className="inline-flex px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
-                        Live
-                      </span>
                     ) : (
-                      <span className="inline-flex px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
-                        Not Live
-                      </span>
+                      <>
+                        {(() => {
+                          const status = getEventStatus(event);
+                          const colors = getStatusColor(status);
+                          return (
+                            <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium border ${colors.bg} ${colors.text} ${colors.border}`}>
+                              {status}
+                            </span>
+                          );
+                        })()}
+                        {event.isLive && (
+                          <span className="inline-flex px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-700 border border-purple-300">
+                            Visible
+                          </span>
+                        )}
+                      </>
                     )}
                   </div>
                 </td>
