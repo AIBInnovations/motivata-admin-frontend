@@ -254,17 +254,33 @@ function Memberships() {
   const handleDeletePlan = async () => {
     if (!deletePlanId) return;
     setActionLoading(true);
-    await membershipService.deletePlan(deletePlanId);
+    setPlanError(null);
+
+    const result = await membershipService.deletePlan(deletePlanId);
+
     setActionLoading(false);
     setDeletePlanId(null);
-    fetchPlans(planPagination.currentPage);
+
+    if (result.success) {
+      fetchPlans(planPagination.currentPage);
+    } else {
+      setPlanError(result.message || 'Failed to delete membership plan');
+    }
   };
 
   const handleRestorePlan = async (planId) => {
     setActionLoading(true);
-    await membershipService.restorePlan(planId);
+    setPlanError(null);
+
+    const result = await membershipService.restorePlan(planId);
+
     setActionLoading(false);
-    fetchPlans(planPagination.currentPage);
+
+    if (result.success) {
+      fetchPlans(planPagination.currentPage);
+    } else {
+      setPlanError(result.message || 'Failed to restore membership plan');
+    }
   };
 
   const handleCreateMembership = async (e) => {
@@ -387,7 +403,7 @@ function Memberships() {
         </button>
       </div>
 
-      {/* Tab switcher - hidden, showing only memberships
+      {/* Tab switcher */}
       <div className="bg-white border border-gray-200 rounded-xl p-2 shadow-sm flex gap-2">
         <button
           onClick={() => setActiveTab('plans')}
@@ -406,11 +422,11 @@ function Memberships() {
           Member Subscriptions
         </button>
       </div>
-      */}
 
-      {/* Plans section - hidden
+      {/* Plans section */}
       {activeTab === 'plans' && (
         <div className="space-y-6" id="plans-tab-content">
+          {/* Create plan form - hidden (admins can only view/update existing plans)
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <div className="flex items-start justify-between gap-3">
               <div>
@@ -558,6 +574,17 @@ function Memberships() {
               </div>
             </form>
           </div>
+          */}
+
+          {/* Error display for plan operations */}
+          {planError && (
+            <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+              <div className="flex items-center gap-2 text-red-700">
+                <XCircle className="h-5 w-5" />
+                <span className="font-medium">{planError}</span>
+              </div>
+            </div>
+          )}
 
           <div className="bg-white rounded-xl shadow-sm border border-gray-200">
             <div className="p-4 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
@@ -652,26 +679,11 @@ function Memberships() {
                     <div className="flex items-center gap-3 pt-2">
                       <button
                         onClick={() => openEditPlan(plan)}
-                        className="flex-1 px-3 py-2 text-sm text-white bg-gray-900 rounded-lg hover:bg-gray-800"
+                        className="w-full px-3 py-2 text-sm text-white bg-gray-900 rounded-lg hover:bg-gray-800"
                       >
                         Edit
                       </button>
-                      {!plan.isDeleted ? (
-                        <button
-                          onClick={() => setDeletePlanId(plan._id)}
-                          className="px-3 py-2 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100"
-                        >
-                          Delete
-                        </button>
-                      ) : (
-                        <button
-                          onClick={() => handleRestorePlan(plan._id)}
-                          disabled={actionLoading}
-                          className="px-3 py-2 text-sm text-emerald-600 bg-emerald-50 border border-emerald-200 rounded-lg hover:bg-emerald-100 disabled:opacity-60"
-                        >
-                          Restore
-                        </button>
-                      )}
+                      {/* Delete/Restore buttons removed - plans cannot be deleted */}
                     </div>
                   </div>
                 ))}
@@ -691,9 +703,9 @@ function Memberships() {
           </div>
         </div>
       )}
-      */}
 
       {/* Member Subscriptions section */}
+      {activeTab === 'memberships' && (
       <div className="space-y-6" id="memberships-tab-content">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-3">
@@ -993,6 +1005,7 @@ function Memberships() {
             )}
           </div>
       </div>
+      )}
 
       {/* Edit plan modal */}
       <Modal
@@ -1280,6 +1293,7 @@ function Memberships() {
       </Modal>
 
       {/* Delete confirmations */}
+      {/* Plan deletion disabled - plans cannot be deleted
       <ConfirmDialog
         isOpen={!!deletePlanId}
         onClose={() => setDeletePlanId(null)}
@@ -1290,6 +1304,7 @@ function Memberships() {
         variant="danger"
         isLoading={actionLoading}
       />
+      */}
       <ConfirmDialog
         isOpen={!!deleteMembershipId}
         onClose={() => setDeleteMembershipId(null)}
