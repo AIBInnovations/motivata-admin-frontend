@@ -27,11 +27,13 @@ import {
   PenSquare,
   ChevronDown,
   ChevronRight,
+  Users,
 } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import MotivataLogo from "../assets/logo/Motivata.png";
 import MotivataLogoSmall from "../assets/logo/logo2.png";
+import MembershipRequestBadge from "./MembershipRequestBadge";
 
 /**
  * Sidebar Component
@@ -194,6 +196,14 @@ function Sidebar({ collapsed, isOpen, onClose }) {
       type: "single",
     },
     {
+      id: "membership-requests",
+      label: "Membership Requests",
+      icon: Users,
+      path: "/membership-requests",
+      type: "single",
+      showBadge: true,
+    },
+    {
       id: "user-subscriptions",
       label: "Subscriptions",
       icon: UserCheck,
@@ -285,9 +295,12 @@ function Sidebar({ collapsed, isOpen, onClose }) {
               `}
             />
             {!collapsed && (
-              <span className="font-medium text-sm truncate">
-                {item.label}
-              </span>
+              <>
+                <span className="font-medium text-sm truncate flex-1">
+                  {item.label}
+                </span>
+                {item.showBadge && <MembershipRequestBadge />}
+              </>
             )}
           </Link>
         </li>

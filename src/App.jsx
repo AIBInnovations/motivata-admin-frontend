@@ -20,6 +20,7 @@ import Stories from './pages/Stories';
 import ScanQR from './pages/ScanQR';
 import TicketReshare from './pages/TicketReshare';
 import Memberships from './pages/Memberships';
+import MembershipRequests from './pages/MembershipRequests';
 import Clubs from './pages/Clubs';
 import ClubJoinRequests from './pages/ClubJoinRequests';
 import AdminClubPosts from './pages/AdminClubPosts';
@@ -69,6 +70,7 @@ function App() {
             <Route path="/polls" element={<Polls />} />
             <Route path="/stories" element={<Stories />} />
             <Route path="/memberships" element={<Memberships />} />
+            <Route path="/membership-requests" element={<MembershipRequests />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/feature-access" element={<FeatureAccess />} />
             <Route path="/clubs" element={<Clubs />} />
