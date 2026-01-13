@@ -167,6 +167,28 @@ const membershipRequestService = {
 
     return result;
   },
+
+  /**
+   * Withdraw a membership request (public with phone verification)
+   * @param {string} id - Request ID to withdraw
+   * @param {Object} data - Withdrawal data
+   * @param {string} data.phone - User's phone number for verification
+   * @returns {Promise} Response with withdrawal status
+   */
+  withdraw: async (id, data) => {
+    console.log('[MembershipRequestService] Withdrawing request:', id);
+    const result = await handleApiResponse(
+      api.post(`${MEMBERSHIP_REQUEST_ENDPOINTS.BASE}/${id}/withdraw`, data)
+    );
+
+    if (result.success) {
+      console.log('[MembershipRequestService] Request withdrawn successfully');
+    } else {
+      console.error('[MembershipRequestService] Failed to withdraw request:', result.message);
+    }
+
+    return result;
+  },
 };
 
 export default membershipRequestService;

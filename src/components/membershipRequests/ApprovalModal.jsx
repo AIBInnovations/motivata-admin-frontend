@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Loader2, Crown, User, Phone, Mail, Users, AlertCircle } from 'lucide-react';
+import { Loader2, Crown, User, Phone, Mail, Users, AlertCircle, ArrowRight } from 'lucide-react';
 import Modal from '../ui/Modal';
 import membershipRequestService from '../../services/membershipRequest.service';
 
@@ -197,6 +197,28 @@ function ApprovalModal({ request, onClose, onSuccess }) {
               </div>
             </div>
           )}
+
+          {/* Plan Change Warning */}
+          {request.requestedPlanId && selectedPlan &&
+           selectedPlan._id !== request.requestedPlanId._id && (
+            <div className="mt-3 p-3 bg-amber-50 border border-amber-300 rounded-lg">
+              <div className="flex items-start gap-2">
+                <AlertCircle className="h-5 w-5 text-amber-600 mt-0.5 flex-shrink-0" />
+                <div className="flex-1">
+                  <p className="font-semibold text-amber-900 mb-2">Plan Changed</p>
+                  <div className="flex items-center gap-2 text-sm">
+                    <span className="text-amber-800">
+                      <strong>Requested:</strong> {request.requestedPlanId.name}
+                    </span>
+                    <ArrowRight className="h-4 w-4 text-amber-600" />
+                    <span className="text-amber-900 font-semibold">
+                      <strong>Approving:</strong> {selectedPlan.name}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Payment Amount */}
@@ -214,9 +236,17 @@ function ApprovalModal({ request, onClose, onSuccess }) {
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-gray-800 outline-none disabled:bg-gray-100"
             placeholder="Enter payment amount"
           />
-          <p className="text-xs text-gray-500 mt-1">
-            You can adjust the amount for discounts or special pricing
-          </p>
+          <div className="flex items-start justify-between mt-1">
+            <p className="text-xs text-gray-500">
+              You can adjust the amount for discounts or special pricing
+            </p>
+            {selectedPlan && formData.paymentAmount &&
+             Number(formData.paymentAmount) !== selectedPlan.price && (
+              <span className="text-xs font-medium text-blue-700 bg-blue-100 px-2 py-0.5 rounded">
+                Custom Pricing
+              </span>
+            )}
+          </div>
         </div>
 
         {/* Admin Notes */}

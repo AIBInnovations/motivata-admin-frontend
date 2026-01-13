@@ -3,6 +3,7 @@ import { api, handleApiResponse } from './api.service';
 const FEATURE_ACCESS_ENDPOINTS = {
   GET_ALL: '/web/feature-access',
   UPDATE: '/web/feature-access',
+  UPDATE_BY_ID: (id) => `/web/feature-access/${id}`,
   CHECK_ACCESS: '/web/feature-access/check',
 };
 
@@ -31,6 +32,19 @@ const featureAccessService = {
   updateFeatureAccess: async (payload) => {
     console.log('[FeatureAccessService] Updating feature access settings:', payload);
     return handleApiResponse(api.put(FEATURE_ACCESS_ENDPOINTS.UPDATE, payload));
+  },
+
+  /**
+   * Update feature access settings by feature ID
+   * @param {string} featureId - Feature database ID
+   * @param {Object} payload - Feature access settings
+   * @param {boolean} payload.isActive - Whether the feature is active/available
+   * @param {boolean} payload.requiresMembership - Whether the feature requires active membership
+   * @returns {Promise} Response with updated settings
+   */
+  updateFeatureAccessById: async (featureId, payload) => {
+    console.log(`[FeatureAccessService] Updating feature by ID ${featureId}:`, payload);
+    return handleApiResponse(api.patch(FEATURE_ACCESS_ENDPOINTS.UPDATE_BY_ID(featureId), payload));
   },
 
   /**

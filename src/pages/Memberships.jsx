@@ -178,18 +178,33 @@ function Memberships() {
 
   const resetPlanForm = () => setPlanForm(defaultPlanForm);
 
-  const preparePlanPayload = (form) => ({
-    name: form.name.trim(),
-    description: form.description.trim(),
-    price: form.price ? Number(form.price) : 0,
-    compareAtPrice: form.compareAtPrice ? Number(form.compareAtPrice) : undefined,
-    durationInDays: form.durationInDays ? Number(form.durationInDays) : 0,
-    perks: form.perks,
-    displayOrder: form.displayOrder ? Number(form.displayOrder) : undefined,
-    isFeatured: form.isFeatured,
-    isActive: form.isActive,
-    maxPurchases: form.maxPurchases ? Number(form.maxPurchases) : undefined,
-  });
+  const preparePlanPayload = (form) => {
+    const isLifetime = form.durationInDays === 0 || form.durationInDays === '0' || form.durationInDays === null || form.durationInDays === '';
+
+    const payload = {
+      name: form.name.trim(),
+      description: form.description.trim(),
+      price: form.price ? Number(form.price) : 0,
+      durationInDays: isLifetime ? 0 : Number(form.durationInDays),
+      perks: form.perks,
+      isFeatured: form.isFeatured,
+      isActive: form.isActive,
+    };
+
+    // Only add optional fields if they have values
+    if (form.compareAtPrice && Number(form.compareAtPrice) > 0) {
+      payload.compareAtPrice = Number(form.compareAtPrice);
+    }
+    if (form.displayOrder && Number(form.displayOrder) > 0) {
+      payload.displayOrder = Number(form.displayOrder);
+    }
+    if (form.maxPurchases && Number(form.maxPurchases) > 0) {
+      payload.maxPurchases = Number(form.maxPurchases);
+    }
+
+    console.log('[Memberships] Prepared plan payload:', payload);
+    return payload;
+  };
 
   const handlePerkAdd = () => {
     const perk = planForm.perkInput.trim();
@@ -663,7 +678,14 @@ function Memberships() {
                     </div>
                     <div className="text-sm text-gray-600 flex items-center gap-2">
                       <CalendarRange className="h-4 w-4" />
-                      {plan.durationInDays} days - {plan.currentPurchases ?? 0}
+                      {plan.durationInDays === 0 || plan.durationInDays === null || plan.isLifetime ? (
+                        <span className="flex items-center gap-1 text-yellow-700 font-semibold">
+                          <Star className="h-3.5 w-3.5" fill="currentColor" />
+                          Lifetime
+                        </span>
+                      ) : (
+                        `${plan.durationInDays} days`
+                      )} - {plan.currentPurchases ?? 0}
                       {plan.maxPurchases ? ` / ${plan.maxPurchases}` : ''} purchases
                     </div>
                     {plan.perks?.length > 0 && (
@@ -742,13 +764,25 @@ function Memberships() {
                   {statusCheck.membership && (
                     <div className="text-sm text-gray-600 space-y-1">
                       <p>Plan: {statusCheck.membership.membershipPlanId?.name}</p>
-                      <p>
-                        Valid till:{' '}
-                        {statusCheck.membership.endDate
-                          ? new Date(statusCheck.membership.endDate).toLocaleDateString()
-                          : '-'}
-                      </p>
-                      <p>Days remaining: {statusCheck.membership.daysRemaining ?? '-'}</p>
+                      {statusCheck.membership.isLifetime ? (
+                        <>
+                          <p className="flex items-center gap-1 text-yellow-700 font-semibold">
+                            <Star className="h-3.5 w-3.5" fill="currentColor" />
+                            Lifetime Membership
+                          </p>
+                          <p>Valid: Forever</p>
+                        </>
+                      ) : (
+                        <>
+                          <p>
+                            Valid till:{' '}
+                            {statusCheck.membership.endDate
+                              ? new Date(statusCheck.membership.endDate).toLocaleDateString()
+                              : '-'}
+                          </p>
+                          <p>Days remaining: {statusCheck.membership.daysRemaining ?? '-'}</p>
+                        </>
+                      )}
                     </div>
                   )}
                   {statusCheck.error && <p className="text-sm text-red-600">{statusCheck.error}</p>}
@@ -1028,15 +1062,37 @@ function Memberships() {
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-gray-800 outline-none"
               placeholder="Plan name"
             />
-            <input
-              type="number"
-              min="1"
-              value={planForm.durationInDays}
-              onChange={(e) => setPlanForm({ ...planForm, durationInDays: e.target.value })}
-              required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-gray-800 outline-none"
-              placeholder="Duration in days"
-            />
+            <div className="space-y-2">
+              <label className="flex items-center gap-2 text-sm text-gray-700">
+                <input
+                  type="checkbox"
+                  checked={planForm.durationInDays === 0 || planForm.durationInDays === '0' || planForm.durationInDays === null || planForm.durationInDays === ''}
+                  onChange={(e) => {
+                    if (e.target.checked) {
+                      setPlanForm({ ...planForm, durationInDays: '0' });
+                    } else {
+                      setPlanForm({ ...planForm, durationInDays: '' });
+                    }
+                  }}
+                  className="h-4 w-4 text-gray-800 border-gray-300 rounded"
+                />
+                <span className="flex items-center gap-1">
+                  <Star className="h-4 w-4 text-yellow-600" fill="currentColor" />
+                  Lifetime Membership (Never Expires)
+                </span>
+              </label>
+              {!(planForm.durationInDays === 0 || planForm.durationInDays === '0' || planForm.durationInDays === null || planForm.durationInDays === '') && (
+                <input
+                  type="number"
+                  min="1"
+                  value={planForm.durationInDays}
+                  onChange={(e) => setPlanForm({ ...planForm, durationInDays: e.target.value })}
+                  required
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-gray-800 outline-none"
+                  placeholder="Duration in days"
+                />
+              )}
+            </div>
             <input
               type="number"
               min="0"

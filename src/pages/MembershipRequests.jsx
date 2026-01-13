@@ -48,6 +48,12 @@ const STATUS_CONFIG = {
     text: 'text-red-700',
     border: 'border-red-300',
   },
+  WITHDRAWN: {
+    label: 'Withdrawn',
+    bg: 'bg-gray-100',
+    text: 'text-gray-700',
+    border: 'border-gray-300',
+  },
 };
 
 /**
@@ -261,6 +267,7 @@ function MembershipRequests() {
             <option value="PAYMENT_SENT">Payment Link Sent</option>
             <option value="COMPLETED">Completed</option>
             <option value="REJECTED">Rejected</option>
+            <option value="WITHDRAWN">Withdrawn</option>
           </select>
 
           {/* Sort By */}
@@ -358,19 +365,46 @@ function MembershipRequests() {
                       </div>
                     </td>
 
-                    {/* Requested Plan */}
+                    {/* Requested Plan / Approved Plan */}
                     <td className="px-6 py-4">
                       {request.requestedPlanId ? (
-                        <div className="flex items-start gap-2">
-                          <Crown className="h-4 w-4 text-yellow-500 mt-0.5" />
-                          <div>
-                            <p className="font-medium text-gray-900">
-                              {request.requestedPlanId.name}
-                            </p>
-                            <p className="text-xs text-gray-500">
-                              ₹{request.requestedPlanId.price} • {request.requestedPlanId.durationInDays} days
-                            </p>
+                        <div className="flex flex-col gap-2">
+                          {/* Requested Plan */}
+                          <div className="flex items-start gap-2">
+                            <Crown className="h-4 w-4 text-yellow-500 mt-0.5" />
+                            <div>
+                              <p className="font-medium text-gray-900">
+                                {request.requestedPlanId.name}
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                ₹{request.requestedPlanId.price} • {
+                                  request.requestedPlanId.durationInDays === 0 || request.requestedPlanId.durationInDays === null
+                                    ? '∞ Lifetime'
+                                    : `${request.requestedPlanId.durationInDays} days`
+                                }
+                              </p>
+                            </div>
                           </div>
+
+                          {/* Show Approved Plan if different */}
+                          {request.approvedPlanId &&
+                           request.approvedPlanId._id !== request.requestedPlanId._id && (
+                            <div className="pl-6 border-l-2 border-green-300">
+                              <p className="text-xs font-medium text-green-700 mb-1">
+                                → Approved Plan
+                              </p>
+                              <p className="font-medium text-gray-900 text-sm">
+                                {request.approvedPlanId.name}
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                ₹{request.paymentAmount || request.approvedPlanId.price} • {
+                                  request.approvedPlanId.durationInDays === 0 || request.approvedPlanId.durationInDays === null
+                                    ? '∞ Lifetime'
+                                    : `${request.approvedPlanId.durationInDays} days`
+                                }
+                              </p>
+                            </div>
+                          )}
                         </div>
                       ) : (
                         <span className="text-sm text-gray-500">No plan selected</span>

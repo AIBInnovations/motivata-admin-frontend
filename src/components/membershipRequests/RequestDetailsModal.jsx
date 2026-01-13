@@ -61,6 +61,13 @@ const STATUS_CONFIG = {
     border: 'border-red-300',
     icon: XCircle,
   },
+  WITHDRAWN: {
+    label: 'Withdrawn by User',
+    bg: 'bg-gray-100',
+    text: 'text-gray-700',
+    border: 'border-gray-300',
+    icon: XCircle,
+  },
 };
 
 /**
@@ -231,7 +238,9 @@ function RequestDetailsModal({ request, onClose, onApprove, onReject, onResendLi
               <div>
                 <p className="text-xs text-gray-600">Duration</p>
                 <p className="font-semibold text-gray-900">
-                  {request.requestedPlanId.durationInDays} days
+                  {request.requestedPlanId.durationInDays === 0 || request.requestedPlanId.durationInDays === null
+                    ? '∞ Lifetime'
+                    : `${request.requestedPlanId.durationInDays} days`}
                 </p>
               </div>
             </div>
@@ -278,9 +287,36 @@ function RequestDetailsModal({ request, onClose, onApprove, onReject, onResendLi
               <div>
                 <p className="text-xs text-gray-600">Duration</p>
                 <p className="font-semibold text-gray-900">
-                  {request.approvedPlanId.durationInDays} days
+                  {request.approvedPlanId.durationInDays === 0 || request.approvedPlanId.durationInDays === null
+                    ? 'Lifetime'
+                    : `${request.approvedPlanId.durationInDays} days`}
                 </p>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Withdrawal Information */}
+        {request.status === 'WITHDRAWN' && (
+          <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg space-y-3">
+            <div className="flex items-center gap-2">
+              <XCircle className="h-5 w-5 text-gray-600" />
+              <h3 className="font-semibold text-gray-900">Withdrawal Information</h3>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <p className="text-xs text-gray-600">Withdrawn On</p>
+                <p className="font-medium text-gray-900">{formatDate(request.deletedAt || request.updatedAt)}</p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-600">Status</p>
+                <p className="font-medium text-gray-900">User withdrew this request</p>
+              </div>
+            </div>
+
+            <div className="p-3 bg-blue-50 rounded text-sm text-blue-800">
+              <strong>Note:</strong> The user withdrew this request and may have submitted a new one.
             </div>
           </div>
         )}
