@@ -12,6 +12,8 @@ import {
   Users,
   Link as LinkIcon,
   Banknote,
+  Tag,
+  Percent,
 } from 'lucide-react';
 import Modal from '../ui/Modal';
 
@@ -264,6 +266,83 @@ function RequestDetailsModal({ request, onClose, onApprove, onReject, onResendLi
             )}
           </div>
         )}
+
+        {/* Discount/Coupon Applied */}
+        {(() => {
+          // Use actual coupon fields from API
+          const hasCoupon = !!(request.couponCode || request.couponId);
+          const couponCode = request.couponCode || request.couponId?.code;
+          const discountPercent = request.discountPercent || request.couponId?.discountPercent;
+          // Use originalAmount from API, fallback to plan price
+          const originalPrice = request.originalAmount || request.approvedPlanId?.price || request.requestedPlanId?.price;
+          // Use API discount amount, fallback to calculated
+          const discountAmount = request.discountAmount || (originalPrice && request.paymentAmount ? originalPrice - request.paymentAmount : 0);
+          const hasDiscount = discountAmount > 0;
+
+          if (!hasDiscount && !hasCoupon) return null;
+
+          return (
+            <div className="p-4 bg-green-50 border border-green-200 rounded-lg space-y-3">
+              <div className="flex items-center gap-2">
+                <Tag className="h-5 w-5 text-green-600" />
+                <h3 className="font-semibold text-green-900">Discount Applied</h3>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {/* Coupon Code */}
+                {couponCode && (
+                  <div>
+                    <p className="text-xs text-green-700">Coupon Code</p>
+                    <p className="font-mono font-semibold text-green-900 uppercase">
+                      {couponCode}
+                    </p>
+                  </div>
+                )}
+
+                {/* Discount Amount */}
+                {discountAmount > 0 && (
+                  <div>
+                    <p className="text-xs text-green-700">Discount Amount</p>
+                    <p className="font-semibold text-green-900">
+                      −₹{discountAmount?.toLocaleString('en-IN')}
+                    </p>
+                  </div>
+                )}
+
+                {/* Discount Percentage (if available) */}
+                {discountPercent && (
+                  <div>
+                    <p className="text-xs text-green-700">Discount Rate</p>
+                    <p className="font-semibold text-green-900 flex items-center gap-1">
+                      <Percent className="h-4 w-4" />
+                      {discountPercent}% off
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Price Breakdown */}
+              {originalPrice && request.paymentAmount && (
+                <div className="mt-3 pt-3 border-t border-green-200">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-green-700">Original Price:</span>
+                    <span className="text-gray-600">₹{originalPrice?.toLocaleString('en-IN')}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-green-700">Discount:</span>
+                    <span className="text-green-600 font-medium">
+                      −₹{discountAmount?.toLocaleString('en-IN')}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm font-semibold mt-1 pt-1 border-t border-green-200">
+                    <span className="text-green-900">Final Amount:</span>
+                    <span className="text-green-900">₹{request.paymentAmount?.toLocaleString('en-IN')}</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })()}
 
         {/* Approved Plan (if different from requested) */}
         {request.approvedPlanId && request.approvedPlanId._id !== request.requestedPlanId?._id && (

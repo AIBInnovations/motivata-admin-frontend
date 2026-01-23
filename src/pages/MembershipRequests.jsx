@@ -13,6 +13,7 @@ import {
   Calendar,
   Crown,
   AlertCircle,
+  Tag,
 } from 'lucide-react';
 import membershipRequestService from '../services/membershipRequest.service';
 import Pagination from '../components/ui/Pagination';
@@ -341,7 +342,29 @@ function MembershipRequests() {
                 </tr>
               </thead>
               <tbody>
-                {requests.map((request) => (
+                {requests.map((request) => {
+                  // Debug: Log coupon fields from API
+                  console.log('[MembershipRequest] Coupon fields for', request.name, ':', {
+                    couponCode: request.couponCode,
+                    couponId: request.couponId,
+                    discountPercent: request.discountPercent,
+                    discountAmount: request.discountAmount,
+                    originalAmount: request.originalAmount,
+                    paymentAmount: request.paymentAmount,
+                    requestedPlanPrice: request.requestedPlanId?.price,
+                    status: request.status,
+                  });
+
+                  // Use actual coupon fields from API if available
+                  const hasCoupon = !!(request.couponCode || request.couponId);
+                  const couponCode = request.couponCode || request.couponId?.code;
+                  const discountPercent = request.discountPercent || request.couponId?.discountPercent;
+                  // Use API discount amount if available, otherwise calculate from price difference
+                  const planPrice = request.originalAmount || request.approvedPlanId?.price || request.requestedPlanId?.price;
+                  const discountAmount = request.discountAmount || (planPrice && request.paymentAmount ? planPrice - request.paymentAmount : 0);
+                  const hasDiscount = discountAmount > 0;
+
+                  return (
                   <tr
                     key={request._id}
                     className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
@@ -377,7 +400,7 @@ function MembershipRequests() {
                                 {request.requestedPlanId.name}
                               </p>
                               <p className="text-xs text-gray-500">
-                                ₹{request.requestedPlanId.price} • {
+                                ₹{request.requestedPlanId.price?.toLocaleString('en-IN')} • {
                                   request.requestedPlanId.durationInDays === 0 || request.requestedPlanId.durationInDays === null
                                     ? '∞ Lifetime'
                                     : `${request.requestedPlanId.durationInDays} days`
@@ -385,6 +408,28 @@ function MembershipRequests() {
                               </p>
                             </div>
                           </div>
+
+                          {/* Coupon / Discount Applied */}
+                          {hasDiscount && (
+                            <div className="flex flex-wrap items-center gap-1.5 ml-6">
+                              <Tag className="h-3.5 w-3.5 text-green-600" />
+                              {hasCoupon && couponCode && (
+                                <span className="text-xs font-mono font-bold text-green-800 bg-green-100 px-2 py-0.5 rounded-md border border-green-300 uppercase">
+                                  {couponCode}
+                                </span>
+                              )}
+                              <span className="text-xs font-medium text-green-700 bg-green-50 px-2 py-0.5 rounded-md border border-green-200">
+                                {discountPercent && `${discountPercent}% • `}−₹{discountAmount.toLocaleString('en-IN')}
+                              </span>
+                            </div>
+                          )}
+
+                          {/* Final Payment Amount (if different from plan price) */}
+                          {hasDiscount && request.paymentAmount && (
+                            <p className="text-xs font-medium text-gray-700 ml-6">
+                              Final: ₹{request.paymentAmount.toLocaleString('en-IN')}
+                            </p>
+                          )}
 
                           {/* Show Approved Plan if different */}
                           {request.approvedPlanId &&
@@ -397,7 +442,7 @@ function MembershipRequests() {
                                 {request.approvedPlanId.name}
                               </p>
                               <p className="text-xs text-gray-500">
-                                ₹{request.paymentAmount || request.approvedPlanId.price} • {
+                                ₹{(request.paymentAmount || request.approvedPlanId.price)?.toLocaleString('en-IN')} • {
                                   request.approvedPlanId.durationInDays === 0 || request.approvedPlanId.durationInDays === null
                                     ? '∞ Lifetime'
                                     : `${request.approvedPlanId.durationInDays} days`
@@ -469,7 +514,8 @@ function MembershipRequests() {
                       </div>
                     </td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           </div>

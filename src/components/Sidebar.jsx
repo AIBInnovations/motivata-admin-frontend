@@ -6,6 +6,7 @@ import {
   ShieldCheck,
   Banknote,
   Gift,
+  Tag,
   X,
   LogOut,
   Video,
@@ -222,6 +223,13 @@ function Sidebar({ collapsed, isOpen, onClose }) {
       label: "Vouchers",
       icon: Gift,
       path: "/vouchers",
+      type: "single",
+    },
+    {
+      id: "coupons",
+      label: "Coupons",
+      icon: Tag,
+      path: "/coupons",
       type: "single",
     },
     {
