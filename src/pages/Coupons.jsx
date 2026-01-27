@@ -54,10 +54,11 @@ const defaultCouponForm = {
  * Applicable types for coupons
  */
 const APPLICABLE_TYPES = [
-  { value: 'ALL', label: 'All Types (Events, Memberships, Sessions)' },
+  { value: 'ALL', label: 'All Types (Events, Memberships, Sessions, Services)' },
   { value: 'MEMBERSHIP', label: 'Memberships Only' },
   { value: 'EVENT', label: 'Events Only' },
   { value: 'SESSION', label: 'Sessions Only' },
+  { value: 'SERVICE', label: 'Services Only' },
 ];
 
 /**
@@ -71,6 +72,8 @@ const getTypeBadgeVariant = (type) => {
       return 'success';
     case 'SESSION':
       return 'warning';
+    case 'SERVICE':
+      return 'primary';
     case 'ALL':
       return 'info';
     default:

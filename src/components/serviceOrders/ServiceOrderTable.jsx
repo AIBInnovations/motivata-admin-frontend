@@ -165,9 +165,25 @@ function ServiceOrderTable({
 
                 {/* Amount */}
                 <td className="px-6 py-4">
-                  <span className="font-medium text-gray-900">
-                    {formatCurrency(order.totalAmount)}
-                  </span>
+                  {order.couponCode ? (
+                    <div className="space-y-1">
+                      <span className="text-sm text-gray-500 line-through">
+                        {formatCurrency(order.originalAmount)}
+                      </span>
+                      <div className="flex items-center gap-1">
+                        <span className="font-medium text-gray-900">
+                          {formatCurrency(order.finalAmount)}
+                        </span>
+                        <span className="text-xs bg-green-100 text-green-700 px-1.5 py-0.5 rounded">
+                          {order.couponCode}
+                        </span>
+                      </div>
+                    </div>
+                  ) : (
+                    <span className="font-medium text-gray-900">
+                      {formatCurrency(order.totalAmount)}
+                    </span>
+                  )}
                 </td>
 
                 {/* Source */}
