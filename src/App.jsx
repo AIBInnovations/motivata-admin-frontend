@@ -33,6 +33,8 @@ import UserSubscriptions from './pages/UserSubscriptions';
 import TestServices from './pages/TestServices';
 import FeaturePricing from './pages/FeaturePricing';
 import FeatureRequests from './pages/FeatureRequests';
+import MotivataBlendRequests from './pages/MotivataBlendRequests';
+import RoundTableRequests from './pages/RoundTableRequests';
 
 function App() {
   return (
@@ -87,6 +89,8 @@ function App() {
             <Route path="/test-services" element={<TestServices />} />
             <Route path="/feature-pricing" element={<FeaturePricing />} />
             <Route path="/feature-requests" element={<FeatureRequests />} />
+            <Route path="/motivata-blend-requests" element={<MotivataBlendRequests />} />
+            <Route path="/round-table-requests" element={<RoundTableRequests />} />
           </Route>
 
           {/* Default redirect */}

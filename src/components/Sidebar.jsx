@@ -30,6 +30,7 @@ import {
   ChevronRight,
   Users,
   Zap,
+  CircleDot,
 } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
@@ -37,6 +38,8 @@ import MotivataLogo from "../assets/logo/Motivata.png";
 import MotivataLogoSmall from "../assets/logo/logo2.png";
 import MembershipRequestBadge from "./MembershipRequestBadge";
 import FeatureRequestBadge from "./FeatureRequestBadge";
+import MotivataBlendBadge from "./MotivataBlendBadge";
+import RoundTableBadge from "./RoundTableBadge";
 
 /**
  * Sidebar Component
@@ -50,6 +53,7 @@ function Sidebar({ collapsed, isOpen, onClose }) {
     clubs: true,
     services: true,
     engagement: true,
+    "registration-requests": true,
   });
 
   const handleLogout = () => {
@@ -188,6 +192,28 @@ function Sidebar({ collapsed, isOpen, onClose }) {
           label: "Requests",
           icon: FileText,
           path: "/service-requests",
+        },
+      ],
+    },
+    {
+      id: "registration-requests",
+      label: "Registration Requests",
+      icon: ClipboardList,
+      type: "section",
+      children: [
+        {
+          id: "motivata-blend-requests",
+          label: "Motivata Blend",
+          icon: Users,
+          path: "/motivata-blend-requests",
+          showBadge: "motivataBlend",
+        },
+        {
+          id: "round-table-requests",
+          label: "Round Table",
+          icon: CircleDot,
+          path: "/round-table-requests",
+          showBadge: "roundTable",
         },
       ],
     },
@@ -389,9 +415,11 @@ function Sidebar({ collapsed, isOpen, onClose }) {
                       `}
                     >
                       <child.icon className="h-4 w-4 shrink-0" />
-                      <span className="font-medium text-sm truncate">
+                      <span className="font-medium text-sm truncate flex-1">
                         {child.label}
                       </span>
+                      {child.showBadge === "motivataBlend" && <MotivataBlendBadge />}
+                      {child.showBadge === "roundTable" && <RoundTableBadge />}
                     </Link>
                   </li>
                 );
