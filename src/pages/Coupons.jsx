@@ -523,6 +523,28 @@ function Coupons() {
   };
 
   /**
+   * Check if coupon is truly active (not just the flag, but also not expired)
+   */
+  const isCouponActive = (coupon) => {
+    if (!coupon.isActive) return false;
+
+    const now = new Date();
+    const validUntil = new Date(coupon.validUntil);
+
+    return now <= validUntil;
+  };
+
+  /**
+   * Check if coupon is expired
+   */
+  const isCouponExpired = (coupon) => {
+    const now = new Date();
+    const validUntil = new Date(coupon.validUntil);
+
+    return now > validUntil;
+  };
+
+  /**
    * Render usage display
    */
   const renderUsage = (coupon) => {
@@ -582,7 +604,9 @@ function Coupons() {
         </div>
       </td>
       <td className="px-6 py-4">
-        {coupon.isActive ? (
+        {isCouponExpired(coupon) ? (
+          <Badge variant="warning" size="sm">Expired</Badge>
+        ) : isCouponActive(coupon) ? (
           <Badge variant="success" size="sm">Active</Badge>
         ) : (
           <Badge variant="danger" size="sm">Inactive</Badge>

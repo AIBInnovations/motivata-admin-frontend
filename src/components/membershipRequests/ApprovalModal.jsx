@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Loader2, Crown, User, Phone, Users, AlertCircle, ArrowRight, Tag, CheckCircle, XCircle } from 'lucide-react';
+import { Loader2, Crown, User, Phone, Users, AlertCircle, ArrowRight, Tag, CheckCircle, XCircle, Mail, Send } from 'lucide-react';
 import Modal from '../ui/Modal';
 import membershipRequestService from '../../services/membershipRequest.service';
 import couponService from '../../services/coupon.service';
@@ -21,10 +21,14 @@ function ApprovalModal({ request, onClose, onSuccess }) {
     couponCode: customerCouponCode || '',
     adminNotes: '',
     sendWhatsApp: true,
+    alternativePhone: '',
+    alternativeEmail: '',
+    contactPreference: ['REGISTERED'], // Default to registered contact
   });
   const [loading, setLoading] = useState(false);
   const [loadingPlans, setLoadingPlans] = useState(true);
   const [error, setError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState({});
 
   // Coupon validation state
   const [couponPreview, setCouponPreview] = useState(null);
@@ -146,9 +150,73 @@ function ApprovalModal({ request, onClose, onSuccess }) {
   };
 
   /**
+   * Validate alternative phone number
+   */
+  const validateAlternativePhone = (phone) => {
+    if (!phone) return null;
+    const cleaned = phone.replace(/\D/g, '');
+    if (cleaned.length !== 10) {
+      return 'Phone number must be exactly 10 digits';
+    }
+    return null;
+  };
+
+  /**
+   * Validate alternative email
+   */
+  const validateAlternativeEmail = (email) => {
+    if (!email) return null;
+    const emailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
+    if (!emailRegex.test(email)) {
+      return 'Please enter a valid email address';
+    }
+    return null;
+  };
+
+  /**
+   * Check if alternative contact is provided
+   */
+  const hasAlternativeContact = Boolean(
+    formData.alternativePhone.trim() || formData.alternativeEmail.trim()
+  );
+
+  /**
+   * Handle contact preference change
+   */
+  const handleContactPreferenceChange = (value) => {
+    const currentPreference = formData.contactPreference;
+
+    if (currentPreference.includes(value)) {
+      // Remove if already selected
+      const newPreference = currentPreference.filter(v => v !== value);
+      // Ensure at least one is selected
+      if (newPreference.length === 0) {
+        setFieldErrors(prev => ({
+          ...prev,
+          contactPreference: 'At least one contact must be selected'
+        }));
+        return;
+      }
+      setFormData(prev => ({ ...prev, contactPreference: newPreference }));
+      setFieldErrors(prev => ({ ...prev, contactPreference: null }));
+    } else {
+      // Add to selection
+      setFormData(prev => ({
+        ...prev,
+        contactPreference: [...currentPreference, value]
+      }));
+      setFieldErrors(prev => ({ ...prev, contactPreference: null }));
+    }
+  };
+
+  /**
    * Handle form submission
    */
   const handleApprove = async () => {
+    // Clear previous errors
+    setError('');
+    setFieldErrors({});
+
     // Validation
     if (!formData.planId) {
       setError('Please select a membership plan');
@@ -159,8 +227,34 @@ function ApprovalModal({ request, onClose, onSuccess }) {
       return;
     }
 
+    // Validate alternative contact fields
+    const errors = {};
+
+    if (formData.alternativePhone.trim()) {
+      const phoneError = validateAlternativePhone(formData.alternativePhone.trim());
+      if (phoneError) errors.alternativePhone = phoneError;
+    }
+
+    if (formData.alternativeEmail.trim()) {
+      const emailError = validateAlternativeEmail(formData.alternativeEmail.trim());
+      if (emailError) errors.alternativeEmail = emailError;
+    }
+
+    // Validate contact preference
+    if (formData.contactPreference.length === 0) {
+      errors.contactPreference = 'Please select at least one contact to send the payment link';
+    }
+
+    if (formData.contactPreference.includes('ALTERNATIVE') && !hasAlternativeContact) {
+      errors.contactPreference = 'Please provide alternative phone or email to send to alternative contact';
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      return;
+    }
+
     setLoading(true);
-    setError('');
 
     try {
       const payload = {
@@ -174,6 +268,15 @@ function ApprovalModal({ request, onClose, onSuccess }) {
       if (formData.couponCode.trim()) {
         payload.couponCode = formData.couponCode.trim().toUpperCase();
       }
+
+      // Include alternative contact fields if provided
+      if (formData.alternativePhone.trim()) {
+        payload.alternativePhone = formData.alternativePhone.replace(/\D/g, '');
+      }
+      if (formData.alternativeEmail.trim()) {
+        payload.alternativeEmail = formData.alternativeEmail.toLowerCase().trim();
+      }
+      payload.contactPreference = formData.contactPreference;
 
       const result = await membershipRequestService.approve(request._id, payload);
 
@@ -476,19 +579,174 @@ function ApprovalModal({ request, onClose, onSuccess }) {
           </p>
         </div>
 
-        {/* Send WhatsApp */}
-        <div className="flex items-center gap-3">
-          <input
-            type="checkbox"
-            id="sendWhatsApp"
-            checked={formData.sendWhatsApp}
-            onChange={(e) => setFormData((prev) => ({ ...prev, sendWhatsApp: e.target.checked }))}
-            disabled={loading}
-            className="w-4 h-4 text-gray-800 rounded focus:ring-0"
-          />
-          <label htmlFor="sendWhatsApp" className="text-sm font-medium text-gray-700">
-            Send payment link via WhatsApp
-          </label>
+        {/* Payment Link Delivery Section */}
+        <div className="border border-gray-200 rounded-lg p-4 bg-gray-50 space-y-4">
+          <div className="flex items-center gap-2">
+            <Send className="h-5 w-5 text-gray-700" />
+            <h3 className="font-semibold text-gray-900">Payment Link Delivery</h3>
+          </div>
+
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+            <p className="text-xs text-blue-800">
+              <strong>Tip:</strong> You can send payment links to alternative contacts in addition to or instead of the registered contact. Simply provide an alternative phone or email below.
+            </p>
+          </div>
+
+          {/* Alternative Phone Number */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Alternative Phone Number <span className="text-gray-400 text-xs">(Optional)</span>
+            </label>
+            <div className="relative">
+              <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <input
+                type="text"
+                value={formData.alternativePhone}
+                onChange={(e) => {
+                  setFormData((prev) => ({ ...prev, alternativePhone: e.target.value }));
+                  setFieldErrors((prev) => ({ ...prev, alternativePhone: null }));
+                }}
+                disabled={loading}
+                maxLength={10}
+                placeholder="9876543210"
+                className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:border-gray-800 outline-none disabled:bg-gray-100 ${
+                  fieldErrors.alternativePhone ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                }`}
+              />
+            </div>
+            <p className="text-xs text-gray-500 mt-1">
+              10-digit Indian phone number without country code
+            </p>
+            {fieldErrors.alternativePhone && (
+              <p className="flex items-center gap-1 text-xs text-red-600 mt-1">
+                <XCircle className="h-3 w-3" />
+                {fieldErrors.alternativePhone}
+              </p>
+            )}
+          </div>
+
+          {/* Alternative Email */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Alternative Email <span className="text-gray-400 text-xs">(Optional)</span>
+            </label>
+            <div className="relative">
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <input
+                type="email"
+                value={formData.alternativeEmail}
+                onChange={(e) => {
+                  setFormData((prev) => ({ ...prev, alternativeEmail: e.target.value }));
+                  setFieldErrors((prev) => ({ ...prev, alternativeEmail: null }));
+                }}
+                disabled={loading}
+                placeholder="alternative@example.com"
+                className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:border-gray-800 outline-none disabled:bg-gray-100 ${
+                  fieldErrors.alternativeEmail ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                }`}
+              />
+            </div>
+            <p className="text-xs text-gray-500 mt-1">
+              Payment link will be sent to this email address
+            </p>
+            {fieldErrors.alternativeEmail && (
+              <p className="flex items-center gap-1 text-xs text-red-600 mt-1">
+                <XCircle className="h-3 w-3" />
+                {fieldErrors.alternativeEmail}
+              </p>
+            )}
+          </div>
+
+          {/* Contact Preference */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Send Payment Link To: <span className="text-red-500">*</span>
+            </label>
+            <div className="space-y-2">
+              {/* Registered Contact */}
+              <label
+                className={`flex items-start gap-3 p-3 border rounded-lg cursor-pointer transition-colors ${
+                  formData.contactPreference.includes('REGISTERED')
+                    ? 'bg-blue-50 border-blue-300'
+                    : 'bg-white border-gray-300 hover:bg-gray-50'
+                }`}
+              >
+                <input
+                  type="checkbox"
+                  checked={formData.contactPreference.includes('REGISTERED')}
+                  onChange={() => handleContactPreferenceChange('REGISTERED')}
+                  disabled={loading}
+                  className="w-4 h-4 text-blue-600 rounded focus:ring-0 mt-0.5"
+                />
+                <div className="flex-1">
+                  <span className="text-sm font-medium text-gray-900">
+                    Registered contact
+                  </span>
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    WhatsApp: {request.phone}
+                  </p>
+                </div>
+              </label>
+
+              {/* Alternative Contact */}
+              <label
+                className={`flex items-start gap-3 p-3 border rounded-lg transition-colors ${
+                  !hasAlternativeContact
+                    ? 'opacity-50 cursor-not-allowed bg-gray-100 border-gray-200'
+                    : formData.contactPreference.includes('ALTERNATIVE')
+                    ? 'bg-blue-50 border-blue-300 cursor-pointer'
+                    : 'bg-white border-gray-300 hover:bg-gray-50 cursor-pointer'
+                }`}
+              >
+                <input
+                  type="checkbox"
+                  checked={formData.contactPreference.includes('ALTERNATIVE')}
+                  onChange={() => handleContactPreferenceChange('ALTERNATIVE')}
+                  disabled={loading || !hasAlternativeContact}
+                  className="w-4 h-4 text-blue-600 rounded focus:ring-0 mt-0.5 disabled:cursor-not-allowed"
+                />
+                <div className="flex-1">
+                  <span className="text-sm font-medium text-gray-900">
+                    Alternative contact
+                  </span>
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    {hasAlternativeContact
+                      ? `${formData.alternativePhone ? 'WhatsApp: ' + formData.alternativePhone : ''}${formData.alternativePhone && formData.alternativeEmail ? ', ' : ''}${formData.alternativeEmail ? 'Email: ' + formData.alternativeEmail : ''}`
+                      : 'Provide phone or email above to enable'
+                    }
+                  </p>
+                </div>
+              </label>
+            </div>
+            {fieldErrors.contactPreference && (
+              <p className="flex items-center gap-1 text-xs text-red-600 mt-2">
+                <AlertCircle className="h-3 w-3" />
+                {fieldErrors.contactPreference}
+              </p>
+            )}
+          </div>
+
+          {/* Send WhatsApp Toggle */}
+          <div className="pt-2 border-t border-gray-200">
+            <label className="flex items-center gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                id="sendWhatsApp"
+                checked={formData.sendWhatsApp}
+                onChange={(e) => setFormData((prev) => ({ ...prev, sendWhatsApp: e.target.checked }))}
+                disabled={loading}
+                className="w-4 h-4 text-gray-800 rounded focus:ring-0"
+              />
+              <div>
+                <span className="text-sm font-medium text-gray-900">
+                  Send payment link via WhatsApp
+                </span>
+                <p className="text-xs text-gray-500">
+                  Automatically send WhatsApp message to selected contacts
+                </p>
+              </div>
+            </label>
+          </div>
         </div>
 
         {/* Error Message */}

@@ -31,6 +31,8 @@ import ServiceOrders from './pages/ServiceOrders';
 import ServiceRequests from './pages/ServiceRequests';
 import UserSubscriptions from './pages/UserSubscriptions';
 import TestServices from './pages/TestServices';
+import FeaturePricing from './pages/FeaturePricing';
+import FeatureRequests from './pages/FeatureRequests';
 
 function App() {
   return (
@@ -83,6 +85,8 @@ function App() {
             <Route path="/service-requests" element={<ServiceRequests />} />
             <Route path="/user-subscriptions" element={<UserSubscriptions />} />
             <Route path="/test-services" element={<TestServices />} />
+            <Route path="/feature-pricing" element={<FeaturePricing />} />
+            <Route path="/feature-requests" element={<FeatureRequests />} />
           </Route>
 
           {/* Default redirect */}

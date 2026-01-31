@@ -29,12 +29,14 @@ import {
   ChevronDown,
   ChevronRight,
   Users,
+  Zap,
 } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import MotivataLogo from "../assets/logo/Motivata.png";
 import MotivataLogoSmall from "../assets/logo/logo2.png";
 import MembershipRequestBadge from "./MembershipRequestBadge";
+import FeatureRequestBadge from "./FeatureRequestBadge";
 
 /**
  * Sidebar Component
@@ -254,6 +256,21 @@ function Sidebar({ collapsed, isOpen, onClose }) {
       type: "single",
     },
     {
+      id: "feature-pricing",
+      label: "Feature Pricing",
+      icon: Tag,
+      path: "/feature-pricing",
+      type: "single",
+    },
+    {
+      id: "feature-requests",
+      label: "Feature Requests",
+      icon: Zap,
+      path: "/feature-requests",
+      type: "single",
+      showBadge: "feature",
+    },
+    {
       id: "settings",
       label: "Settings",
       icon: Settings,
@@ -307,7 +324,8 @@ function Sidebar({ collapsed, isOpen, onClose }) {
                 <span className="font-medium text-sm truncate flex-1">
                   {item.label}
                 </span>
-                {item.showBadge && <MembershipRequestBadge />}
+                {item.showBadge === true && <MembershipRequestBadge />}
+                {item.showBadge === "feature" && <FeatureRequestBadge />}
               </>
             )}
           </Link>
