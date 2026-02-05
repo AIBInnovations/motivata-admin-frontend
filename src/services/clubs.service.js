@@ -48,6 +48,24 @@ const clubsService = {
     return handleApiResponse(api.get(`${CLUBS_ENDPOINTS.CONNECT_CLUBS}/${clubId}/members`, { params }));
   },
 
+  // ============ POSTS ============
+  getClubPosts: async (clubId, params = {}) => {
+    console.log('[ClubsService] Fetching club posts:', clubId, params);
+    return handleApiResponse(api.get(`${CLUBS_ENDPOINTS.CLUBS}/${clubId}/posts`, { params }));
+  },
+
+  getPostById: async (postId, includeDeleted = false) => {
+    console.log('[ClubsService] Fetching post:', postId);
+    return handleApiResponse(api.get(`${CLUBS_ENDPOINTS.CLUBS}/posts/${postId}`, {
+      params: { includeDeleted }
+    }));
+  },
+
+  deletePost: async (postId) => {
+    console.log('[ClubsService] Deleting post:', postId);
+    return handleApiResponse(api.delete(`${CLUBS_ENDPOINTS.CLUBS}/posts/${postId}`));
+  },
+
 };
 
 export default clubsService;

@@ -25,14 +25,11 @@ import Clubs from './pages/Clubs';
 import ClubJoinRequests from './pages/ClubJoinRequests';
 import AdminClubPosts from './pages/AdminClubPosts';
 import Settings from './pages/Settings';
-import FeatureAccess from './pages/FeatureAccess';
 import Services from './pages/Services';
 import ServiceOrders from './pages/ServiceOrders';
 import ServiceRequests from './pages/ServiceRequests';
 import UserSubscriptions from './pages/UserSubscriptions';
 import TestServices from './pages/TestServices';
-import FeaturePricing from './pages/FeaturePricing';
-import FeatureRequests from './pages/FeatureRequests';
 import MotivataBlendRequests from './pages/MotivataBlendRequests';
 import RoundTableRequests from './pages/RoundTableRequests';
 
@@ -76,7 +73,6 @@ function App() {
             <Route path="/memberships" element={<Memberships />} />
             <Route path="/membership-requests" element={<MembershipRequests />} />
             <Route path="/settings" element={<Settings />} />
-            <Route path="/feature-access" element={<FeatureAccess />} />
             <Route path="/clubs" element={<Clubs />} />
             <Route path="/club-join-requests" element={<ClubJoinRequests />} />
             <Route path="/admin-club-posts" element={<AdminClubPosts />} />
@@ -87,8 +83,6 @@ function App() {
             <Route path="/service-requests" element={<ServiceRequests />} />
             <Route path="/user-subscriptions" element={<UserSubscriptions />} />
             <Route path="/test-services" element={<TestServices />} />
-            <Route path="/feature-pricing" element={<FeaturePricing />} />
-            <Route path="/feature-requests" element={<FeatureRequests />} />
             <Route path="/motivata-blend-requests" element={<MotivataBlendRequests />} />
             <Route path="/round-table-requests" element={<RoundTableRequests />} />
           </Route>

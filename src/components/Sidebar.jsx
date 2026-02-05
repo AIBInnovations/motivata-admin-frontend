@@ -37,7 +37,6 @@ import { useAuth } from "../contexts/AuthContext";
 import MotivataLogo from "../assets/logo/Motivata.png";
 import MotivataLogoSmall from "../assets/logo/logo2.png";
 import MembershipRequestBadge from "./MembershipRequestBadge";
-import FeatureRequestBadge from "./FeatureRequestBadge";
 import MotivataBlendBadge from "./MotivataBlendBadge";
 import RoundTableBadge from "./RoundTableBadge";
 
@@ -193,6 +192,12 @@ function Sidebar({ collapsed, isOpen, onClose }) {
           icon: FileText,
           path: "/service-requests",
         },
+        {
+          id: "user-subscriptions",
+          label: "Subscriptions",
+          icon: UserCheck,
+          path: "/user-subscriptions",
+        },
       ],
     },
     {
@@ -233,13 +238,6 @@ function Sidebar({ collapsed, isOpen, onClose }) {
       showBadge: true,
     },
     {
-      id: "user-subscriptions",
-      label: "Subscriptions",
-      icon: UserCheck,
-      path: "/user-subscriptions",
-      type: "single",
-    },
-    {
       id: "cashtickets",
       label: "Cash Tickets",
       icon: Banknote,
@@ -273,28 +271,6 @@ function Sidebar({ collapsed, isOpen, onClose }) {
       icon: Share2,
       path: "/ticket-reshare",
       type: "single",
-    },
-    {
-      id: "feature-access",
-      label: "Feature Access",
-      icon: Shield,
-      path: "/feature-access",
-      type: "single",
-    },
-    {
-      id: "feature-pricing",
-      label: "Feature Pricing",
-      icon: Tag,
-      path: "/feature-pricing",
-      type: "single",
-    },
-    {
-      id: "feature-requests",
-      label: "Feature Requests",
-      icon: Zap,
-      path: "/feature-requests",
-      type: "single",
-      showBadge: "feature",
     },
     {
       id: "settings",
@@ -351,7 +327,6 @@ function Sidebar({ collapsed, isOpen, onClose }) {
                   {item.label}
                 </span>
                 {item.showBadge === true && <MembershipRequestBadge />}
-                {item.showBadge === "feature" && <FeatureRequestBadge />}
               </>
             )}
           </Link>
