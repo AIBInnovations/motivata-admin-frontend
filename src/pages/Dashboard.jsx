@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { MdRefresh, MdDownload } from 'react-icons/md';
+import { MdRefresh } from 'react-icons/md';
 import { toast } from 'react-toastify';
 
 // Components
@@ -67,12 +67,6 @@ function Dashboard() {
     fetchDashboardData();
   };
 
-  // Handle export (placeholder)
-  const handleExport = () => {
-    toast.info('Export functionality coming soon!');
-    // TODO: Implement CSV/Excel export
-  };
-
   // Get data for selected time range
   const getTimeRangeData = (dataObj) => {
     if (!dataObj) return null;
@@ -105,15 +99,6 @@ function Dashboard() {
             >
               <MdRefresh className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
               <span className="hidden sm:inline font-medium">Refresh</span>
-            </button>
-
-            <button
-              onClick={handleExport}
-              className="flex items-center gap-1.5 px-3 py-2 bg-gradient-to-r from-gray-800 to-gray-900 text-white rounded-lg hover:from-gray-900 hover:to-black transition-all shadow-sm text-sm"
-              title="Export dashboard data"
-            >
-              <MdDownload className="w-4 h-4" />
-              <span className="hidden sm:inline font-medium">Export</span>
             </button>
           </div>
         </div>

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Bell, Search, X } from 'lucide-react';
+import { Search, X } from 'lucide-react';
 
 /**
  * Header Component
@@ -70,20 +70,6 @@ function Header({ toggleSidebar }) {
           aria-label="Search"
         >
           <Search className="h-5 w-5" />
-        </button>
-
-        {/* Notifications */}
-        <button
-          className="relative p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-all hover:scale-105 active:scale-95 group"
-          aria-label="Notifications"
-          title="Notifications"
-        >
-          <Bell className="h-5 w-5 group-hover:animate-pulse" />
-          <span className="absolute top-1.5 right-1.5 h-2 w-2 bg-red-500 rounded-full ring-2 ring-white" />
-          {/* Notification count badge */}
-          <span className="absolute -top-1 -right-1 h-5 w-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center ring-2 ring-white">
-            3
-          </span>
         </button>
       </div>
 

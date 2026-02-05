@@ -355,11 +355,8 @@ function useSessions(initialFilters = {}) {
 
         if (result.success) {
           console.log('[useSessions] Booking updated successfully');
-          setBookings((prev) =>
-            prev.map((booking) =>
-              booking._id === bookingId ? { ...booking, ...result.data.booking } : booking
-            )
-          );
+          // Refetch bookings to get updated count and data
+          await fetchBookings(bookingPagination.currentPage);
           return {
             success: true,
             data: result.data,
@@ -376,7 +373,7 @@ function useSessions(initialFilters = {}) {
         return { success: false, error: 'Failed to update booking' };
       }
     },
-    []
+    [fetchBookings, bookingPagination.currentPage]
   );
 
   /**
