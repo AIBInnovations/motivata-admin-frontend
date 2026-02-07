@@ -273,6 +273,13 @@ function Sidebar({ collapsed, isOpen, onClose }) {
       type: "single",
     },
     {
+      id: "motivata-blend-banner",
+      label: "Blend Banner",
+      icon: ImagePlay,
+      path: "/motivata-blend-banner",
+      type: "single",
+    },
+    {
       id: "settings",
       label: "Settings",
       icon: Settings,

@@ -32,6 +32,7 @@ import UserSubscriptions from './pages/UserSubscriptions';
 import TestServices from './pages/TestServices';
 import MotivataBlendRequests from './pages/MotivataBlendRequests';
 import RoundTableRequests from './pages/RoundTableRequests';
+import MotivataBlendBanner from './pages/MotivataBlendBanner';
 
 function App() {
   return (
@@ -85,6 +86,7 @@ function App() {
             <Route path="/test-services" element={<TestServices />} />
             <Route path="/motivata-blend-requests" element={<MotivataBlendRequests />} />
             <Route path="/round-table-requests" element={<RoundTableRequests />} />
+            <Route path="/motivata-blend-banner" element={<MotivataBlendBanner />} />
           </Route>
 
           {/* Default redirect */}
