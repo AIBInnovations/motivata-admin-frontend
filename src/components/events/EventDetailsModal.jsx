@@ -10,6 +10,8 @@ import {
   ExternalLink,
   Play,
   Ticket,
+  Link,
+  Radio,
 } from 'lucide-react';
 import Modal from '../ui/Modal';
 import { getEventStatus, getStatusColor } from '../../utils/eventStatus';
@@ -109,6 +111,9 @@ function EventDetailsModal({
 
   const ModeIcon = getModeIcon(event.mode);
   const hasPricingTiers = event.pricingTiers && event.pricingTiers.length > 0;
+  const eventStatus = getEventStatus(event);
+  const isEventLiveNow = event.isLive || eventStatus === 'Ongoing';
+  const showJoinLink = isEventLiveNow && event.joinLink && (event.mode === 'ONLINE' || event.mode === 'HYBRID');
 
   return (
     <Modal
@@ -214,6 +219,46 @@ function EventDetailsModal({
           <h3 className="text-sm font-medium text-gray-500 mb-2">Description</h3>
           <p className="text-gray-700 whitespace-pre-wrap">{event.description}</p>
         </div>
+
+        {/* Live Event Joining Link - shown when event is ongoing/live */}
+        {showJoinLink ? (
+          <div className="p-4 bg-green-50 border-2 border-green-400 rounded-xl">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="flex items-center gap-1.5 px-2.5 py-1 bg-green-500 text-white text-xs font-bold rounded-full animate-pulse">
+                <Radio className="h-3 w-3" />
+                LIVE NOW
+              </span>
+              <h3 className="text-sm font-semibold text-green-800">Event is Live — Join Now!</h3>
+            </div>
+            <a
+              href={event.joinLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 w-full px-4 py-3 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors"
+            >
+              <Link className="h-4 w-4 flex-shrink-0" />
+              <span className="truncate">{event.joinLink}</span>
+              <ExternalLink className="h-4 w-4 flex-shrink-0 ml-auto" />
+            </a>
+            <p className="mt-2 text-xs text-green-700">
+              Yeh link users ko event ke shuru hone par dikhta hai.
+            </p>
+          </div>
+        ) : event.joinLink && (event.mode === 'ONLINE' || event.mode === 'HYBRID') ? (
+          <div className="p-4 bg-gray-50 border border-gray-200 rounded-xl">
+            <div className="flex items-center gap-2 mb-2">
+              <Link className="h-4 w-4 text-gray-400" />
+              <h3 className="text-sm font-medium text-gray-500">Event Joining Link</h3>
+            </div>
+            <p className="text-xs text-gray-400 mb-2">
+              Yeh link users ko sirf tab dikhega jab event live hoga (start time ke baad).
+            </p>
+            <div className="flex items-center gap-2 px-3 py-2 bg-gray-100 rounded-lg">
+              <span className="text-sm text-gray-500 truncate">{event.joinLink}</span>
+              <span className="ml-auto text-xs text-gray-400 whitespace-nowrap">Not Live Yet</span>
+            </div>
+          </div>
+        ) : null}
 
         {/* Event Status Badge */}
         <div className="flex items-center gap-2 mb-4">
