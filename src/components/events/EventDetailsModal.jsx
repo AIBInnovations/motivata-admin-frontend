@@ -113,7 +113,7 @@ function EventDetailsModal({
   const hasPricingTiers = event.pricingTiers && event.pricingTiers.length > 0;
   const eventStatus = getEventStatus(event);
   const isEventLiveNow = event.isLive || eventStatus === 'Ongoing';
-  const showJoinLink = isEventLiveNow && event.joinLink && (event.mode === 'ONLINE' || event.mode === 'HYBRID');
+  const showJoinLink = isEventLiveNow && event.joinLink;
 
   return (
     <Modal
@@ -244,7 +244,7 @@ function EventDetailsModal({
               Yeh link users ko event ke shuru hone par dikhta hai.
             </p>
           </div>
-        ) : event.joinLink && (event.mode === 'ONLINE' || event.mode === 'HYBRID') ? (
+        ) : event.joinLink ? (
           <div className="p-4 bg-gray-50 border border-gray-200 rounded-xl">
             <div className="flex items-center gap-2 mb-2">
               <Link className="h-4 w-4 text-gray-400" />

@@ -697,27 +697,25 @@ function EventForm({
             </div>
           )}
 
-          {/* Joining Link (shown for ONLINE and HYBRID modes) */}
-          {(formData.mode === 'ONLINE' || formData.mode === 'HYBRID') && (
-            <div className="mt-4">
-              <label htmlFor="joinLink" className="block text-sm font-medium text-gray-700 mb-1">
-                Event Joining Link
-              </label>
-              <input
-                type="url"
-                id="joinLink"
-                name="joinLink"
-                value={formData.joinLink}
-                onChange={handleChange}
-                disabled={isLoading}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-gray-800 outline-none disabled:bg-gray-100"
-                placeholder="https://zoom.us/j/... or https://meet.google.com/..."
-              />
-              <p className="mt-1 text-xs text-gray-500">
-                This link will be shown to users only when the event is live (between start and end time).
-              </p>
-            </div>
-          )}
+          {/* Joining Link (shown for all modes) */}
+          <div className="mt-4">
+            <label htmlFor="joinLink" className="block text-sm font-medium text-gray-700 mb-1">
+              Event Joining Link
+            </label>
+            <input
+              type="url"
+              id="joinLink"
+              name="joinLink"
+              value={formData.joinLink}
+              onChange={handleChange}
+              disabled={isLoading}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-gray-800 outline-none disabled:bg-gray-100"
+              placeholder="https://zoom.us/j/... or https://meet.google.com/..."
+            />
+            <p className="mt-1 text-xs text-gray-500">
+              This link will be shown to users only when the event is live (between start and end time).
+            </p>
+          </div>
         </div>
 
         {/* Date and Time */}
