@@ -196,6 +196,11 @@ function SOSQuizForm({
       ...prev,
       questions: [...prev.questions, getInitialQuestionState()],
     }));
+    setErrors((prev) => {
+      const newErrors = { ...prev };
+      delete newErrors.questions;
+      return newErrors;
+    });
   };
 
   /**
