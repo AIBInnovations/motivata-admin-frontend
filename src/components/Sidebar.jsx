@@ -31,6 +31,7 @@ import {
   Users,
   Zap,
   CircleDot,
+  Globe,
 } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
@@ -105,6 +106,26 @@ function Sidebar({ collapsed, isOpen, onClose }) {
       type: "single",
     },
     {
+      id: "doers-club",
+      label: "Doer's Club",
+      icon: Briefcase,
+      type: "section",
+      children: [
+        {
+          id: "job-posts",
+          label: "Job Posts",
+          icon: Briefcase,
+          path: "/job-posts",
+        },
+        {
+          id: "job-applications",
+          label: "Applications",
+          icon: Users,
+          path: "/job-applications",
+        },
+      ],
+    },
+    {
       id: "clubs",
       label: "Clubs & Connect",
       icon: UsersRound,
@@ -124,9 +145,15 @@ function Sidebar({ collapsed, isOpen, onClose }) {
         },
         {
           id: "admin-club-posts",
-          label: "Create Post",
+          label: "Club Post",
           icon: PenSquare,
           path: "/admin-club-posts",
+        },
+        {
+          id: "explore-posts",
+          label: "Explore Posts",
+          icon: Globe,
+          path: "/explore-posts",
         },
       ],
     },

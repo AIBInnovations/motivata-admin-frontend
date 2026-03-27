@@ -33,6 +33,9 @@ import TestServices from './pages/TestServices';
 import MotivataBlendRequests from './pages/MotivataBlendRequests';
 import RoundTableRequests from './pages/RoundTableRequests';
 import MotivataBlendBanner from './pages/MotivataBlendBanner';
+import ExplorePosts from './pages/ExplorePosts';
+import JobPosts from './pages/JobPosts';
+import JobApplications from './pages/JobApplications';
 
 function App() {
   return (
@@ -87,6 +90,9 @@ function App() {
             <Route path="/motivata-blend-requests" element={<MotivataBlendRequests />} />
             <Route path="/round-table-requests" element={<RoundTableRequests />} />
             <Route path="/motivata-blend-banner" element={<MotivataBlendBanner />} />
+            <Route path="/explore-posts" element={<ExplorePosts />} />
+            <Route path="/job-posts" element={<JobPosts />} />
+            <Route path="/job-applications" element={<JobApplications />} />
           </Route>
 
           {/* Default redirect */}
