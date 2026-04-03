@@ -333,8 +333,11 @@ function EventDetailsModal({
               <span className="text-sm font-medium">Location</span>
             </div>
             <p className="text-gray-900 font-medium">
-              {event.mode === 'ONLINE' ? 'Online Event' : event.city || 'Location not specified'}
+              {event.mode === 'ONLINE' ? 'Online Event' : event.venue || event.city || 'Location not specified'}
             </p>
+            {event.mode !== 'ONLINE' && event.venue && event.city && (
+              <p className="text-sm text-gray-600">{event.city}</p>
+            )}
             <p className="text-sm text-gray-500 capitalize">{event.mode?.toLowerCase()} event</p>
           </div>
         </div>

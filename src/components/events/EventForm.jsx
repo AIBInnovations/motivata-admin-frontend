@@ -18,6 +18,7 @@ const getInitialFormState = (event = null, seatArrangement = null) => ({
     videoUrl: event?.thumbnail?.videoUrl || '',
   },
   mode: event?.mode || '',
+  venue: event?.venue || '',
   city: event?.city || '',
   gmapLink: event?.gmapLink || '',
   joinLink: event?.joinLink || '',
@@ -87,6 +88,11 @@ const validateForm = (data, isEditMode = false) => {
   // Mode validation
   if (!data.mode) {
     errors.mode = 'Mode is required';
+  }
+
+  // Venue validation (required for OFFLINE or HYBRID)
+  if ((data.mode === 'OFFLINE' || data.mode === 'HYBRID') && !data.venue.trim()) {
+    errors.venue = 'Venue is required for offline or hybrid events';
   }
 
   // City validation (required for OFFLINE or HYBRID)
@@ -456,6 +462,10 @@ function EventForm({
     };
 
     // Add optional fields
+    if (formData.venue.trim()) {
+      submitData.venue = formData.venue.trim();
+    }
+
     if (formData.city.trim()) {
       submitData.city = formData.city.trim();
     }
@@ -651,50 +661,71 @@ function EventForm({
             </div>
           </div>
 
-          {/* City and Google Maps Link (shown for OFFLINE or HYBRID) */}
+          {/* Venue, City and Google Maps Link (shown for OFFLINE or HYBRID) */}
           {(formData.mode === 'OFFLINE' || formData.mode === 'HYBRID') && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <>
               <div>
-                <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-1">
-                  City <span className="text-red-500">*</span>
+                <label htmlFor="venue" className="block text-sm font-medium text-gray-700 mb-1">
+                  Venue <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
-                  id="city"
-                  name="city"
-                  value={formData.city}
+                  id="venue"
+                  name="venue"
+                  value={formData.venue}
                   onChange={handleChange}
                   disabled={isLoading}
                   className={`w-full px-3 py-2 border rounded-lg focus:border-gray-800 outline-none disabled:bg-gray-100 ${
-                    errors.city ? 'border-red-500' : 'border-gray-300'
+                    errors.venue ? 'border-red-500' : 'border-gray-300'
                   }`}
-                  placeholder="Enter city"
+                  placeholder="Enter venue name or address"
                 />
-                {errors.city && <p className="mt-1 text-sm text-red-500">{errors.city}</p>}
+                {errors.venue && <p className="mt-1 text-sm text-red-500">{errors.venue}</p>}
               </div>
 
-              <div>
-                <label htmlFor="gmapLink" className="block text-sm font-medium text-gray-700 mb-1">
-                  <span className="flex items-center gap-1">
-                    <MapPin className="h-4 w-4" />
-                    Google Maps Link
-                  </span>
-                </label>
-                <input
-                  type="url"
-                  id="gmapLink"
-                  name="gmapLink"
-                  value={formData.gmapLink}
-                  onChange={handleChange}
-                  disabled={isLoading}
-                  className={`w-full px-3 py-2 border rounded-lg focus:border-gray-800 outline-none disabled:bg-gray-100 ${
-                    errors.gmapLink ? 'border-red-500' : 'border-gray-300'
-                  }`}
-                  placeholder="https://maps.app.goo.gl/..."
-                />
-                {errors.gmapLink && <p className="mt-1 text-sm text-red-500">{errors.gmapLink}</p>}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-1">
+                    City <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="city"
+                    name="city"
+                    value={formData.city}
+                    onChange={handleChange}
+                    disabled={isLoading}
+                    className={`w-full px-3 py-2 border rounded-lg focus:border-gray-800 outline-none disabled:bg-gray-100 ${
+                      errors.city ? 'border-red-500' : 'border-gray-300'
+                    }`}
+                    placeholder="Enter city"
+                  />
+                  {errors.city && <p className="mt-1 text-sm text-red-500">{errors.city}</p>}
+                </div>
+
+                <div>
+                  <label htmlFor="gmapLink" className="block text-sm font-medium text-gray-700 mb-1">
+                    <span className="flex items-center gap-1">
+                      <MapPin className="h-4 w-4" />
+                      Google Maps Link
+                    </span>
+                  </label>
+                  <input
+                    type="url"
+                    id="gmapLink"
+                    name="gmapLink"
+                    value={formData.gmapLink}
+                    onChange={handleChange}
+                    disabled={isLoading}
+                    className={`w-full px-3 py-2 border rounded-lg focus:border-gray-800 outline-none disabled:bg-gray-100 ${
+                      errors.gmapLink ? 'border-red-500' : 'border-gray-300'
+                    }`}
+                    placeholder="https://maps.app.goo.gl/..."
+                  />
+                  {errors.gmapLink && <p className="mt-1 text-sm text-red-500">{errors.gmapLink}</p>}
+                </div>
               </div>
-            </div>
+            </>
           )}
 
           {/* Joining Link (shown for all modes) */}
