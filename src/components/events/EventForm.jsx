@@ -18,7 +18,7 @@ const getInitialFormState = (event = null, seatArrangement = null) => ({
     videoUrl: event?.thumbnail?.videoUrl || '',
   },
   mode: event?.mode || '',
-  venue: event?.venue || '',
+  venue: event?.venueName || event?.venue || '',
   city: event?.city || '',
   gmapLink: event?.gmapLink || '',
   joinLink: event?.joinLink || '',
@@ -463,7 +463,7 @@ function EventForm({
 
     // Add optional fields
     if (formData.venue.trim()) {
-      submitData.venue = formData.venue.trim();
+      submitData.venueName = formData.venue.trim();
     }
 
     if (formData.city.trim()) {
