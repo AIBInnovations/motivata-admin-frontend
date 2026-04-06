@@ -37,6 +37,7 @@ import ExplorePosts from './pages/ExplorePosts';
 import JobPosts from './pages/JobPosts';
 import JobApplications from './pages/JobApplications';
 
+
 function App() {
   return (
     <BrowserRouter>
