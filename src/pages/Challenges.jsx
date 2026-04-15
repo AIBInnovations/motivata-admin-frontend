@@ -34,16 +34,9 @@ const formatCategory = (category) => {
  * Category options for filter
  */
 const CATEGORY_OPTIONS = [
-  { value: 'health', label: 'Health' },
-  { value: 'fitness', label: 'Fitness' },
-  { value: 'mindfulness', label: 'Mindfulness' },
-  { value: 'productivity', label: 'Productivity' },
-  { value: 'social', label: 'Social' },
-  { value: 'creativity', label: 'Creativity' },
-  { value: 'learning', label: 'Learning' },
-  { value: 'wellness', label: 'Wellness' },
-  { value: 'habit', label: 'Habit' },
-  { value: 'other', label: 'Other' },
+  { value: 'personal', label: 'Personal' },
+  { value: 'professional', label: 'Professional' },
+  { value: 'relational', label: 'Relational' },
 ];
 
 /**

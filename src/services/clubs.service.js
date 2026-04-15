@@ -3,6 +3,7 @@ import { api, handleApiResponse } from './api.service';
 const CLUBS_ENDPOINTS = {
   CLUBS: '/web/clubs',
   CONNECT_CLUBS: '/app/connect/clubs',
+  MEDIA_UPLOAD: '/web/clubs/media/upload',
 };
 
 /**
@@ -64,6 +65,22 @@ const clubsService = {
   deletePost: async (postId) => {
     console.log('[ClubsService] Deleting post:', postId);
     return handleApiResponse(api.delete(`${CLUBS_ENDPOINTS.CLUBS}/posts/${postId}`));
+  },
+
+  uploadMedia: async (file) => {
+    console.log('[ClubsService] Uploading club media');
+    const formData = new FormData();
+    formData.append('file', file);
+    return handleApiResponse(
+      api.post(CLUBS_ENDPOINTS.MEDIA_UPLOAD, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })
+    );
+  },
+
+  createPost: async (clubId, data) => {
+    console.log('[ClubsService] Creating post in club:', clubId);
+    return handleApiResponse(api.post(`${CLUBS_ENDPOINTS.CLUBS}/${clubId}/posts`, data));
   },
 
 };
