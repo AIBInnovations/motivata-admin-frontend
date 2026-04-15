@@ -1,9 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import { Loader2, Plus, Trash2, RefreshCw, XCircle, Briefcase, Users, ToggleLeft, ToggleRight, ChevronDown, Image as ImageIcon, Upload, X } from 'lucide-react';
-import { toast } from 'react-toastify';
+import { Loader2, Plus, Trash2, RefreshCw, XCircle, Briefcase, Users, ToggleLeft, ToggleRight, Upload, X, Pencil } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import jobsService from '../services/jobs.service';
-import clubsService from '../services/clubs.service';
 import Modal from '../components/ui/Modal';
 
 const JOB_TYPES = [
@@ -24,7 +22,7 @@ const TYPE_COLORS = {
 
 const defaultForm = {
   title: '', company: '', location: '', type: 'FULL_TIME',
-  description: '', requirements: '', salary: '', deadline: '', imageUrl: '',
+  description: '', requirements: '', salary: '', deadline: '', jobImage: '',
 };
 
 function JobPosts() {
@@ -41,136 +39,99 @@ function JobPosts() {
   const [deletingId, setDeletingId] = useState(null);
   const [togglingId, setTogglingId] = useState(null);
 
-  // Job image upload state
-  const [jobImage, setJobImage] = useState(null); // { id, status, url, errorMsg }
+  // Create form — image upload state
+  const [jobImage, setJobImage] = useState(null); // { status: 'uploading'|'done'|'error', url, errorMsg }
   const jobFileInputRef = useRef(null);
 
   const handleJobImageSelect = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const placeholder = { id: `${Date.now()}`, file, status: 'uploading', url: null, errorMsg: null };
+    const placeholder = { status: 'uploading', url: null, errorMsg: null };
     setJobImage(placeholder);
     if (jobFileInputRef.current) jobFileInputRef.current.value = '';
-    const result = await clubsService.uploadMedia(file);
-    if (result.success && result.data?.mediaUrl) {
-      setJobImage({ ...placeholder, status: 'done', url: result.data.mediaUrl });
-      setForm((prev) => ({ ...prev, imageUrl: result.data.mediaUrl }));
+    const result = await jobsService.uploadJobImage(file);
+    if (result.success && result.data?.imageUrl) {
+      setJobImage({ status: 'done', url: result.data.imageUrl });
+      setForm((prev) => ({ ...prev, jobImage: result.data.imageUrl }));
     } else {
-      setJobImage({ ...placeholder, status: 'error', errorMsg: result.message || 'Upload failed' });
+      setJobImage({ status: 'error', errorMsg: result.message || 'Upload failed' });
     }
   };
 
   const handleRemoveJobImage = () => {
     setJobImage(null);
-    setForm((prev) => ({ ...prev, imageUrl: '' }));
+    setForm((prev) => ({ ...prev, jobImage: '' }));
   };
 
-  // Create club post state
-  const [showPostModal, setShowPostModal] = useState(false);
-  const [postImages, setPostImages] = useState([]);
-  const [postCaption, setPostCaption] = useState('');
-  const [postError, setPostError] = useState('');
-  const [isSubmittingPost, setIsSubmittingPost] = useState(false);
-  const [doersClubId, setDoersClubId] = useState(null);
-  const fileInputRef = useRef(null);
+  // Edit modal state
+  const [editingJob, setEditingJob] = useState(null);
+  const [editForm, setEditForm] = useState(defaultForm);
+  const [editJobImage, setEditJobImage] = useState(null); // { status, url, errorMsg }
+  const [isSubmittingEdit, setIsSubmittingEdit] = useState(false);
+  const [editError, setEditError] = useState(null);
+  const editJobFileInputRef = useRef(null);
 
-  useEffect(() => { fetchJobs(); fetchDoersClub(); }, []);
+  const openEditModal = (job) => {
+    setEditingJob(job);
+    setEditForm({
+      title: job.title || '',
+      company: job.company || '',
+      location: job.location || '',
+      type: job.type || 'FULL_TIME',
+      description: job.description || '',
+      requirements: job.requirements || '',
+      salary: job.salary || '',
+      deadline: job.deadline ? job.deadline.slice(0, 10) : '',
+      jobImage: job.jobImage || '',
+    });
+    setEditJobImage(job.jobImage ? { status: 'done', url: job.jobImage } : null);
+    setEditError(null);
+  };
+
+  const handleEditJobImageSelect = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setEditJobImage({ status: 'uploading', url: null, errorMsg: null });
+    if (editJobFileInputRef.current) editJobFileInputRef.current.value = '';
+    const result = await jobsService.uploadJobImage(file);
+    if (result.success && result.data?.imageUrl) {
+      setEditJobImage({ status: 'done', url: result.data.imageUrl });
+      setEditForm((prev) => ({ ...prev, jobImage: result.data.imageUrl }));
+    } else {
+      setEditJobImage({ status: 'error', errorMsg: result.message || 'Upload failed' });
+    }
+  };
+
+  const handleRemoveEditJobImage = () => {
+    setEditJobImage(null);
+    setEditForm((prev) => ({ ...prev, jobImage: '' }));
+  };
+
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+    if (!canManage || !editingJob) return;
+    setIsSubmittingEdit(true);
+    setEditError(null);
+    const result = await jobsService.updateJob(editingJob._id, {
+      ...editForm,
+      deadline: editForm.deadline || undefined,
+    });
+    if (result.success) {
+      setJobs((prev) => prev.map((j) => j._id === editingJob._id ? { ...j, ...editForm } : j));
+      setEditingJob(null);
+    } else {
+      setEditError(result.message || 'Failed to update job');
+    }
+    setIsSubmittingEdit(false);
+  };
+
+  useEffect(() => { fetchJobs(); }, []);
 
   const fetchJobs = async () => {
     setIsLoading(true);
     const result = await jobsService.getJobs();
     if (result.success) setJobs(result.data?.jobs || []);
     setIsLoading(false);
-  };
-
-  // Find the Doer's Club by name so we know which clubId to post to
-  const fetchDoersClub = async () => {
-    const result = await clubsService.getClubs({ page: 1, limit: 100 });
-    if (result.success) {
-      const clubs = result.data?.clubs || [];
-      const doers = clubs.find((c) =>
-        c.name?.toLowerCase().includes("doer")
-      );
-      if (doers) setDoersClubId(doers._id);
-    }
-  };
-
-  const openPostModal = () => {
-    setPostImages([]);
-    setPostCaption('');
-    setPostError('');
-    setShowPostModal(true);
-  };
-
-  const handleImageSelect = async (e) => {
-    const files = Array.from(e.target.files || []);
-    if (!files.length) return;
-
-    const remaining = 10 - postImages.length;
-    const toUpload = files.slice(0, remaining);
-
-    const placeholders = toUpload.map((file) => ({
-      id: `${Date.now()}-${Math.random()}`,
-      file,
-      status: 'uploading',
-      url: null,
-      errorMsg: null,
-    }));
-
-    setPostImages((prev) => [...prev, ...placeholders]);
-    setPostError('');
-    if (fileInputRef.current) fileInputRef.current.value = '';
-
-    await Promise.all(
-      placeholders.map(async (placeholder) => {
-        const result = await clubsService.uploadMedia(placeholder.file);
-        setPostImages((prev) =>
-          prev.map((img) => {
-            if (img.id !== placeholder.id) return img;
-            if (result.success && result.data?.mediaUrl) {
-              return { ...img, status: 'done', url: result.data.mediaUrl };
-            }
-            return { ...img, status: 'error', errorMsg: result.message || 'Upload failed' };
-          })
-        );
-      })
-    );
-  };
-
-  const handleRemoveImage = (id) => {
-    setPostImages((prev) => prev.filter((img) => img.id !== id));
-  };
-
-  const handleSubmitPost = async () => {
-    const uploadedUrls = postImages
-      .filter((img) => img.status === 'done')
-      .map((img) => img.url);
-
-    if (uploadedUrls.length === 0) {
-      setPostError('Please upload at least one image');
-      return;
-    }
-
-    if (!doersClubId) {
-      setPostError("Doer's Club not found. Make sure the club exists.");
-      return;
-    }
-
-    setIsSubmittingPost(true);
-    setPostError('');
-
-    const payload = { mediaUrls: uploadedUrls };
-    if (postCaption.trim()) payload.caption = postCaption.trim();
-
-    const result = await clubsService.createPost(doersClubId, payload);
-    setIsSubmittingPost(false);
-
-    if (result.success) {
-      toast.success('Post created successfully');
-      setShowPostModal(false);
-    } else {
-      setPostError(result.message || 'Failed to create post');
-    }
   };
 
   const handleSubmit = async (e) => {
@@ -230,18 +191,10 @@ function JobPosts() {
             <RefreshCw className="h-4 w-4" /> Refresh
           </button>
           {canManage && (
-            <>
-              <button
-                onClick={openPostModal}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
-              >
-                <ImageIcon className="h-4 w-4" /> Create Post
-              </button>
-              <button onClick={() => { setShowForm(!showForm); setError(null); setSuccess(null); if (showForm) { setForm(defaultForm); setJobImage(null); } }}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800">
-                <Plus className="h-4 w-4" /> Create Job
-              </button>
-            </>
+            <button onClick={() => { setShowForm(!showForm); setError(null); setSuccess(null); if (showForm) { setForm(defaultForm); setJobImage(null); } }}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800">
+              <Plus className="h-4 w-4" /> Create Job
+            </button>
           )}
         </div>
       </div>
@@ -317,7 +270,7 @@ function JobPosts() {
               <input
                 ref={jobFileInputRef}
                 type="file"
-                accept="image/jpeg,image/png,image/gif,image/webp"
+                accept="image/jpeg,image/png,image/webp"
                 className="hidden"
                 onChange={handleJobImageSelect}
               />
@@ -329,7 +282,7 @@ function JobPosts() {
                 >
                   <Upload className="h-5 w-5" />
                   <span className="text-sm font-medium">Click to upload image</span>
-                  <span className="text-xs text-gray-400">JPEG, PNG, GIF, WEBP</span>
+                  <span className="text-xs text-gray-400">JPEG, PNG, WEBP · Max 10MB</span>
                 </button>
               ) : (
                 <div className="relative w-full h-40 rounded-lg overflow-hidden bg-gray-100 border border-gray-200">
@@ -424,10 +377,16 @@ function JobPosts() {
                       Applications
                     </a>
                     {canManage && (
-                      <button onClick={() => handleDelete(job._id)} disabled={deletingId === job._id}
-                        className="p-2 text-gray-400 hover:text-red-500 rounded-lg transition-colors">
-                        {deletingId === job._id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
-                      </button>
+                      <>
+                        <button onClick={() => openEditModal(job)}
+                          className="p-2 text-gray-400 hover:text-blue-500 rounded-lg transition-colors" title="Edit">
+                          <Pencil className="h-4 w-4" />
+                        </button>
+                        <button onClick={() => handleDelete(job._id)} disabled={deletingId === job._id}
+                          className="p-2 text-gray-400 hover:text-red-500 rounded-lg transition-colors">
+                          {deletingId === job._id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                        </button>
+                      </>
                     )}
                   </div>
                 </div>
@@ -436,142 +395,143 @@ function JobPosts() {
           </ul>
         )}
       </div>
-      {/* Create Post Modal */}
+      {/* Edit Job Modal */}
       <Modal
-        isOpen={showPostModal}
-        onClose={() => setShowPostModal(false)}
-        title="Create Post"
+        isOpen={!!editingJob}
+        onClose={() => setEditingJob(null)}
+        title="Edit Job Post"
         size="lg"
       >
-        <div className="space-y-5">
-          {/* Image Upload Area */}
+        <form onSubmit={handleEditSubmit} className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="text-sm font-semibold text-gray-900">Title <span className="text-red-500">*</span></label>
+              <input required value={editForm.title} onChange={e => setEditForm({ ...editForm, title: e.target.value })}
+                placeholder="e.g. Frontend Developer"
+                className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:border-gray-800" />
+            </div>
+            <div>
+              <label className="text-sm font-semibold text-gray-900">Company <span className="text-red-500">*</span></label>
+              <input required value={editForm.company} onChange={e => setEditForm({ ...editForm, company: e.target.value })}
+                placeholder="e.g. Motivata"
+                className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:border-gray-800" />
+            </div>
+            <div>
+              <label className="text-sm font-semibold text-gray-900">Location <span className="text-red-500">*</span></label>
+              <input required value={editForm.location} onChange={e => setEditForm({ ...editForm, location: e.target.value })}
+                placeholder="e.g. Remote / Mumbai"
+                className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:border-gray-800" />
+            </div>
+            <div>
+              <label className="text-sm font-semibold text-gray-900">Type <span className="text-red-500">*</span></label>
+              <select value={editForm.type} onChange={e => setEditForm({ ...editForm, type: e.target.value })}
+                className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:border-gray-800 bg-white">
+                {JOB_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="text-sm font-semibold text-gray-900">Salary</label>
+              <input value={editForm.salary} onChange={e => setEditForm({ ...editForm, salary: e.target.value })}
+                placeholder="e.g. ₹5-8 LPA"
+                className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:border-gray-800" />
+            </div>
+            <div>
+              <label className="text-sm font-semibold text-gray-900">Deadline</label>
+              <input type="date" value={editForm.deadline} onChange={e => setEditForm({ ...editForm, deadline: e.target.value })}
+                className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:border-gray-800" />
+            </div>
+          </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Images <span className="text-red-500">*</span>
-              <span className="text-gray-400 font-normal ml-1">(max 10)</span>
-            </label>
+            <label className="text-sm font-semibold text-gray-900">Description <span className="text-red-500">*</span></label>
+            <textarea required value={editForm.description} onChange={e => setEditForm({ ...editForm, description: e.target.value })}
+              rows={4} placeholder="Job description..."
+              className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:border-gray-800 resize-none" />
+          </div>
+          <div>
+            <label className="text-sm font-semibold text-gray-900">Requirements</label>
+            <textarea value={editForm.requirements} onChange={e => setEditForm({ ...editForm, requirements: e.target.value })}
+              rows={3} placeholder="Skills, qualifications..."
+              className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:border-gray-800 resize-none" />
+          </div>
 
-            {postImages.length > 0 && (
-              <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 mb-3">
-                {postImages.map((img) => (
-                  <div key={img.id} className="relative aspect-square rounded-lg overflow-hidden bg-gray-100 border border-gray-200">
-                    {img.status === 'uploading' && (
-                      <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-100">
-                        <Loader2 className="h-6 w-6 animate-spin text-gray-500" />
-                        <span className="text-xs text-gray-500 mt-1">Uploading…</span>
-                      </div>
-                    )}
-                    {img.status === 'done' && (
-                      <>
-                        <img src={img.url} alt="Preview" className="w-full h-full object-cover" />
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveImage(img.id)}
-                          className="absolute top-1 right-1 p-0.5 bg-black/60 rounded-full text-white hover:bg-black/80 transition-colors"
-                        >
-                          <X className="h-3.5 w-3.5" />
-                        </button>
-                      </>
-                    )}
-                    {img.status === 'error' && (
-                      <div className="absolute inset-0 flex flex-col items-center justify-center bg-red-50 p-2">
-                        <XCircle className="h-5 w-5 text-red-500 mb-1" />
-                        <span className="text-xs text-red-600 text-center line-clamp-2">
-                          {img.errorMsg || 'Upload failed'}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveImage(img.id)}
-                          className="mt-1 text-xs text-red-500 underline"
-                        >
-                          Remove
-                        </button>
-                      </div>
-                    )}
+          {/* Job Image */}
+          <div>
+            <label className="text-sm font-semibold text-gray-900">Job Image</label>
+            <p className="text-xs text-gray-400 mb-2">Optional banner image for the job post</p>
+            <input
+              ref={editJobFileInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              className="hidden"
+              onChange={handleEditJobImageSelect}
+            />
+            {!editJobImage ? (
+              <button
+                type="button"
+                onClick={() => editJobFileInputRef.current?.click()}
+                className="w-full flex flex-col items-center justify-center gap-2 px-4 py-5 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <Upload className="h-5 w-5" />
+                <span className="text-sm font-medium">Click to upload image</span>
+                <span className="text-xs text-gray-400">JPEG, PNG, WEBP · Max 10MB</span>
+              </button>
+            ) : (
+              <div className="relative w-full h-40 rounded-lg overflow-hidden bg-gray-100 border border-gray-200">
+                {editJobImage.status === 'uploading' && (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-100">
+                    <Loader2 className="h-6 w-6 animate-spin text-gray-500" />
+                    <span className="text-xs text-gray-500 mt-1">Uploading…</span>
                   </div>
-                ))}
+                )}
+                {editJobImage.status === 'done' && (
+                  <>
+                    <img src={editJobImage.url} alt="Job banner" className="w-full h-full object-cover" />
+                    <div className="absolute inset-0 flex items-center justify-center gap-2 opacity-0 hover:opacity-100 bg-black/40 transition-opacity">
+                      <button
+                        type="button"
+                        onClick={() => editJobFileInputRef.current?.click()}
+                        className="px-3 py-1.5 bg-white text-gray-900 text-xs font-medium rounded-lg"
+                      >
+                        Change
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleRemoveEditJobImage}
+                        className="p-1.5 bg-white text-red-500 rounded-lg"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  </>
+                )}
+                {editJobImage.status === 'error' && (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center bg-red-50 p-4">
+                    <XCircle className="h-5 w-5 text-red-500 mb-1" />
+                    <span className="text-xs text-red-600 text-center">{editJobImage.errorMsg || 'Upload failed'}</span>
+                    <button type="button" onClick={handleRemoveEditJobImage} className="mt-2 text-xs text-red-500 underline">Remove</button>
+                  </div>
+                )}
               </div>
             )}
-
-            {postImages.length < 10 && (
-              <>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/jpeg,image/png,image/gif,image/webp"
-                  multiple
-                  className="hidden"
-                  onChange={handleImageSelect}
-                />
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="w-full flex flex-col items-center justify-center gap-2 px-4 py-6 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-gray-400 hover:text-gray-600 transition-colors"
-                >
-                  <Upload className="h-6 w-6" />
-                  <span className="text-sm font-medium">Click to select images</span>
-                  <span className="text-xs text-gray-400">JPEG, PNG, GIF, WEBP · Max 50 MB each</span>
-                </button>
-              </>
-            )}
-
-            {postError && (
-              <p className="text-sm text-red-600 mt-2">{postError}</p>
-            )}
           </div>
 
-          {/* Caption */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Caption
-              <span className="text-gray-400 font-normal ml-1">(optional)</span>
-            </label>
-            <textarea
-              value={postCaption}
-              onChange={(e) => setPostCaption(e.target.value)}
-              maxLength={2000}
-              rows={3}
-              placeholder="Write a caption…"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-gray-800 outline-none resize-none text-sm transition-colors"
-            />
-            <p className="text-xs text-gray-400 text-right mt-0.5">
-              {postCaption.length}/2000
-            </p>
-          </div>
+          {editError && (
+            <div className="flex items-center gap-2 px-4 py-3 bg-red-50 border border-red-200 text-red-700 rounded-lg">
+              <XCircle className="h-4 w-4 shrink-0" /><span className="text-sm">{editError}</span>
+            </div>
+          )}
 
-          {/* Actions */}
-          <div className="flex items-center justify-end gap-3 pt-2 border-t border-gray-200">
-            <button
-              type="button"
-              onClick={() => setShowPostModal(false)}
-              disabled={isSubmittingPost}
-              className="px-4 py-2 text-sm text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 disabled:opacity-50 transition-colors"
-            >
+          <div className="flex justify-end gap-3 pt-2 border-t border-gray-200">
+            <button type="button" onClick={() => setEditingJob(null)}
+              className="px-5 py-2.5 text-sm text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200">
               Cancel
             </button>
-            <button
-              type="button"
-              onClick={handleSubmitPost}
-              disabled={
-                isSubmittingPost ||
-                postImages.filter((img) => img.status === 'done').length === 0
-              }
-              className="inline-flex items-center gap-2 px-5 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 disabled:opacity-50 text-sm font-medium transition-colors"
-            >
-              {isSubmittingPost ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Creating…
-                </>
-              ) : (
-                <>
-                  <Plus className="h-4 w-4" />
-                  Create Post
-                </>
-              )}
+            <button type="submit" disabled={isSubmittingEdit || editJobImage?.status === 'uploading'}
+              className="inline-flex items-center gap-2 px-6 py-2.5 bg-gray-900 text-white text-sm rounded-lg hover:bg-gray-800 disabled:opacity-60">
+              {isSubmittingEdit ? <><Loader2 className="h-4 w-4 animate-spin" />Saving...</> : 'Save Changes'}
             </button>
           </div>
-        </div>
+        </form>
       </Modal>
     </div>
   );
