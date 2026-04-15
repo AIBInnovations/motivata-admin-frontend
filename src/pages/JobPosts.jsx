@@ -24,7 +24,7 @@ const TYPE_COLORS = {
 
 const defaultForm = {
   title: '', company: '', location: '', type: 'FULL_TIME',
-  description: '', requirements: '', salary: '', deadline: '',
+  description: '', requirements: '', salary: '', deadline: '', imageUrl: '',
 };
 
 function JobPosts() {
@@ -40,6 +40,30 @@ function JobPosts() {
   const [success, setSuccess] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
   const [togglingId, setTogglingId] = useState(null);
+
+  // Job image upload state
+  const [jobImage, setJobImage] = useState(null); // { id, status, url, errorMsg }
+  const jobFileInputRef = useRef(null);
+
+  const handleJobImageSelect = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const placeholder = { id: `${Date.now()}`, file, status: 'uploading', url: null, errorMsg: null };
+    setJobImage(placeholder);
+    if (jobFileInputRef.current) jobFileInputRef.current.value = '';
+    const result = await clubsService.uploadMedia(file);
+    if (result.success && result.data?.mediaUrl) {
+      setJobImage({ ...placeholder, status: 'done', url: result.data.mediaUrl });
+      setForm((prev) => ({ ...prev, imageUrl: result.data.mediaUrl }));
+    } else {
+      setJobImage({ ...placeholder, status: 'error', errorMsg: result.message || 'Upload failed' });
+    }
+  };
+
+  const handleRemoveJobImage = () => {
+    setJobImage(null);
+    setForm((prev) => ({ ...prev, imageUrl: '' }));
+  };
 
   // Create club post state
   const [showPostModal, setShowPostModal] = useState(false);
@@ -164,6 +188,7 @@ function JobPosts() {
     if (result.success) {
       setSuccess('Job post created successfully!');
       setForm(defaultForm);
+      setJobImage(null);
       setShowForm(false);
       fetchJobs();
     } else {
@@ -212,7 +237,7 @@ function JobPosts() {
               >
                 <ImageIcon className="h-4 w-4" /> Create Post
               </button>
-              <button onClick={() => { setShowForm(!showForm); setError(null); setSuccess(null); }}
+              <button onClick={() => { setShowForm(!showForm); setError(null); setSuccess(null); if (showForm) { setForm(defaultForm); setJobImage(null); } }}
                 className="inline-flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800">
                 <Plus className="h-4 w-4" /> Create Job
               </button>
@@ -284,8 +309,61 @@ function JobPosts() {
                 rows={3} placeholder="Skills, qualifications..."
                 className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:border-gray-800 resize-none" />
             </div>
+
+            {/* Job Image Upload */}
+            <div>
+              <label className="text-sm font-semibold text-gray-900">Job Image</label>
+              <p className="text-xs text-gray-400 mb-2">Optional banner image for the job post</p>
+              <input
+                ref={jobFileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/gif,image/webp"
+                className="hidden"
+                onChange={handleJobImageSelect}
+              />
+              {!jobImage ? (
+                <button
+                  type="button"
+                  onClick={() => jobFileInputRef.current?.click()}
+                  className="w-full flex flex-col items-center justify-center gap-2 px-4 py-5 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <Upload className="h-5 w-5" />
+                  <span className="text-sm font-medium">Click to upload image</span>
+                  <span className="text-xs text-gray-400">JPEG, PNG, GIF, WEBP</span>
+                </button>
+              ) : (
+                <div className="relative w-full h-40 rounded-lg overflow-hidden bg-gray-100 border border-gray-200">
+                  {jobImage.status === 'uploading' && (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-100">
+                      <Loader2 className="h-6 w-6 animate-spin text-gray-500" />
+                      <span className="text-xs text-gray-500 mt-1">Uploading…</span>
+                    </div>
+                  )}
+                  {jobImage.status === 'done' && (
+                    <>
+                      <img src={jobImage.url} alt="Job banner" className="w-full h-full object-cover" />
+                      <button
+                        type="button"
+                        onClick={handleRemoveJobImage}
+                        className="absolute top-2 right-2 p-1 bg-black/60 rounded-full text-white hover:bg-black/80 transition-colors"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    </>
+                  )}
+                  {jobImage.status === 'error' && (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-red-50 p-4">
+                      <XCircle className="h-5 w-5 text-red-500 mb-1" />
+                      <span className="text-xs text-red-600 text-center">{jobImage.errorMsg || 'Upload failed'}</span>
+                      <button type="button" onClick={handleRemoveJobImage} className="mt-2 text-xs text-red-500 underline">Remove</button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
             <div className="flex justify-end gap-3 pt-2 border-t border-gray-200">
-              <button type="button" onClick={() => { setShowForm(false); setForm(defaultForm); }}
+              <button type="button" onClick={() => { setShowForm(false); setForm(defaultForm); setJobImage(null); }}
                 className="px-5 py-2.5 text-sm text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200">
                 Cancel
               </button>
