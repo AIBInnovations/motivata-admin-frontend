@@ -208,6 +208,38 @@ function ChallengeDetailsModal({
                   </div>
                 </div>
 
+                {/* Allowed Durations */}
+                <div>
+                  <h4 className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                    <Clock className="h-4 w-4" />
+                    {challenge.allowedDurations && challenge.allowedDurations.length > 0
+                      ? 'Duration Options'
+                      : 'Duration'}
+                  </h4>
+                  {challenge.allowedDurations && challenge.allowedDurations.length > 0 ? (
+                    <div className="flex flex-wrap gap-2">
+                      {challenge.allowedDurations.map((d) => (
+                        <span
+                          key={d}
+                          className={`px-2.5 py-1 rounded-full text-xs font-medium ${
+                            d === challenge.durationDays
+                              ? 'bg-blue-600 text-white'
+                              : 'bg-blue-100 text-blue-700'
+                          }`}
+                        >
+                          {d} days{d === challenge.durationDays ? ' (default)' : ''}
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-600">
+                      {challenge.durationDays
+                        ? `Fixed duration: ${challenge.durationDays} days`
+                        : 'No duration limit'}
+                    </p>
+                  )}
+                </div>
+
                 {/* Tasks List */}
                 {challenge.tasks && challenge.tasks.length > 0 && (
                   <div>

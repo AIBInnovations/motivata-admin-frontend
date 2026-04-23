@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Loader2, AlertCircle, Plus, Trash2, GripVertical } from 'lucide-react';
+import { Loader2, AlertCircle, Plus, Trash2, GripVertical, X } from 'lucide-react';
 import Modal from '../ui/Modal';
 import FileUpload from '../ui/FileUpload';
 
@@ -32,6 +32,7 @@ const getInitialFormState = () => ({
   difficulty: 'medium',
   tasks: [],
   durationDays: '',
+  allowedDurations: [],
   imageUrl: '',
   isActive: false,
 });
@@ -67,6 +68,8 @@ function ChallengeForm({
   const [formData, setFormData] = useState(getInitialFormState());
   const [errors, setErrors] = useState({});
   const [activeTab, setActiveTab] = useState('basic');
+  const [durationInput, setDurationInput] = useState('');
+  const [durationChipError, setDurationChipError] = useState('');
 
   const isEditMode = !!challengeToEdit;
 
@@ -84,6 +87,9 @@ function ChallengeForm({
             description: t.description || '',
           })) || [],
           durationDays: challengeToEdit.durationDays?.toString() || '',
+          allowedDurations: Array.isArray(challengeToEdit.allowedDurations)
+            ? [...challengeToEdit.allowedDurations]
+            : [],
           imageUrl: challengeToEdit.imageUrl || '',
           isActive: challengeToEdit.isActive ?? false,
         });
@@ -92,6 +98,8 @@ function ChallengeForm({
       }
       setErrors({});
       setActiveTab('basic');
+      setDurationInput('');
+      setDurationChipError('');
     }
   }, [isOpen, challengeToEdit]);
 
@@ -129,6 +137,27 @@ function ChallengeForm({
         newErrors.durationDays = 'Duration must be at least 1 day';
       } else if (durationNum > 365) {
         newErrors.durationDays = 'Duration cannot exceed 365 days';
+      } else if (
+        data.allowedDurations.length > 0 &&
+        !data.allowedDurations.includes(durationNum)
+      ) {
+        newErrors.durationDays = 'Default must be one of the allowed durations';
+      }
+    }
+
+    // Allowed durations validation (each 1-365, no duplicates; empty array is valid)
+    if (data.allowedDurations.length > 0) {
+      const seen = new Set();
+      for (const d of data.allowedDurations) {
+        if (!Number.isInteger(d) || d < 1 || d > 365) {
+          newErrors.allowedDurations = 'Each duration must be an integer between 1 and 365';
+          break;
+        }
+        if (seen.has(d)) {
+          newErrors.allowedDurations = 'Duplicate durations are not allowed';
+          break;
+        }
+        seen.add(d);
       }
     }
 
@@ -217,6 +246,76 @@ function ChallengeForm({
   };
 
   /**
+   * Add an allowed duration chip
+   */
+  const handleAddAllowedDuration = () => {
+    const trimmed = durationInput.trim();
+    if (!trimmed) return;
+
+    if (!/^\d+$/.test(trimmed)) {
+      setDurationChipError('Must be a whole number');
+      return;
+    }
+
+    const num = parseInt(trimmed, 10);
+    if (num < 1 || num > 365) {
+      setDurationChipError('Must be between 1 and 365');
+      return;
+    }
+
+    if (formData.allowedDurations.includes(num)) {
+      setDurationChipError(`${num} is already added`);
+      return;
+    }
+
+    const next = [...formData.allowedDurations, num].sort((a, b) => a - b);
+    setFormData((prev) => ({ ...prev, allowedDurations: next }));
+    setDurationInput('');
+    setDurationChipError('');
+    if (errors.allowedDurations) {
+      setErrors((prev) => {
+        const { allowedDurations: _omit, ...rest } = prev;
+        return rest;
+      });
+    }
+  };
+
+  /**
+   * Remove an allowed duration chip
+   * @param {number} value - Duration value to remove
+   */
+  const handleRemoveAllowedDuration = (value) => {
+    setFormData((prev) => {
+      const nextAllowed = prev.allowedDurations.filter((d) => d !== value);
+      // Clear default if it no longer matches a remaining chip
+      const defaultNum = parseInt(prev.durationDays, 10);
+      const nextDurationDays =
+        nextAllowed.length > 0 && !nextAllowed.includes(defaultNum)
+          ? ''
+          : prev.durationDays;
+      return {
+        ...prev,
+        allowedDurations: nextAllowed,
+        durationDays: nextDurationDays,
+      };
+    });
+  };
+
+  /**
+   * Handle Enter key in duration chip input
+   */
+  const handleDurationKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleAddAllowedDuration();
+    } else if (e.key === 'Backspace' && !durationInput && formData.allowedDurations.length > 0) {
+      // Quick-remove last chip with Backspace when input is empty
+      const last = formData.allowedDurations[formData.allowedDurations.length - 1];
+      handleRemoveAllowedDuration(last);
+    }
+  };
+
+  /**
    * Handle form submission
    * @param {Event} e - Form event
    */
@@ -245,6 +344,7 @@ function ChallengeForm({
         description: task.description.trim(),
         order: index,
       })),
+      allowedDurations: [...formData.allowedDurations].sort((a, b) => a - b),
       isActive: formData.isActive,
     };
 
@@ -388,30 +488,114 @@ function ChallengeForm({
                 </div>
               </div>
 
-              {/* Duration Days */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Duration (Days)
-                  <span className="text-gray-400 font-normal ml-1">(optional)</span>
-                </label>
-                <input
-                  type="number"
-                  value={formData.durationDays}
-                  onChange={(e) => handleChange('durationDays', e.target.value)}
-                  placeholder="e.g., 30"
-                  min="1"
-                  max="365"
-                  disabled={isLoading}
-                  className={`w-full px-3 py-2 border rounded-lg focus:border-gray-800 outline-none transition-colors ${
-                    errors.durationDays ? 'border-red-500' : 'border-gray-300'
-                  } ${isLoading ? 'bg-gray-100' : ''}`}
-                />
-                {errors.durationDays && (
-                  <p className="text-red-600 text-sm mt-1">{errors.durationDays}</p>
-                )}
-                <p className="text-xs text-gray-500 mt-1">
-                  Duration of the challenge in days. Leave empty for no time limit.
-                </p>
+              {/* Duration Days + Allowed Durations */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Default Duration */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Default Duration (Days)
+                    <span className="text-gray-400 font-normal ml-1">(optional)</span>
+                  </label>
+                  {formData.allowedDurations.length > 0 ? (
+                    <select
+                      value={formData.durationDays}
+                      onChange={(e) => handleChange('durationDays', e.target.value)}
+                      disabled={isLoading}
+                      className={`w-full px-3 py-2 border rounded-lg focus:border-gray-800 outline-none transition-colors ${
+                        errors.durationDays ? 'border-red-500' : 'border-gray-300'
+                      } ${isLoading ? 'bg-gray-100' : ''}`}
+                    >
+                      <option value="">Select default</option>
+                      {formData.allowedDurations.map((d) => (
+                        <option key={d} value={d}>
+                          {d} days
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <input
+                      type="number"
+                      value={formData.durationDays}
+                      onChange={(e) => handleChange('durationDays', e.target.value)}
+                      placeholder="e.g., 30"
+                      min="1"
+                      max="365"
+                      disabled={isLoading}
+                      className={`w-full px-3 py-2 border rounded-lg focus:border-gray-800 outline-none transition-colors ${
+                        errors.durationDays ? 'border-red-500' : 'border-gray-300'
+                      } ${isLoading ? 'bg-gray-100' : ''}`}
+                    />
+                  )}
+                  {errors.durationDays && (
+                    <p className="text-red-600 text-sm mt-1">{errors.durationDays}</p>
+                  )}
+                  <p className="text-xs text-gray-500 mt-1">
+                    {formData.allowedDurations.length > 0
+                      ? 'Which of the allowed durations is the default.'
+                      : 'Leave empty for no time limit.'}
+                  </p>
+                </div>
+
+                {/* Allowed Durations */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Allowed Durations
+                    <span className="text-gray-400 font-normal ml-1">(optional)</span>
+                  </label>
+                  <div
+                    className={`flex flex-wrap items-center gap-1.5 w-full min-h-[42px] px-2 py-1.5 border rounded-lg focus-within:border-gray-800 transition-colors ${
+                      errors.allowedDurations || durationChipError
+                        ? 'border-red-500'
+                        : 'border-gray-300'
+                    } ${isLoading ? 'bg-gray-100' : 'bg-white'}`}
+                  >
+                    {formData.allowedDurations.map((d) => (
+                      <span
+                        key={d}
+                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 text-xs font-medium"
+                      >
+                        {d} days
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveAllowedDuration(d)}
+                          disabled={isLoading}
+                          className="hover:text-blue-900"
+                          aria-label={`Remove ${d} days`}
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </span>
+                    ))}
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      value={durationInput}
+                      onChange={(e) => {
+                        setDurationInput(e.target.value);
+                        if (durationChipError) setDurationChipError('');
+                      }}
+                      onKeyDown={handleDurationKeyDown}
+                      onBlur={() => {
+                        if (durationInput.trim()) handleAddAllowedDuration();
+                      }}
+                      placeholder={
+                        formData.allowedDurations.length === 0
+                          ? 'e.g., 30, press Enter'
+                          : ''
+                      }
+                      disabled={isLoading}
+                      className="flex-1 min-w-[80px] px-1 py-1 text-sm outline-none bg-transparent"
+                    />
+                  </div>
+                  {(errors.allowedDurations || durationChipError) && (
+                    <p className="text-red-600 text-sm mt-1">
+                      {errors.allowedDurations || durationChipError}
+                    </p>
+                  )}
+                  <p className="text-xs text-gray-500 mt-1">
+                    Preset durations users can pick from. Leave empty for fixed duration.
+                  </p>
+                </div>
               </div>
 
               {/* Challenge Image */}
