@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { Loader2, AlertCircle, Plus, Trash2, GripVertical, X } from 'lucide-react';
 import Modal from '../ui/Modal';
 import FileUpload from '../ui/FileUpload';
+import IconPicker from './IconPicker';
+import useChallengeIcons from '../../hooks/useChallengeIcons';
 
 /**
  * Challenge category options
@@ -34,6 +36,7 @@ const getInitialFormState = () => ({
   durationDays: '',
   allowedDurations: [],
   imageUrl: '',
+  icon: null,
   isActive: false,
 });
 
@@ -44,6 +47,7 @@ const getInitialFormState = () => ({
 const getInitialTaskState = () => ({
   title: '',
   description: '',
+  icon: null,
 });
 
 /**
@@ -71,6 +75,8 @@ function ChallengeForm({
   const [durationInput, setDurationInput] = useState('');
   const [durationChipError, setDurationChipError] = useState('');
 
+  const { icons, isLoading: iconsLoading, error: iconsError } = useChallengeIcons();
+
   const isEditMode = !!challengeToEdit;
 
   // Reset form when modal opens/closes or challenge changes
@@ -85,12 +91,14 @@ function ChallengeForm({
           tasks: challengeToEdit.tasks?.map((t) => ({
             title: t.title || '',
             description: t.description || '',
+            icon: t.icon ?? null,
           })) || [],
           durationDays: challengeToEdit.durationDays?.toString() || '',
           allowedDurations: Array.isArray(challengeToEdit.allowedDurations)
             ? [...challengeToEdit.allowedDurations]
             : [],
           imageUrl: challengeToEdit.imageUrl || '',
+          icon: challengeToEdit.icon ?? null,
           isActive: challengeToEdit.isActive ?? false,
         });
       } else {
@@ -339,10 +347,12 @@ function ChallengeForm({
       description: formData.description.trim(),
       category: formData.category,
       difficulty: formData.difficulty,
+      icon: formData.icon ?? null,
       tasks: formData.tasks.map((task, index) => ({
         title: task.title.trim(),
         description: task.description.trim(),
         order: index,
+        icon: task.icon ?? null,
       })),
       allowedDurations: [...formData.allowedDurations].sort((a, b) => a - b),
       isActive: formData.isActive,
@@ -598,6 +608,17 @@ function ChallengeForm({
                 </div>
               </div>
 
+              {/* Challenge Icon */}
+              <IconPicker
+                label="Challenge Icon"
+                value={formData.icon}
+                onChange={(key) => handleChange('icon', key)}
+                icons={icons}
+                isLoading={iconsLoading}
+                error={iconsError}
+                disabled={isLoading}
+              />
+
               {/* Challenge Image */}
               <FileUpload
                 label="Challenge Image"
@@ -672,6 +693,17 @@ function ChallengeForm({
                           <Trash2 className="h-4 w-4" />
                         </button>
                       </div>
+
+                      {/* Task Icon */}
+                      <IconPicker
+                        label="Task Icon"
+                        value={task.icon}
+                        onChange={(key) => handleTaskChange(tIndex, 'icon', key)}
+                        icons={icons}
+                        isLoading={iconsLoading}
+                        error={iconsError}
+                        disabled={isLoading}
+                      />
 
                       {/* Task Title */}
                       <div>

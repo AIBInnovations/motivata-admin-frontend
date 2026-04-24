@@ -4,6 +4,15 @@ import { tokenStorage, clearAllAuthData } from '../utils/storage';
 // API Base URL - configure in .env file
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
+// Host without the /api suffix, for resolving relative asset URLs returned by the API
+export const API_ORIGIN = API_BASE_URL.replace(/\/api\/?$/, '');
+
+export const resolveAssetUrl = (relativePath) => {
+  if (!relativePath) return '';
+  if (/^https?:\/\//i.test(relativePath)) return relativePath;
+  return `${API_ORIGIN}${relativePath.startsWith('/') ? '' : '/'}${relativePath}`;
+};
+
 console.log('[API] Initializing with base URL:', API_BASE_URL);
 
 /**

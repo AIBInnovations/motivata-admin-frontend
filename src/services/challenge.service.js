@@ -14,6 +14,7 @@ const CHALLENGE_ENDPOINTS = {
   TOGGLE_STATUS: (id) => `/web/challenges/${id}/toggle-status`,
   STATS: (id) => `/web/challenges/${id}/stats`,
   PARTICIPANTS: (id) => `/web/challenges/${id}/participants`,
+  ICONS: '/web/challenges/icons',
 };
 
 const challengeService = {
@@ -185,6 +186,41 @@ const challengeService = {
       title,
       description,
     };
+  },
+
+  _iconsCache: null,
+  _iconsPromise: null,
+
+  /**
+   * Get the list of preset icons available for challenges/tasks.
+   * Result is cached for the SPA lifetime (call once per page load).
+   * @returns {Promise<Object>} API response with { icons: [...] }
+   */
+  getIcons: async () => {
+    if (challengeService._iconsCache) {
+      return {
+        success: true,
+        data: challengeService._iconsCache,
+        message: null,
+        error: null,
+        status: 200,
+      };
+    }
+
+    if (!challengeService._iconsPromise) {
+      console.log('[ChallengeService] Fetching icons');
+      challengeService._iconsPromise = handleApiResponse(
+        api.get(CHALLENGE_ENDPOINTS.ICONS)
+      ).then((res) => {
+        if (res.success) {
+          challengeService._iconsCache = res.data;
+        }
+        challengeService._iconsPromise = null;
+        return res;
+      });
+    }
+
+    return challengeService._iconsPromise;
   },
 };
 
