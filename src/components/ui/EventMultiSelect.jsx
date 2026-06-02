@@ -21,12 +21,16 @@ const formatDate = (dateString) => {
  * Category color mapping
  */
 const CATEGORY_COLORS = {
-  TECHNOLOGY: 'bg-blue-100 text-gray-900',
-  MUSIC: 'bg-purple-100 text-purple-700',
-  SPORTS: 'bg-green-100 text-green-700',
-  BUSINESS: 'bg-yellow-100 text-yellow-700',
-  EDUCATION: 'bg-indigo-100 text-indigo-700',
+  WEBINAR: 'bg-blue-100 text-gray-900',
+  MASTERCLASS: 'bg-indigo-100 text-indigo-700',
+  WORKSHOPS: 'bg-green-100 text-green-700',
+  TALK_SESSIONS: 'bg-yellow-100 text-yellow-700',
+  LIVE_SESSIONS: 'bg-red-100 text-red-700',
   ENTERTAINMENT: 'bg-pink-100 text-pink-700',
+  PROGRAMS: 'bg-amber-100 text-amber-700',
+  MEETUPS: 'bg-orange-100 text-orange-700',
+  COMMUNITY_SERVICE: 'bg-purple-100 text-purple-700',
+  HEALTH_WELLNESS: 'bg-teal-100 text-teal-700',
   DEFAULT: 'bg-gray-100 text-gray-700',
 };
 

@@ -1,5 +1,6 @@
 import { Eye, Edit, Trash2, RotateCcw, Trash, Loader2 } from 'lucide-react';
 import { getEventStatus, getStatusColor, formatDateTime } from '../../utils/eventStatus';
+import { getCategoryLabel } from '../../hooks/useEventsManagement';
 
 /**
  * Format date for display
@@ -46,20 +47,18 @@ function formatCurrency(amount) {
  */
 function getCategoryColor(category) {
   const colors = {
-    TECHNOLOGY: 'bg-blue-100 text-gray-900',
-    EDUCATION: 'bg-indigo-100 text-indigo-700',
-    MEDICAL: 'bg-green-100 text-green-700',
-    COMEDY: 'bg-yellow-100 text-yellow-700',
+    WEBINAR: 'bg-blue-100 text-gray-900',
+    MASTERCLASS: 'bg-indigo-100 text-indigo-700',
+    WORKSHOPS: 'bg-green-100 text-green-700',
+    TALK_SESSIONS: 'bg-yellow-100 text-yellow-700',
+    LIVE_SESSIONS: 'bg-red-100 text-red-700',
     ENTERTAINMENT: 'bg-pink-100 text-pink-700',
-    BUSINESS: 'bg-gray-100 text-gray-700',
-    SPORTS: 'bg-orange-100 text-orange-700',
-    ARTS: 'bg-purple-100 text-purple-700',
-    MUSIC: 'bg-red-100 text-red-700',
-    FOOD: 'bg-amber-100 text-amber-700',
-    LIFESTYLE: 'bg-teal-100 text-teal-700',
-    OTHER: 'bg-slate-100 text-slate-700',
+    PROGRAMS: 'bg-gray-100 text-gray-700',
+    MEETUPS: 'bg-orange-100 text-orange-700',
+    COMMUNITY_SERVICE: 'bg-purple-100 text-purple-700',
+    HEALTH_WELLNESS: 'bg-teal-100 text-teal-700',
   };
-  return colors[category] || colors.OTHER;
+  return colors[category] || 'bg-slate-100 text-slate-700';
 }
 
 /**
@@ -166,6 +165,11 @@ function EventTable({
                             Featured
                           </span>
                         )}
+                        {event.audience === 'MEMBERS_ONLY' && (
+                          <span className="hidden sm:inline-flex px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-100 text-amber-700">
+                            Members Only
+                          </span>
+                        )}
                       </div>
                       {event.city && (
                         <p className="text-sm text-gray-500 truncate">{event.city}</p>
@@ -181,7 +185,7 @@ function EventTable({
                       event.category
                     )}`}
                   >
-                    {event.category}
+                    {getCategoryLabel(event.category)}
                   </span>
                 </td>
 

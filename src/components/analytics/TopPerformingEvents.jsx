@@ -30,11 +30,16 @@ const TopPerformingEvents = ({ events, loading }) => {
 
   const getCategoryColor = (category) => {
     const colors = {
-      TECHNOLOGY: 'bg-blue-100 text-blue-800',
+      WEBINAR: 'bg-blue-100 text-blue-800',
+      MASTERCLASS: 'bg-indigo-100 text-indigo-800',
+      WORKSHOPS: 'bg-green-100 text-green-800',
+      TALK_SESSIONS: 'bg-yellow-100 text-yellow-800',
+      LIVE_SESSIONS: 'bg-red-100 text-red-800',
       ENTERTAINMENT: 'bg-pink-100 text-pink-800',
-      EDUCATION: 'bg-green-100 text-green-800',
-      BUSINESS: 'bg-yellow-100 text-yellow-800',
-      OTHER: 'bg-gray-100 text-gray-800',
+      PROGRAMS: 'bg-amber-100 text-amber-800',
+      MEETUPS: 'bg-orange-100 text-orange-800',
+      COMMUNITY_SERVICE: 'bg-purple-100 text-purple-800',
+      HEALTH_WELLNESS: 'bg-teal-100 text-teal-800',
     };
     return colors[category] || 'bg-gray-100 text-gray-800';
   };

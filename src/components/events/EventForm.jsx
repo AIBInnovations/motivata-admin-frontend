@@ -35,6 +35,7 @@ const getInitialFormState = (event = null, seatArrangement = null) => ({
   pricingTiers: event?.pricingTiers || [],
   isLive: event?.isLive ?? false,
   featured: event?.featured ?? false,
+  audience: event?.audience || 'ALL',
   // Seat Arrangement
   useSeatArrangement: !!seatArrangement,
   seatArrangement: {
@@ -459,6 +460,7 @@ function EventForm({
       endDate: new Date(formData.endDate).toISOString(),
       bookingStartDate: new Date(formData.bookingStartDate).toISOString(),
       bookingEndDate: new Date(formData.bookingEndDate).toISOString(),
+      audience: formData.audience || 'ALL',
     };
 
     // Add optional fields
@@ -652,13 +654,35 @@ function EventForm({
               >
                 <option value="">Select category</option>
                 {EVENT_CATEGORIES.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat.charAt(0) + cat.slice(1).toLowerCase()}
+                  <option key={cat.value} value={cat.value}>
+                    {cat.label}
                   </option>
                 ))}
               </select>
               {errors.category && <p className="mt-1 text-sm text-red-500">{errors.category}</p>}
             </div>
+          </div>
+
+          {/* Audience / Access */}
+          <div>
+            <label htmlFor="audience" className="block text-sm font-medium text-gray-700 mb-1">
+              Audience
+            </label>
+            <select
+              id="audience"
+              name="audience"
+              value={formData.audience}
+              onChange={handleChange}
+              disabled={isLoading}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-gray-800 outline-none disabled:bg-gray-100"
+            >
+              <option value="ALL">Open for All</option>
+              <option value="MEMBERS_ONLY">Members Only</option>
+            </select>
+            <p className="mt-1 text-xs text-gray-500">
+              "Members Only" events can be viewed by everyone but only members can book them. Non-members
+              are prompted to become a member.
+            </p>
           </div>
 
           {/* Venue, City and Google Maps Link (shown for OFFLINE or HYBRID) */}

@@ -36,6 +36,8 @@ import MotivataBlendBanner from './pages/MotivataBlendBanner';
 import ExplorePosts from './pages/ExplorePosts';
 import JobPosts from './pages/JobPosts';
 import JobApplications from './pages/JobApplications';
+import OpportunityFilters from './pages/OpportunityFilters';
+import Recommendations from './pages/Recommendations';
 
 
 function App() {
@@ -94,6 +96,8 @@ function App() {
             <Route path="/explore-posts" element={<ExplorePosts />} />
             <Route path="/job-posts" element={<JobPosts />} />
             <Route path="/job-applications" element={<JobApplications />} />
+            <Route path="/opportunity-filters" element={<OpportunityFilters />} />
+            <Route path="/recommendations" element={<Recommendations />} />
           </Route>
 
           {/* Default redirect */}

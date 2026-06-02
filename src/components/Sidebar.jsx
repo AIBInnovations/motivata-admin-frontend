@@ -21,6 +21,7 @@ import {
   Settings,
   Shield,
   Briefcase,
+  SlidersHorizontal,
   CreditCard,
   FileText,
   UserCheck,
@@ -32,6 +33,7 @@ import {
   Zap,
   CircleDot,
   Globe,
+  Lightbulb,
 } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
@@ -123,6 +125,12 @@ function Sidebar({ collapsed, isOpen, onClose }) {
           icon: Users,
           path: "/job-applications",
         },
+        {
+          id: "opportunity-filters",
+          label: "Opportunity Filters",
+          icon: SlidersHorizontal,
+          path: "/opportunity-filters",
+        },
       ],
     },
     {
@@ -192,6 +200,12 @@ function Sidebar({ collapsed, isOpen, onClose }) {
           label: "Stories",
           icon: ImagePlay,
           path: "/stories",
+        },
+        {
+          id: "recommendations",
+          label: "Recommendations",
+          icon: Lightbulb,
+          path: "/recommendations",
         },
       ],
     },

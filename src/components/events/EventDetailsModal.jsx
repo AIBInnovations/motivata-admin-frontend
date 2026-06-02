@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import Modal from '../ui/Modal';
 import { getEventStatus, getStatusColor } from '../../utils/eventStatus';
+import { getCategoryLabel } from '../../hooks/useEventsManagement';
 import TimelinePreview from './TimelinePreview';
 
 /**
@@ -44,20 +45,18 @@ function formatPrice(price) {
  */
 function getCategoryColor(category) {
   const colors = {
-    TECHNOLOGY: 'bg-blue-100 text-gray-900',
-    EDUCATION: 'bg-indigo-100 text-indigo-700',
-    MEDICAL: 'bg-green-100 text-green-700',
-    COMEDY: 'bg-yellow-100 text-yellow-700',
+    WEBINAR: 'bg-blue-100 text-gray-900',
+    MASTERCLASS: 'bg-indigo-100 text-indigo-700',
+    WORKSHOPS: 'bg-green-100 text-green-700',
+    TALK_SESSIONS: 'bg-yellow-100 text-yellow-700',
+    LIVE_SESSIONS: 'bg-red-100 text-red-700',
     ENTERTAINMENT: 'bg-pink-100 text-pink-700',
-    BUSINESS: 'bg-gray-100 text-gray-700',
-    SPORTS: 'bg-orange-100 text-orange-700',
-    ARTS: 'bg-purple-100 text-purple-700',
-    MUSIC: 'bg-red-100 text-red-700',
-    FOOD: 'bg-amber-100 text-amber-700',
-    LIFESTYLE: 'bg-teal-100 text-teal-700',
-    OTHER: 'bg-slate-100 text-slate-700',
+    PROGRAMS: 'bg-gray-100 text-gray-700',
+    MEETUPS: 'bg-orange-100 text-orange-700',
+    COMMUNITY_SERVICE: 'bg-purple-100 text-purple-700',
+    HEALTH_WELLNESS: 'bg-teal-100 text-teal-700',
   };
-  return colors[category] || colors.OTHER;
+  return colors[category] || 'bg-slate-100 text-slate-700';
 }
 
 /**
@@ -129,7 +128,7 @@ function EventDetailsModal({
             <h2 className="text-xl font-bold text-gray-900 mb-2">{event.name}</h2>
             <div className="flex flex-wrap items-center gap-2">
               <span className={`px-3 py-1 rounded-full text-sm font-medium ${getCategoryColor(event.category)}`}>
-                {event.category}
+                {getCategoryLabel(event.category)}
               </span>
               <span className={`px-3 py-1 rounded-full text-sm font-medium ${getModeColor(event.mode)}`}>
                 {event.mode}
@@ -146,6 +145,11 @@ function EventDetailsModal({
               {event.featured && (
                 <span className="px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-700">
                   Featured
+                </span>
+              )}
+              {event.audience === 'MEMBERS_ONLY' && (
+                <span className="px-3 py-1 rounded-full text-sm font-medium bg-amber-100 text-amber-700">
+                  Members Only
                 </span>
               )}
               {event.isDeleted && (

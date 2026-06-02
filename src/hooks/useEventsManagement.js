@@ -5,19 +5,24 @@ import eventService from '../services/event.service';
  * Event categories enum
  */
 export const EVENT_CATEGORIES = [
-  'TECHNOLOGY',
-  'EDUCATION',
-  'MEDICAL',
-  'COMEDY',
-  'ENTERTAINMENT',
-  'BUSINESS',
-  'SPORTS',
-  'ARTS',
-  'MUSIC',
-  'FOOD',
-  'LIFESTYLE',
-  'OTHER',
+  { value: 'WEBINAR', label: 'Webinar' },
+  { value: 'MASTERCLASS', label: 'Masterclass' },
+  { value: 'WORKSHOPS', label: 'Workshops' },
+  { value: 'TALK_SESSIONS', label: 'Talk Sessions' },
+  { value: 'LIVE_SESSIONS', label: 'Live Sessions' },
+  { value: 'ENTERTAINMENT', label: 'Entertainment' },
+  { value: 'PROGRAMS', label: 'Programs' },
+  { value: 'MEETUPS', label: 'Meet-ups' },
+  { value: 'COMMUNITY_SERVICE', label: 'Community Service' },
+  { value: 'HEALTH_WELLNESS', label: 'Health & Wellness' },
 ];
+
+/**
+ * Get the human-readable label for an event category value.
+ * Falls back to the raw value (e.g. legacy categories) if not found.
+ */
+export const getCategoryLabel = (value) =>
+  EVENT_CATEGORIES.find((c) => c.value === value)?.label || value || 'N/A';
 
 /**
  * Event modes enum

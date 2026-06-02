@@ -5,11 +5,16 @@ import StatCard from './StatCard';
 import { formatNumber } from '../../services/analytics.service';
 
 const CATEGORY_COLORS = {
-  TECHNOLOGY: '#3B82F6',
+  WEBINAR: '#3B82F6',
+  MASTERCLASS: '#6366F1',
+  WORKSHOPS: '#10B981',
+  TALK_SESSIONS: '#EAB308',
+  LIVE_SESSIONS: '#EF4444',
   ENTERTAINMENT: '#EC4899',
-  EDUCATION: '#10B981',
-  BUSINESS: '#F59E0B',
-  OTHER: '#6B7280',
+  PROGRAMS: '#F59E0B',
+  MEETUPS: '#F97316',
+  COMMUNITY_SERVICE: '#A855F7',
+  HEALTH_WELLNESS: '#14B8A6',
 };
 
 const MODE_COLORS = {

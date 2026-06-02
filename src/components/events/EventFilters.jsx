@@ -80,10 +80,10 @@ function EventFilters({
           disabled={disabled}
           className="px-4 py-2 border border-gray-300 rounded-lg focus:border-gray-800 outline-none bg-white disabled:bg-gray-100"
         >
-          <option value="">All Categories</option>
+          <option value="">All Category</option>
           {EVENT_CATEGORIES.map((cat) => (
-            <option key={cat} value={cat}>
-              {cat.charAt(0) + cat.slice(1).toLowerCase()}
+            <option key={cat.value} value={cat.value}>
+              {cat.label}
             </option>
           ))}
         </select>

@@ -23,13 +23,23 @@ const TYPE_COLORS = {
 const defaultForm = {
   title: '', company: '', location: '', type: 'FULL_TIME',
   description: '', requirements: '', salary: '', deadline: '', jobImage: '',
+  opportunityType: '', duration: '', timeline: '', opportunityLocation: '',
 };
+
+// The admin-managed opportunity filter groups, mapped to the job form fields.
+const OPP_FIELDS = [
+  { key: 'opportunityType', label: 'Opportunity Type', cat: 'type' },
+  { key: 'duration', label: 'Duration', cat: 'duration' },
+  { key: 'timeline', label: 'Timeline', cat: 'timeline' },
+  { key: 'opportunityLocation', label: 'Location', cat: 'location' },
+];
 
 function JobPosts() {
   const { hasRole } = useAuth();
   const canManage = hasRole(['SUPER_ADMIN', 'ADMIN']);
 
   const [jobs, setJobs] = useState([]);
+  const [filterOptions, setFilterOptions] = useState({ type: [], duration: [], timeline: [], location: [] });
   const [isLoading, setIsLoading] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState(defaultForm);
@@ -83,6 +93,10 @@ function JobPosts() {
       salary: job.salary || '',
       deadline: job.deadline ? job.deadline.slice(0, 10) : '',
       jobImage: job.jobImage || '',
+      opportunityType: job.opportunityType || '',
+      duration: job.duration || '',
+      timeline: job.timeline || '',
+      opportunityLocation: job.opportunityLocation || '',
     });
     setEditJobImage(job.jobImage ? { status: 'done', url: job.jobImage } : null);
     setEditError(null);
@@ -125,7 +139,10 @@ function JobPosts() {
     setIsSubmittingEdit(false);
   };
 
-  useEffect(() => { fetchJobs(); }, []);
+  useEffect(() => {
+    fetchJobs();
+    fetchFilterOptions();
+  }, []);
 
   const fetchJobs = async () => {
     setIsLoading(true);
@@ -133,6 +150,42 @@ function JobPosts() {
     if (result.success) setJobs(result.data?.jobs || []);
     setIsLoading(false);
   };
+
+  const fetchFilterOptions = async () => {
+    const res = await jobsService.getOpportunityFilters();
+    if (res.success && res.data?.filters) {
+      // Admin endpoint returns objects ({ _id, value }); reduce to value strings.
+      const f = res.data.filters;
+      const toValues = (arr) => (arr || []).map((o) => (typeof o === 'string' ? o : o.value));
+      setFilterOptions({
+        type: toValues(f.type),
+        duration: toValues(f.duration),
+        timeline: toValues(f.timeline),
+        location: toValues(f.location),
+      });
+    }
+  };
+
+  // Renders the 4 opportunity-attribute dropdowns for a given form state setter.
+  const renderOppSelects = (formState, setFormState) => (
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      {OPP_FIELDS.map((f) => (
+        <div key={f.key}>
+          <label className="text-sm font-semibold text-gray-900">{f.label}</label>
+          <select
+            value={formState[f.key] || ''}
+            onChange={(e) => setFormState({ ...formState, [f.key]: e.target.value })}
+            className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:border-gray-800 bg-white"
+          >
+            <option value="">— None —</option>
+            {(filterOptions[f.cat] || []).map((opt) => (
+              <option key={opt} value={opt}>{opt}</option>
+            ))}
+          </select>
+        </div>
+      ))}
+    </div>
+  );
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -250,6 +303,10 @@ function JobPosts() {
                   className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:border-gray-800" />
               </div>
             </div>
+
+            {/* Opportunity filter attributes (drive the app's Doers tab filters) */}
+            {renderOppSelects(form, setForm)}
+
             <div>
               <label className="text-sm font-semibold text-gray-900">Description <span className="text-red-500">*</span></label>
               <textarea required value={form.description} onChange={e => setForm({ ...form, description: e.target.value })}
@@ -441,6 +498,10 @@ function JobPosts() {
                 className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:border-gray-800" />
             </div>
           </div>
+
+          {/* Opportunity filter attributes */}
+          {renderOppSelects(editForm, setEditForm)}
+
           <div>
             <label className="text-sm font-semibold text-gray-900">Description <span className="text-red-500">*</span></label>
             <textarea required value={editForm.description} onChange={e => setEditForm({ ...editForm, description: e.target.value })}

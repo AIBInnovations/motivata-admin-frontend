@@ -7,6 +7,8 @@ const ENDPOINTS = {
   JOB_APPLICATIONS: (id) => `/web/jobs/${id}/applications`,
   ALL_APPLICATIONS: '/web/jobs/applications',
   APPLICATION_STATUS: (id) => `/web/jobs/applications/${id}/status`,
+  FILTERS: '/web/jobs/filters',
+  FILTER: (id) => `/web/jobs/filters/${id}`,
 };
 
 const jobsService = {
@@ -24,6 +26,11 @@ const jobsService = {
   getJobApplications: (jobId, params = {}) => handleApiResponse(api.get(ENDPOINTS.JOB_APPLICATIONS(jobId), { params })),
   getAllApplications: (params = {}) => handleApiResponse(api.get(ENDPOINTS.ALL_APPLICATIONS, { params })),
   updateApplicationStatus: (applicationId, status) => handleApiResponse(api.put(ENDPOINTS.APPLICATION_STATUS(applicationId), { status })),
+
+  // Opportunity filter options (Type / Duration / Timeline / Location)
+  getOpportunityFilters: () => handleApiResponse(api.get(ENDPOINTS.FILTERS)),
+  createOpportunityFilter: (category, value) => handleApiResponse(api.post(ENDPOINTS.FILTERS, { category, value })),
+  deleteOpportunityFilter: (id) => handleApiResponse(api.delete(ENDPOINTS.FILTER(id))),
 };
 
 export default jobsService;
