@@ -6,9 +6,13 @@ import couponService from '../../services/coupon.service';
 
 /**
  * ApprovalModal Component
- * Modal for approving membership requests and sending payment links
+ * Modal for approving membership requests and sending payment links.
+ *
+ * `service` selects the queue: membershipRequestService (default) or
+ * doerRequestService. Both expose the same getPlans/approve contract, so the
+ * Doer queue reuses this modal and only sees its own plans.
  */
-function ApprovalModal({ request, onClose, onSuccess }) {
+function ApprovalModal({ request, onClose, onSuccess, service = membershipRequestService }) {
   const [plans, setPlans] = useState([]);
 
   // Check if customer already applied a coupon
@@ -51,7 +55,7 @@ function ApprovalModal({ request, onClose, onSuccess }) {
     const fetchPlans = async () => {
       setLoadingPlans(true);
       try {
-        const result = await membershipRequestService.getPlans();
+        const result = await service.getPlans();
         if (result.success) {
           setPlans(result.data.plans || []);
 
@@ -78,7 +82,7 @@ function ApprovalModal({ request, onClose, onSuccess }) {
     };
 
     fetchPlans();
-  }, [request]);
+  }, [request, service]);
 
   /**
    * Handle plan selection change
@@ -278,7 +282,7 @@ function ApprovalModal({ request, onClose, onSuccess }) {
       }
       payload.contactPreference = formData.contactPreference;
 
-      const result = await membershipRequestService.approve(request._id, payload);
+      const result = await service.approve(request._id, payload);
 
       if (result.success) {
         onSuccess();

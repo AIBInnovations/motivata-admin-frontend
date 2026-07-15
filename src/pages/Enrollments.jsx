@@ -1,314 +1,325 @@
-import { useState } from 'react'
-import { Search, ChevronLeft, ChevronRight, Eye, Trash2 } from 'lucide-react'
+import { useState, useEffect, useCallback } from 'react';
+import {
+  Search,
+  Filter,
+  RefreshCw,
+  XCircle,
+  Loader2,
+  User,
+  Phone,
+  Mail,
+  Calendar,
+  Ticket,
+  AlertCircle,
+} from 'lucide-react';
+import { toast } from 'react-toastify';
+import enrollmentService from '../services/enrollment.service';
+import eventService from '../services/event.service';
+import Pagination from '../components/ui/Pagination';
+
+const STATUS_CONFIG = {
+  ACTIVE: { label: 'Active', bg: 'bg-green-100', text: 'text-green-700', border: 'border-green-300' },
+  CANCELLED: { label: 'Cancelled', bg: 'bg-red-100', text: 'text-red-700', border: 'border-red-300' },
+  REFUNDED: { label: 'Refunded', bg: 'bg-gray-100', text: 'text-gray-700', border: 'border-gray-300' },
+  MIXED: { label: 'Partially Cancelled', bg: 'bg-yellow-100', text: 'text-yellow-700', border: 'border-yellow-300' },
+};
+
+/**
+ * Collapse a ticket Map (phone -> { status }) into one display status.
+ * All same -> that status; a mix of active and cancelled -> MIXED.
+ */
+const deriveStatus = (tickets) => {
+  const values = tickets ? Object.values(tickets) : [];
+  if (!values.length) return 'ACTIVE';
+  const statuses = [...new Set(values.map((t) => t.status))];
+  if (statuses.length === 1) return statuses[0];
+  if (statuses.includes('ACTIVE')) return 'MIXED';
+  return statuses[0];
+};
+
+const formatDate = (value) => {
+  if (!value) return 'N/A';
+  return new Date(value).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+};
 
 function Enrollments() {
-  const [currentPage, setCurrentPage] = useState(1)
-  const [searchQuery, setSearchQuery] = useState('')
-  const [statusFilter, setStatusFilter] = useState('')
-  const [eventFilter, setEventFilter] = useState('')
-  const enrollmentsPerPage = 10
+  const [enrollments, setEnrollments] = useState([]);
+  const [events, setEvents] = useState([]);
+  const [pagination, setPagination] = useState({ currentPage: 1, totalPages: 0, totalCount: 0, limit: 10 });
+  const [filters, setFilters] = useState({ page: 1, limit: 10, status: '', eventId: '', sortBy: 'createdAt', sortOrder: 'desc' });
+  const [search, setSearch] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const statusColors = {
-    confirmed: 'bg-green-100 text-green-700',
-    pending: 'bg-yellow-100 text-yellow-700',
-    cancelled: 'bg-red-100 text-red-700',
-  }
-
-  const [enrollments, setEnrollments] = useState([
-    {
-      id: 1,
-      userName: 'John Doe',
-      email: 'john.doe@email.com',
-      phone: '+91 9876543210',
-      eventName: 'Tech Conference 2025',
-      enrollmentDate: '2025-02-15',
-      status: 'confirmed',
-    },
-    {
-      id: 2,
-      userName: 'Jane Smith',
-      email: 'jane.smith@email.com',
-      phone: '+91 9876543211',
-      eventName: 'Medical Summit 2025',
-      enrollmentDate: '2025-02-18',
-      status: 'pending',
-    },
-    {
-      id: 3,
-      userName: 'Mike Johnson',
-      email: 'mike.j@email.com',
-      phone: '+91 9876543212',
-      eventName: 'Comedy Night Live',
-      enrollmentDate: '2025-02-20',
-      status: 'confirmed',
-    },
-    {
-      id: 4,
-      userName: 'Sarah Wilson',
-      email: 'sarah.w@email.com',
-      phone: '+91 9876543213',
-      eventName: 'Rock Music Festival',
-      enrollmentDate: '2025-02-22',
-      status: 'cancelled',
-    },
-    {
-      id: 5,
-      userName: 'David Brown',
-      email: 'david.b@email.com',
-      phone: '+91 9876543214',
-      eventName: 'AI Workshop 2025',
-      enrollmentDate: '2025-02-25',
-      status: 'confirmed',
-    },
-    {
-      id: 6,
-      userName: 'Emily Davis',
-      email: 'emily.d@email.com',
-      phone: '+91 9876543215',
-      eventName: 'Health Awareness Camp',
-      enrollmentDate: '2025-02-28',
-      status: 'pending',
-    },
-    {
-      id: 7,
-      userName: 'Chris Martin',
-      email: 'chris.m@email.com',
-      phone: '+91 9876543216',
-      eventName: 'Stand-up Comedy Show',
-      enrollmentDate: '2025-03-01',
-      status: 'confirmed',
-    },
-    {
-      id: 8,
-      userName: 'Lisa Anderson',
-      email: 'lisa.a@email.com',
-      phone: '+91 9876543217',
-      eventName: 'Jazz Night',
-      enrollmentDate: '2025-03-05',
-      status: 'confirmed',
-    },
-    {
-      id: 9,
-      userName: 'Robert Taylor',
-      email: 'robert.t@email.com',
-      phone: '+91 9876543218',
-      eventName: 'Tech Conference 2025',
-      enrollmentDate: '2025-03-08',
-      status: 'pending',
-    },
-    {
-      id: 10,
-      userName: 'Amanda White',
-      email: 'amanda.w@email.com',
-      phone: '+91 9876543219',
-      eventName: 'Medical Summit 2025',
-      enrollmentDate: '2025-03-10',
-      status: 'confirmed',
-    },
-    {
-      id: 11,
-      userName: 'Kevin Lee',
-      email: 'kevin.l@email.com',
-      phone: '+91 9876543220',
-      eventName: 'Rock Music Festival',
-      enrollmentDate: '2025-03-12',
-      status: 'cancelled',
-    },
-    {
-      id: 12,
-      userName: 'Michelle Garcia',
-      email: 'michelle.g@email.com',
-      phone: '+91 9876543221',
-      eventName: 'Comedy Night Live',
-      enrollmentDate: '2025-03-15',
-      status: 'confirmed',
-    },
-  ])
-
-  const events = [...new Set(enrollments.map((e) => e.eventName))]
-  const statuses = ['confirmed', 'pending', 'cancelled']
-
-  const handleDelete = (id) => {
-    if (window.confirm('Are you sure you want to delete this enrollment?')) {
-      setEnrollments(enrollments.filter((enrollment) => enrollment.id !== id))
+  const fetchEnrollments = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const result = await enrollmentService.getAll(filters);
+      if (result.success) {
+        setEnrollments(result.data.enrollments || []);
+        setPagination((prev) => result.data.pagination || prev);
+      } else {
+        setError(result.message || 'Failed to fetch enrollments');
+        setEnrollments([]);
+      }
+    } catch {
+      setError('An error occurred while fetching enrollments');
+      setEnrollments([]);
+    } finally {
+      setIsLoading(false);
     }
-  }
+  }, [filters]);
 
-  // Filter enrollments
-  const filteredEnrollments = enrollments
-    .filter((enrollment) => {
-      const matchesSearch =
-        enrollment.userName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        enrollment.email.toLowerCase().includes(searchQuery.toLowerCase())
-      const matchesStatus = statusFilter ? enrollment.status === statusFilter : true
-      const matchesEvent = eventFilter ? enrollment.eventName === eventFilter : true
-      return matchesSearch && matchesStatus && matchesEvent
-    })
+  useEffect(() => {
+    fetchEnrollments();
+  }, [fetchEnrollments]);
 
-  // Pagination logic
-  const totalPages = Math.ceil(filteredEnrollments.length / enrollmentsPerPage)
-  const startIndex = (currentPage - 1) * enrollmentsPerPage
-  const endIndex = startIndex + enrollmentsPerPage
-  const currentEnrollments = filteredEnrollments.slice(startIndex, endIndex)
+  // Event dropdown for the filter. Loaded once.
+  useEffect(() => {
+    eventService
+      .getDropdownEvents()
+      .then((result) => {
+        if (result.success) setEvents(result.data.events || []);
+      })
+      .catch(() => {});
+  }, []);
 
-  // Reset to page 1 when filters change
-  const handleFilterChange = (setter, value) => {
-    setter(value)
-    setCurrentPage(1)
-  }
+  const handleFilterChange = (key, value) => {
+    setFilters((prev) => ({ ...prev, [key]: value, page: 1 }));
+  };
 
-  const goToPrevious = () => {
-    if (currentPage > 1) setCurrentPage(currentPage - 1)
-  }
+  const handlePageChange = (page) => {
+    setFilters((prev) => ({ ...prev, page }));
+  };
 
-  const goToNext = () => {
-    if (currentPage < totalPages) setCurrentPage(currentPage + 1)
-  }
+  const handleCancel = async (enrollment) => {
+    const name = enrollment.userId?.name || 'this user';
+    if (!window.confirm(`Cancel ALL tickets for ${name}? This cannot be undone.`)) return;
+    try {
+      const result = await enrollmentService.cancel(enrollment._id, { cancelAll: true, reason: 'Cancelled by admin' });
+      if (result.success) {
+        toast.success('Enrollment cancelled');
+        fetchEnrollments();
+      } else {
+        toast.error(result.message || 'Failed to cancel enrollment');
+      }
+    } catch {
+      toast.error('An error occurred while cancelling');
+    }
+  };
+
+  const getStatusBadge = (status) => {
+    const config = STATUS_CONFIG[status] || STATUS_CONFIG.ACTIVE;
+    return (
+      <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border ${config.bg} ${config.text} ${config.border}`}>
+        {config.label}
+      </span>
+    );
+  };
+
+  // Backend has no text search on enrollments, so filter the loaded page here.
+  const term = search.trim().toLowerCase();
+  const visible = term
+    ? enrollments.filter((e) => {
+        const u = e.userId || {};
+        return [u.name, u.email, u.phone].some((v) => v && String(v).toLowerCase().includes(term));
+      })
+    : enrollments;
 
   return (
-    <div>
-      {/* Search & Filters */}
-      <div className="bg-white rounded-xl shadow-sm p-4 mb-6">
-        <div className="flex flex-wrap items-center gap-4">
-          {/* Search Bar */}
-          <div className="relative w-80">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+    <div className="p-6 space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Enrollments</h1>
+          <p className="text-sm text-gray-500 mt-1">Event enrollments and their ticket status</p>
+        </div>
+        <button
+          onClick={fetchEnrollments}
+          disabled={isLoading}
+          className="flex items-center gap-2 px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition-colors disabled:opacity-50"
+        >
+          <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+          Refresh
+        </button>
+      </div>
+
+      {/* Filters */}
+      <div className="bg-white rounded-xl shadow-sm p-4 space-y-4">
+        <div className="flex items-center gap-2 text-gray-700 font-semibold">
+          <Filter className="h-5 w-5" />
+          Filters
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
             <input
               type="text"
-              placeholder="Search by name or email..."
-              value={searchQuery}
-              onChange={(e) => handleFilterChange(setSearchQuery, e.target.value)}
+              placeholder="Search this page by name, phone, email..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:border-gray-800 outline-none"
             />
           </div>
 
-          {/* Status Filter */}
           <select
-            value={statusFilter}
-            onChange={(e) => handleFilterChange(setStatusFilter, e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:border-gray-800 outline-none bg-white"
-          >
-            <option value="">All Status</option>
-            {statuses.map((status) => (
-              <option key={status} value={status} className="capitalize">
-                {status.charAt(0).toUpperCase() + status.slice(1)}
-              </option>
-            ))}
-          </select>
-
-          {/* Event Filter */}
-          <select
-            value={eventFilter}
-            onChange={(e) => handleFilterChange(setEventFilter, e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:border-gray-800 outline-none bg-white"
+            value={filters.eventId}
+            onChange={(e) => handleFilterChange('eventId', e.target.value)}
+            className="px-4 py-2 border border-gray-300 rounded-lg focus:border-gray-800 outline-none"
           >
             <option value="">All Events</option>
-            {events.map((event) => (
-              <option key={event} value={event}>
-                {event}
+            {events.map((ev) => (
+              <option key={ev._id} value={ev._id}>
+                {ev.name}
               </option>
             ))}
+          </select>
+
+          <select
+            value={`${filters.sortBy}-${filters.sortOrder}`}
+            onChange={(e) => {
+              const [sortBy, sortOrder] = e.target.value.split('-');
+              setFilters((prev) => ({ ...prev, sortBy, sortOrder, page: 1 }));
+            }}
+            className="px-4 py-2 border border-gray-300 rounded-lg focus:border-gray-800 outline-none"
+          >
+            <option value="createdAt-desc">Newest First</option>
+            <option value="createdAt-asc">Oldest First</option>
           </select>
         </div>
       </div>
 
-      {/* Enrollments List */}
-      <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-        <table className="w-full">
-          <thead className="bg-gray-50 border-b border-gray-200">
-            <tr>
-              <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">User</th>
-              <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Event</th>
-              <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Phone</th>
-              <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Enrollment Date</th>
-              <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Status</th>
-              <th className="text-right px-6 py-4 text-sm font-medium text-gray-600">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {currentEnrollments.map((enrollment) => (
-              <tr key={enrollment.id} className="border-b border-gray-100 hover:bg-gray-50">
-                <td className="px-6 py-4">
-                  <div>
-                    <p className="font-medium text-gray-900">{enrollment.userName}</p>
-                    <p className="text-sm text-gray-500">{enrollment.email}</p>
-                  </div>
-                </td>
-                <td className="px-6 py-4 text-gray-600">{enrollment.eventName}</td>
-                <td className="px-6 py-4 text-gray-600">{enrollment.phone}</td>
-                <td className="px-6 py-4 text-gray-600">{enrollment.enrollmentDate}</td>
-                <td className="px-6 py-4">
-                  <span
-                    className={`px-3 py-1 rounded-full text-xs font-medium capitalize ${
-                      statusColors[enrollment.status]
-                    }`}
-                  >
-                    {enrollment.status}
-                  </span>
-                </td>
-                <td className="px-6 py-4">
-                  <div className="flex items-center justify-end gap-2">
-                    <button
-                      className="p-2 text-gray-800 hover:bg-gray-50 rounded-lg transition-all"
-                      title="View Details"
-                    >
-                      <Eye className="h-5 w-5" />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(enrollment.id)}
-                      className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-all"
-                      title="Delete"
-                    >
-                      <Trash2 className="h-5 w-5" />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-center gap-2">
+          <AlertCircle className="h-5 w-5" />
+          {error}
+        </div>
+      )}
 
-        {/* Pagination */}
-        <div className="flex items-center justify-between px-6 py-4 border-t border-gray-200">
-          <p className="text-sm text-gray-600">
-            Showing {filteredEnrollments.length > 0 ? startIndex + 1 : 0} to{' '}
-            {Math.min(endIndex, filteredEnrollments.length)} of {filteredEnrollments.length} enrollments
+      {isLoading && (
+        <div className="bg-white rounded-xl shadow-sm p-8 flex items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-gray-800" />
+          <span className="ml-3 text-gray-600">Loading enrollments...</span>
+        </div>
+      )}
+
+      {!isLoading && visible.length === 0 && (
+        <div className="bg-white rounded-xl shadow-sm p-8 text-center">
+          <Ticket className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+          <p className="text-lg font-medium text-gray-900">No enrollments found</p>
+          <p className="text-sm text-gray-500 mt-1">
+            {search || filters.eventId ? 'Try adjusting your filters' : 'Enrollments will appear here'}
           </p>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={goToPrevious}
-              disabled={currentPage === 1}
-              className={`p-2 rounded-lg transition-all ${
-                currentPage === 1 ? 'text-gray-300 cursor-not-allowed' : 'text-gray-600 hover:bg-gray-100'
-              }`}
-            >
-              <ChevronLeft className="h-5 w-5" />
-            </button>
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-              <button
-                key={page}
-                onClick={() => setCurrentPage(page)}
-                className={`w-8 h-8 rounded-lg transition-all ${
-                  currentPage === page ? 'bg-gray-800 text-white' : 'text-gray-600 hover:bg-gray-100'
-                }`}
-              >
-                {page}
-              </button>
-            ))}
-            <button
-              onClick={goToNext}
-              disabled={currentPage === totalPages}
-              className={`p-2 rounded-lg transition-all ${
-                currentPage === totalPages ? 'text-gray-300 cursor-not-allowed' : 'text-gray-600 hover:bg-gray-100'
-              }`}
-            >
-              <ChevronRight className="h-5 w-5" />
-            </button>
+        </div>
+      )}
+
+      {!isLoading && visible.length > 0 && (
+        <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50 border-b border-gray-200">
+                <tr>
+                  <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Attendee</th>
+                  <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Event</th>
+                  <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Tickets</th>
+                  <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Status</th>
+                  <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Enrolled On</th>
+                  <th className="text-right px-6 py-4 text-sm font-medium text-gray-600">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {visible.map((enrollment) => {
+                  const user = enrollment.userId || {};
+                  const event = enrollment.eventId || {};
+                  const status = deriveStatus(enrollment.tickets);
+                  const amount =
+                    enrollment.paymentId?.finalAmount ??
+                    enrollment.paymentId?.amount ??
+                    (enrollment.ticketPrice != null ? enrollment.ticketPrice * (enrollment.ticketCount || 1) : null);
+
+                  return (
+                    <tr key={enrollment._id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                      <td className="px-6 py-4">
+                        <div className="flex flex-col gap-1">
+                          <div className="flex items-center gap-2">
+                            <User className="h-4 w-4 text-gray-400" />
+                            <span className="font-medium text-gray-900">{user.name || 'Unknown'}</span>
+                          </div>
+                          {user.phone && (
+                            <div className="flex items-center gap-2">
+                              <Phone className="h-3.5 w-3.5 text-gray-400" />
+                              <span className="text-sm text-gray-600">{user.phone}</span>
+                            </div>
+                          )}
+                          {user.email && (
+                            <div className="flex items-center gap-2">
+                              <Mail className="h-3.5 w-3.5 text-gray-400" />
+                              <span className="text-sm text-gray-600">{user.email}</span>
+                            </div>
+                          )}
+                        </div>
+                      </td>
+
+                      <td className="px-6 py-4">
+                        <p className="font-medium text-gray-900">{event.name || 'Unknown event'}</p>
+                        {event.startDate && <p className="text-xs text-gray-500">{formatDate(event.startDate)}</p>}
+                      </td>
+
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2">
+                          <Ticket className="h-4 w-4 text-gray-400" />
+                          <span className="text-sm text-gray-900">{enrollment.ticketCount || 1}</span>
+                        </div>
+                        {amount != null && (
+                          <p className="text-xs text-gray-500 mt-1">₹{Number(amount).toLocaleString('en-IN')}</p>
+                        )}
+                        {enrollment.tierName && <p className="text-xs text-gray-400">{enrollment.tierName}</p>}
+                      </td>
+
+                      <td className="px-6 py-4">{getStatusBadge(status)}</td>
+
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <Calendar className="h-4 w-4" />
+                          {formatDate(enrollment.createdAt)}
+                        </div>
+                      </td>
+
+                      <td className="px-6 py-4">
+                        <div className="flex items-center justify-end gap-2">
+                          {status !== 'CANCELLED' && status !== 'REFUNDED' && (
+                            <button
+                              onClick={() => handleCancel(enrollment)}
+                              className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                              title="Cancel enrollment"
+                            >
+                              <XCircle className="h-4 w-4" />
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="border-t border-gray-200 px-6 py-4">
+            <Pagination
+              currentPage={pagination.currentPage}
+              totalPages={pagination.totalPages}
+              onPageChange={handlePageChange}
+              totalItems={pagination.totalCount}
+              itemsPerPage={pagination.limit}
+              itemLabel="enrollments"
+            />
           </div>
         </div>
-      </div>
+      )}
     </div>
-  )
+  );
 }
 
-export default Enrollments
+export default Enrollments;

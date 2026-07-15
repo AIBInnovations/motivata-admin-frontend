@@ -5,9 +5,10 @@ import membershipRequestService from '../../services/membershipRequest.service';
 
 /**
  * RejectionModal Component
- * Modal for rejecting membership requests with a reason
+ * Modal for rejecting membership requests with a reason.
+ * `service` selects the queue — see ApprovalModal.
  */
-function RejectionModal({ request, onClose, onSuccess }) {
+function RejectionModal({ request, onClose, onSuccess, service = membershipRequestService }) {
   const [formData, setFormData] = useState({
     rejectionReason: '',
     adminNotes: '',
@@ -29,7 +30,7 @@ function RejectionModal({ request, onClose, onSuccess }) {
     setError('');
 
     try {
-      const result = await membershipRequestService.reject(request._id, {
+      const result = await service.reject(request._id, {
         rejectionReason: formData.rejectionReason.trim(),
         adminNotes: formData.adminNotes.trim() || undefined,
       });

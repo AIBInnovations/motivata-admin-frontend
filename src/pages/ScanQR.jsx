@@ -4,6 +4,7 @@ import { Html5Qrcode } from 'html5-qrcode';
 import { toast } from 'react-toastify';
 import { MdQrCodeScanner, MdCameraswitch, MdClose, MdCheckCircle, MdContentCopy, MdWarning, MdCardGiftcard } from 'react-icons/md';
 import { FaCamera, FaCameraRetro } from 'react-icons/fa';
+import { tokenStorage } from '../utils/storage';
 
 /**
  * Error Boundary to catch and handle scanner errors
@@ -570,7 +571,7 @@ function ScanQR() {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Authorization': `Bearer ${tokenStorage.getAccessToken()}`,
         },
       }
     );
@@ -632,7 +633,7 @@ function ScanQR() {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Authorization': `Bearer ${tokenStorage.getAccessToken()}`,
         },
       }
     );

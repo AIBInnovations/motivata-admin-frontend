@@ -28,6 +28,7 @@ import ConfirmDialog from '../components/ui/ConfirmDialog';
 const defaultPlanForm = {
   name: '',
   description: '',
+  planType: 'MEMBERSHIP',
   price: '',
   compareAtPrice: '',
   durationInDays: '',
@@ -189,6 +190,9 @@ function Memberships() {
     const payload = {
       name: form.name.trim(),
       description: form.description.trim(),
+      // Decides which website form offers this plan and which admin queue
+      // reviews the resulting request.
+      planType: form.planType || 'MEMBERSHIP',
       price: form.price ? Number(form.price) : 0,
       durationInDays: isLifetime ? 0 : Number(form.durationInDays),
       perks: form.perks,
@@ -242,6 +246,7 @@ function Memberships() {
     setPlanForm({
       ...defaultPlanForm,
       ...plan,
+      planType: plan.planType || 'MEMBERSHIP',
       price: plan.price ?? '',
       compareAtPrice: plan.compareAtPrice ?? '',
       durationInDays: plan.durationInDays ?? '',
@@ -446,7 +451,8 @@ function Memberships() {
       {/* Plans section */}
       {activeTab === 'plans' && (
         <div className="space-y-6" id="plans-tab-content">
-          {/* Create plan form - hidden (admins can only view/update existing plans)
+          {/* Create plan form - hidden on purpose (admins can only view/update existing plans).
+              Plans, including DOER plans, are created directly in the database by the dev team.
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <div className="flex items-start justify-between gap-3">
               <div>
@@ -470,6 +476,15 @@ function Memberships() {
                 placeholder="Plan name"
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-gray-800 outline-none"
               />
+              <select
+                value={planForm.planType}
+                onChange={(e) => setPlanForm({ ...planForm, planType: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-gray-800 outline-none"
+                title="Which website form offers this plan"
+              >
+                <option value="MEMBERSHIP">Membership plan (Request Membership form)</option>
+                <option value="DOER">Doer plan (Become a Doer form)</option>
+              </select>
               <input
                 type="number"
                 min="1"

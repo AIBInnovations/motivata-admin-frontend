@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { ShoppingCart, CheckCircle, Clock, AlertCircle, RefreshCw } from 'lucide-react';
 import { toast } from 'react-toastify';
+import { tokenStorage } from '../utils/storage';
 
 /**
  * TestServices Page
@@ -53,7 +54,7 @@ function TestServices() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Authorization': `Bearer ${tokenStorage.getAccessToken()}`,
         },
         body: JSON.stringify(serviceData),
       });

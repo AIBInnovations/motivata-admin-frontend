@@ -2,6 +2,7 @@ import { useState } from "react";
 import {
   LayoutDashboard,
   Calendar,
+  Ticket,
   UserCog,
   ShieldCheck,
   Banknote,
@@ -42,6 +43,7 @@ import MotivataLogoSmall from "../assets/logo/logo2.png";
 import MembershipRequestBadge from "./MembershipRequestBadge";
 import MotivataBlendBadge from "./MotivataBlendBadge";
 import RoundTableBadge from "./RoundTableBadge";
+import DoerRequestBadge from "./DoerRequestBadge";
 
 /**
  * Sidebar Component
@@ -91,6 +93,13 @@ function Sidebar({ collapsed, isOpen, onClose }) {
       label: "Events",
       icon: Calendar,
       path: "/events",
+      type: "single",
+    },
+    {
+      id: "enrollments",
+      label: "Enrollments",
+      icon: Ticket,
+      path: "/enrollments",
       type: "single",
     },
     {
@@ -279,6 +288,14 @@ function Sidebar({ collapsed, isOpen, onClose }) {
       showBadge: true,
     },
     {
+      id: "doer-requests",
+      label: "Doer Requests",
+      icon: Zap,
+      path: "/doer-requests",
+      type: "single",
+      showBadge: "doer",
+    },
+    {
       id: "cashtickets",
       label: "Cash Tickets",
       icon: Banknote,
@@ -375,6 +392,7 @@ function Sidebar({ collapsed, isOpen, onClose }) {
                   {item.label}
                 </span>
                 {item.showBadge === true && <MembershipRequestBadge />}
+                {item.showBadge === "doer" && <DoerRequestBadge />}
               </>
             )}
           </Link>

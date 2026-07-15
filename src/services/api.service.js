@@ -1,8 +1,17 @@
 import axios from 'axios';
 import { tokenStorage, clearAllAuthData } from '../utils/storage';
 
-// API Base URL - configure in .env file
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+// API Base URL - configure in .env file.
+// The localhost fallback is a dev convenience. In a production build an unset
+// VITE_API_BASE_URL used to silently point the whole panel at localhost:5000,
+// so every request failed with no obvious cause. Fail loudly at load instead.
+const configuredApiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+if (!configuredApiBaseUrl && import.meta.env.PROD) {
+  throw new Error(
+    'VITE_API_BASE_URL is not set. A production build must not fall back to localhost:5000 — set it in the environment.'
+  );
+}
+const API_BASE_URL = configuredApiBaseUrl || 'http://localhost:5000/api';
 
 // Host without the /api suffix, for resolving relative asset URLs returned by the API
 export const API_ORIGIN = API_BASE_URL.replace(/\/api\/?$/, '');

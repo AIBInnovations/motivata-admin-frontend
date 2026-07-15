@@ -32,12 +32,16 @@ import UserSubscriptions from './pages/UserSubscriptions';
 import TestServices from './pages/TestServices';
 import MotivataBlendRequests from './pages/MotivataBlendRequests';
 import RoundTableRequests from './pages/RoundTableRequests';
+import DoerRequests from './pages/DoerRequests';
 import MotivataBlendBanner from './pages/MotivataBlendBanner';
 import ExplorePosts from './pages/ExplorePosts';
 import JobPosts from './pages/JobPosts';
 import JobApplications from './pages/JobApplications';
 import OpportunityFilters from './pages/OpportunityFilters';
 import Recommendations from './pages/Recommendations';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { PendingCountsProvider } from './contexts/PendingCountsContext';
 
 
 function App() {
@@ -55,11 +59,16 @@ function App() {
             }
           />
 
-          {/* Protected Routes with Layout */}
+          {/* Protected Routes with Layout.
+              PendingCountsProvider wraps the Layout (which renders the sidebar
+              badges) so all four counts share one poll. It lives inside
+              ProtectedRoute, so it only polls for a logged-in admin. */}
           <Route
             element={
               <ProtectedRoute>
-                <Layout />
+                <PendingCountsProvider>
+                  <Layout />
+                </PendingCountsProvider>
               </ProtectedRoute>
             }
           >
@@ -92,6 +101,7 @@ function App() {
             <Route path="/test-services" element={<TestServices />} />
             <Route path="/motivata-blend-requests" element={<MotivataBlendRequests />} />
             <Route path="/round-table-requests" element={<RoundTableRequests />} />
+            <Route path="/doer-requests" element={<DoerRequests />} />
             <Route path="/motivata-blend-banner" element={<MotivataBlendBanner />} />
             <Route path="/explore-posts" element={<ExplorePosts />} />
             <Route path="/job-posts" element={<JobPosts />} />
@@ -106,6 +116,16 @@ function App() {
           {/* 404 - redirect to dashboard */}
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
+
+        {/* Without this the toast() calls across the app render nothing. */}
+        <ToastContainer
+          position="top-right"
+          autoClose={4000}
+          newestOnTop
+          closeOnClick
+          pauseOnHover
+          theme="light"
+        />
       </AuthProvider>
     </BrowserRouter>
   );
