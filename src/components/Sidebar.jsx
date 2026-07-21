@@ -289,7 +289,7 @@ function Sidebar({ collapsed, isOpen, onClose }) {
     },
     {
       id: "doer-requests",
-      label: "Doer Requests",
+      label: "Doer Purchases",
       icon: Zap,
       path: "/doer-requests",
       type: "single",
@@ -378,8 +378,7 @@ function Sidebar({ collapsed, isOpen, onClose }) {
               }
               ${collapsed ? "lg:justify-center lg:px-2" : ""}
             `}
-            title={collapsed ? item.label : ""}
-          >
+            title={collapsed ? item.label : ""}>
             <item.icon
               className={`
                 h-4 w-4 shrink-0 transition-transform duration-200
@@ -419,8 +418,7 @@ function Sidebar({ collapsed, isOpen, onClose }) {
               }
               ${collapsed ? "lg:justify-center lg:px-2" : ""}
             `}
-            title={collapsed ? item.label : ""}
-          >
+            title={collapsed ? item.label : ""}>
             <item.icon className="h-4 w-4 shrink-0" />
             {!collapsed && (
               <>
@@ -453,13 +451,14 @@ function Sidebar({ collapsed, isOpen, onClose }) {
                             ? "bg-gray-900 text-white shadow-md"
                             : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
                         }
-                      `}
-                    >
+                      `}>
                       <child.icon className="h-4 w-4 shrink-0" />
                       <span className="font-medium text-sm truncate flex-1">
                         {child.label}
                       </span>
-                      {child.showBadge === "motivataBlend" && <MotivataBlendBadge />}
+                      {child.showBadge === "motivataBlend" && (
+                        <MotivataBlendBadge />
+                      )}
                       {child.showBadge === "roundTable" && <RoundTableBadge />}
                     </Link>
                   </li>
@@ -486,16 +485,14 @@ function Sidebar({ collapsed, isOpen, onClose }) {
         transition-all duration-300 ease-in-out
         h-screen
         overflow-hidden
-      `}
-    >
+      `}>
       {/* Header with Logo and Close Button */}
       <div className="p-5 lg:p-6 border-b border-gray-200/80 shrink-0 bg-white/80 backdrop-blur-sm">
         <div className="flex items-start justify-between">
           <div
             className={`flex flex-col ${
               collapsed ? "items-center" : "items-start"
-            } min-w-0 flex-1`}
-          >
+            } min-w-0 flex-1`}>
             <img
               src={collapsed ? MotivataLogoSmall : MotivataLogo}
               alt="Motivata"
@@ -512,8 +509,7 @@ function Sidebar({ collapsed, isOpen, onClose }) {
           <button
             onClick={onClose}
             className="lg:hidden p-2 text-gray-500 hover:bg-gray-100 rounded-lg transition-all active:scale-95"
-            aria-label="Close sidebar"
-          >
+            aria-label="Close sidebar">
             <X className="h-5 w-5" />
           </button>
         </div>
@@ -538,8 +534,7 @@ function Sidebar({ collapsed, isOpen, onClose }) {
               transition-all duration-200 hover:shadow-md
               ${collapsed ? "lg:justify-center lg:p-2" : ""}
             `}
-            title={collapsed ? `${displayName} - ${displayRole}` : ""}
-          >
+            title={collapsed ? `${displayName} - ${displayRole}` : ""}>
             {/* Avatar with initials */}
             <div className="relative shrink-0">
               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-gray-800 via-purple-600 to-pink-600 flex items-center justify-center text-white font-bold text-sm shadow-md ring-2 ring-white">
@@ -581,8 +576,7 @@ function Sidebar({ collapsed, isOpen, onClose }) {
               group
               ${collapsed ? "lg:px-2" : ""}
             `}
-            title="Logout"
-          >
+            title="Logout">
             <LogOut className="h-4 w-4 shrink-0 group-hover:scale-110 transition-transform" />
             {!collapsed && <span>Logout</span>}
           </button>

@@ -459,6 +459,15 @@ function RequestDetailsModal({ request, onClose, onApprove, onReject, onResendLi
               </div>
             </div>
 
+            {request.joinReason && (
+              <div>
+                <p className="text-xs text-gray-600 mb-1">Why they want to join</p>
+                <p className="text-sm text-gray-700 bg-white p-3 rounded border border-gray-200 whitespace-pre-line">
+                  {request.joinReason}
+                </p>
+              </div>
+            )}
+
             {request.adminNotes && (
               <div>
                 <p className="text-xs text-gray-600 mb-1">Admin Notes</p>
