@@ -35,6 +35,7 @@ const getInitialFormState = (event = null, seatArrangement = null) => ({
   pricingTiers: event?.pricingTiers || [],
   isLive: event?.isLive ?? false,
   featured: event?.featured ?? false,
+  isBanner: event?.isBanner ?? false,
   audience: event?.audience || 'ALL',
   // Seat Arrangement
   useSeatArrangement: !!seatArrangement,
@@ -524,6 +525,7 @@ function EventForm({
     if (isEditMode) {
       submitData.isLive = formData.isLive;
       submitData.featured = formData.featured;
+      submitData.isBanner = formData.isBanner;
     }
 
     // Add seat arrangement data if enabled
@@ -1344,6 +1346,26 @@ function EventForm({
               <div>
                 <span className="text-sm font-medium text-gray-900">Featured</span>
                 <p className="text-xs text-gray-500">Highlight in featured sections</p>
+              </div>
+            </label>
+
+            {/* Banner Toggle — only one event can be the website banner. Turning
+                it on here clears it off any other event automatically. */}
+            <label className="flex items-center gap-3 cursor-pointer">
+              <div className="relative">
+                <input
+                  type="checkbox"
+                  checked={formData.isBanner}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, isBanner: e.target.checked }))}
+                  disabled={isLoading}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:bg-yellow-500 peer-disabled:opacity-50 transition-colors"></div>
+                <div className="absolute left-0.5 top-0.5 w-5 h-5 bg-white rounded-full shadow peer-checked:translate-x-5 transition-transform"></div>
+              </div>
+              <div>
+                <span className="text-sm font-medium text-gray-900">Website Banner</span>
+                <p className="text-xs text-gray-500">Show in the site&apos;s Upcoming Session banner (only one event)</p>
               </div>
             </label>
           </div>
