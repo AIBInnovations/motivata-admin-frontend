@@ -35,6 +35,9 @@ import {
   CircleDot,
   Globe,
   Lightbulb,
+  GraduationCap,
+  Building2,
+  KeyRound,
 } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
@@ -58,6 +61,7 @@ function Sidebar({ collapsed, isOpen, onClose }) {
     services: true,
     engagement: true,
     "registration-requests": true,
+    "student-referrals": true,
   });
 
   const handleLogout = () => {
@@ -269,6 +273,26 @@ function Sidebar({ collapsed, isOpen, onClose }) {
           icon: CircleDot,
           path: "/round-table-requests",
           showBadge: "roundTable",
+        },
+      ],
+    },
+    {
+      id: "student-referrals",
+      label: "Student Referrals",
+      icon: GraduationCap,
+      type: "section",
+      children: [
+        {
+          id: "colleges",
+          label: "Colleges",
+          icon: Building2,
+          path: "/colleges",
+        },
+        {
+          id: "referral-codes",
+          label: "Referral Codes",
+          icon: KeyRound,
+          path: "/referral-codes",
         },
       ],
     },

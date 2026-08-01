@@ -37,6 +37,7 @@ const defaultPlanForm = {
   displayOrder: '',
   isFeatured: false,
   isActive: true,
+  requiresReferral: false,
   maxPurchases: '',
 };
 
@@ -198,6 +199,9 @@ function Memberships() {
       perks: form.perks,
       isFeatured: form.isFeatured,
       isActive: form.isActive,
+      // Student plans must verify a college referral code at checkout. This
+      // checkbox is the single switch: on = referral compulsory.
+      requiresReferral: !!form.requiresReferral,
     };
 
     // Only add optional fields if they have values
@@ -252,6 +256,7 @@ function Memberships() {
       durationInDays: plan.durationInDays ?? '',
       displayOrder: plan.displayOrder ?? '',
       maxPurchases: plan.maxPurchases ?? '',
+      requiresReferral: !!plan.requiresReferral,
       perks: plan.perks || [],
       perkInput: '',
     });
@@ -1172,6 +1177,15 @@ function Memberships() {
                 className="h-4 w-4 text-gray-800 border-gray-300 rounded"
               />
               Featured
+            </label>
+            <label className="flex items-center gap-2 text-sm text-gray-700" title="Student plans: buyer must verify a college referral code before paying">
+              <input
+                type="checkbox"
+                checked={!!planForm.requiresReferral}
+                onChange={(e) => setPlanForm({ ...planForm, requiresReferral: e.target.checked })}
+                className="h-4 w-4 text-gray-800 border-gray-300 rounded"
+              />
+              Requires Referral
             </label>
           </div>
           <div className="space-y-2">

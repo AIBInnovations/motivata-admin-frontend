@@ -39,6 +39,8 @@ import JobPosts from './pages/JobPosts';
 import JobApplications from './pages/JobApplications';
 import OpportunityFilters from './pages/OpportunityFilters';
 import Recommendations from './pages/Recommendations';
+import Colleges from './pages/Colleges';
+import ReferralCodes from './pages/ReferralCodes';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { PendingCountsProvider } from './contexts/PendingCountsContext';
@@ -108,6 +110,8 @@ function App() {
             <Route path="/job-applications" element={<JobApplications />} />
             <Route path="/opportunity-filters" element={<OpportunityFilters />} />
             <Route path="/recommendations" element={<Recommendations />} />
+            <Route path="/colleges" element={<Colleges />} />
+            <Route path="/referral-codes" element={<ReferralCodes />} />
           </Route>
 
           {/* Default redirect */}

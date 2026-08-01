@@ -496,8 +496,36 @@ function RequestDetailsModal({ request, onClose, onApprove, onReject, onResendLi
               <div>
                 <h3 className="font-semibold text-green-900">Membership Granted</h3>
                 <p className="text-sm text-green-700">
-                  Membership ID: <span className="font-mono">{request.userMembershipId}</span>
+                  Membership ID:{' '}
+                  <span className="font-mono">
+                    {typeof request.userMembershipId === 'object'
+                      ? request.userMembershipId._id
+                      : request.userMembershipId}
+                  </span>
                 </p>
+                {typeof request.userMembershipId === 'object' && (
+                  <div className="mt-2 space-y-1">
+                    {request.userMembershipId.planSnapshot?.name && (
+                      <p className="text-sm text-green-700">
+                        Plan: {request.userMembershipId.planSnapshot.name}
+                      </p>
+                    )}
+                    {request.userMembershipId.collegeId &&
+                      request.userMembershipId.referralCodeId && (
+                        <p className="text-xs text-green-700">
+                          Student referral:{' '}
+                          <span className="font-mono font-semibold">
+                            {typeof request.userMembershipId.referralCodeId === 'object'
+                              ? request.userMembershipId.referralCodeId.code
+                              : request.userMembershipId.referralCodeId}
+                          </span>
+                          {typeof request.userMembershipId.collegeId === 'object' &&
+                            request.userMembershipId.collegeId.name &&
+                            ` · ${request.userMembershipId.collegeId.name}`}
+                        </p>
+                      )}
+                  </div>
+                )}
               </div>
             </div>
           </div>
