@@ -3,6 +3,7 @@ import membershipRequestService from '../services/membershipRequest.service';
 import doerRequestService from '../services/doerRequest.service';
 import motivataBlendService from '../services/motivataBlend.service';
 import roundTableService from '../services/roundTable.service';
+import eventRequestService from '../services/eventRequest.service';
 
 /**
  * One poller for every sidebar pending-count badge.
@@ -21,6 +22,7 @@ const SOURCES = {
   doer: doerRequestService,
   motivataBlend: motivataBlendService,
   roundTable: roundTableService,
+  eventRequest: eventRequestService,
 };
 
 const PendingCountsContext = createContext({ counts: {}, error: {} });

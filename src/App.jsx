@@ -32,6 +32,7 @@ import UserSubscriptions from './pages/UserSubscriptions';
 import TestServices from './pages/TestServices';
 import MotivataBlendRequests from './pages/MotivataBlendRequests';
 import RoundTableRequests from './pages/RoundTableRequests';
+import EventRequests from './pages/EventRequests';
 import DoerRequests from './pages/DoerRequests';
 import MotivataBlendBanner from './pages/MotivataBlendBanner';
 import ExplorePosts from './pages/ExplorePosts';
@@ -40,6 +41,7 @@ import JobApplications from './pages/JobApplications';
 import OpportunityFilters from './pages/OpportunityFilters';
 import Recommendations from './pages/Recommendations';
 import Colleges from './pages/Colleges';
+import Leaders from './pages/Leaders';
 import ReferralCodes from './pages/ReferralCodes';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -103,6 +105,7 @@ function App() {
             <Route path="/test-services" element={<TestServices />} />
             <Route path="/motivata-blend-requests" element={<MotivataBlendRequests />} />
             <Route path="/round-table-requests" element={<RoundTableRequests />} />
+            <Route path="/event-requests" element={<EventRequests />} />
             <Route path="/doer-requests" element={<DoerRequests />} />
             <Route path="/motivata-blend-banner" element={<MotivataBlendBanner />} />
             <Route path="/explore-posts" element={<ExplorePosts />} />
@@ -111,6 +114,7 @@ function App() {
             <Route path="/opportunity-filters" element={<OpportunityFilters />} />
             <Route path="/recommendations" element={<Recommendations />} />
             <Route path="/colleges" element={<Colleges />} />
+            <Route path="/leaders" element={<Leaders />} />
             <Route path="/referral-codes" element={<ReferralCodes />} />
           </Route>
 
