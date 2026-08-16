@@ -680,10 +680,10 @@ function EventForm({
             >
               <option value="ALL">Open for All</option>
               <option value="MEMBERS_ONLY">Members Only</option>
+              <option value="INVITE_ONLY">Invite Only (Request Invite)</option>
             </select>
             <p className="mt-1 text-xs text-gray-500">
-              "Members Only" events can be viewed by everyone but only members can book them. Non-members
-              are prompted to become a member.
+              "Members Only" — only members can book. "Invite Only" — users request an invite; admin approves and sends payment link manually.
             </p>
           </div>
 
