@@ -118,12 +118,18 @@ function ReferralCodes() {
 
   const fetchColleges = useCallback(async () => {
     setCollegesLoading(true);
-    const res = await collegeService.getAll({ limit: 100 });
-    if (res.success) {
-      setColleges(res.data?.colleges || []);
-    } else {
-      toast.error(res.message || 'Failed to load colleges');
-    }
+    // Load both kinds in parallel so a single code list can attach to either a
+    // college or a leader. Backend does not care about kind — collegeId is the
+    // only link — so this is purely a UI grouping change.
+    const [collegesRes, leadersRes] = await Promise.all([
+      collegeService.getAll({ limit: 100, kind: 'college' }),
+      collegeService.getAll({ limit: 100, kind: 'leader' }),
+    ]);
+    const collegeList = collegesRes.success ? collegesRes.data?.colleges || [] : [];
+    const leaderList = leadersRes.success ? leadersRes.data?.colleges || [] : [];
+    if (!collegesRes.success) toast.error(collegesRes.message || 'Failed to load colleges');
+    if (!leadersRes.success) toast.error(leadersRes.message || 'Failed to load leaders');
+    setColleges([...collegeList, ...leaderList]);
     setCollegesLoading(false);
   }, []);
 
@@ -241,8 +247,8 @@ function ReferralCodes() {
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Referral Codes</h1>
           <p className="text-sm text-gray-500 mt-1">
-            Student verification codes for colleges. Referral never discounts a price — it only
-            proves the buyer is a student.
+            Verification codes owned by a college or a leader. Referral never discounts a price —
+            it only tags the buyer to the owner.
           </p>
         </div>
 
@@ -279,12 +285,21 @@ function ReferralCodes() {
           }}
           className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent outline-none"
         >
-          <option value="all">All colleges</option>
-          {colleges.map((college) => (
-            <option key={college._id} value={college._id}>
-              {college.name}
-            </option>
-          ))}
+          <option value="all">All owners</option>
+          <optgroup label="Colleges">
+            {colleges.filter((c) => (c.kind || 'college') === 'college').map((college) => (
+              <option key={college._id} value={college._id}>
+                {college.name}
+              </option>
+            ))}
+          </optgroup>
+          <optgroup label="Leaders">
+            {colleges.filter((c) => c.kind === 'leader').map((leader) => (
+              <option key={leader._id} value={leader._id}>
+                {leader.name}
+              </option>
+            ))}
+          </optgroup>
         </select>
 
         <select
@@ -337,7 +352,7 @@ function ReferralCodes() {
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
                   <th className="px-4 py-3 text-left font-medium text-gray-600">Code</th>
-                  <th className="px-4 py-3 text-left font-medium text-gray-600">College</th>
+                  <th className="px-4 py-3 text-left font-medium text-gray-600">Owner</th>
                   <th className="px-4 py-3 text-left font-medium text-gray-600">Uses</th>
                   <th className="px-4 py-3 text-left font-medium text-gray-600">Expires</th>
                   <th className="px-4 py-3 text-left font-medium text-gray-600">Status</th>
@@ -347,8 +362,10 @@ function ReferralCodes() {
               <tbody className="divide-y divide-gray-100">
                 {codes.map((code) => {
                   const status = codeStatus(code);
-                  const collegeName =
-                    typeof code.collegeId === 'object' && code.collegeId ? code.collegeId.name : '-';
+                  const owner =
+                    typeof code.collegeId === 'object' && code.collegeId ? code.collegeId : null;
+                  const isLeader = owner?.kind === 'leader';
+                  const ownerName = owner?.name || '-';
                   return (
                     <tr key={code._id} className="hover:bg-gray-50">
                       <td className="px-4 py-3">
@@ -365,7 +382,12 @@ function ReferralCodes() {
                       <td className="px-4 py-3">
                         <span className="inline-flex items-center gap-1.5 text-gray-600">
                           <Building2 className="h-3.5 w-3.5 text-gray-400" />
-                          {collegeName}
+                          {ownerName}
+                          {isLeader && (
+                            <span className="text-[10px] uppercase tracking-wide text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded">
+                              Leader
+                            </span>
+                          )}
                         </span>
                       </td>
                       <td className="px-4 py-3">
@@ -465,12 +487,21 @@ function ReferralCodes() {
                 formErrors.collegeId ? 'border-red-300' : 'border-gray-300'
               }`}
             >
-              <option value="">{collegesLoading ? 'Loading colleges...' : 'Select a college'}</option>
-              {colleges.map((college) => (
-                <option key={college._id} value={college._id}>
-                  {college.name} — {college.city}
-                </option>
-              ))}
+              <option value="">{collegesLoading ? 'Loading...' : 'Select a college or leader'}</option>
+              <optgroup label="Colleges">
+                {colleges.filter((c) => (c.kind || 'college') === 'college').map((college) => (
+                  <option key={college._id} value={college._id}>
+                    {college.name} — {college.city}
+                  </option>
+                ))}
+              </optgroup>
+              <optgroup label="Leaders">
+                {colleges.filter((c) => c.kind === 'leader').map((leader) => (
+                  <option key={leader._id} value={leader._id}>
+                    {leader.name} — {leader.city}
+                  </option>
+                ))}
+              </optgroup>
             </select>
             {formErrors.collegeId && (
               <p className="mt-1 text-xs text-red-600">{formErrors.collegeId}</p>

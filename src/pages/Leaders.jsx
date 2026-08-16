@@ -4,7 +4,7 @@ import {
   Plus,
   RefreshCw,
   Search,
-  Building2,
+  UserRound,
   MapPin,
   Edit,
   Trash2,
@@ -37,16 +37,16 @@ const formatDate = (iso) =>
     : '-';
 
 /**
- * Colleges Page
+ * Leaders Page
  *
- * Colleges are the student organisations behind referral codes. Each college
- * owns one or more codes (managed on the Referral Codes page); deactivating a
- * college disables every code under it.
+ * A Leader is an individual ambassador who distributes referral codes without
+ * a college affiliation. Same data model as College (name, city, referral
+ * codes), tagged with kind='leader' so the two lists stay separate in the UI.
  */
-function Colleges() {
-  const [activeTab, setActiveTab] = useState('colleges');
+function Leaders() {
+  const [activeTab, setActiveTab] = useState('leaders');
 
-  const [colleges, setColleges] = useState([]);
+  const [leaders, setLeaders] = useState([]);
   const [report, setReport] = useState([]);
   const [reportTotals, setReportTotals] = useState(null);
 
@@ -68,13 +68,13 @@ function Colleges() {
   const [showModal, setShowModal] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
 
-  const fetchColleges = useCallback(async () => {
+  const fetchLeaders = useCallback(async () => {
     setLoading(true);
 
     const params = {
       page: pagination.currentPage,
       limit: pagination.limit,
-      kind: 'college',
+      kind: 'leader',
     };
 
     if (filters.search.trim()) params.search = filters.search.trim();
@@ -83,14 +83,14 @@ function Colleges() {
     const res = await collegeService.getAll(params);
 
     if (res.success) {
-      setColleges(res.data?.colleges || []);
+      setLeaders(res.data?.colleges || []);
       setPagination((prev) => ({
         ...prev,
         totalPages: res.data?.pagination?.totalPages || 0,
         totalCount: res.data?.pagination?.totalCount || 0,
       }));
     } else {
-      toast.error(res.message || 'Failed to load colleges');
+      toast.error(res.message || 'Failed to load leaders');
     }
 
     setLoading(false);
@@ -99,7 +99,7 @@ function Colleges() {
   const fetchReport = useCallback(async () => {
     setReportLoading(true);
 
-    const res = await collegeService.getReport({ kind: 'college' });
+    const res = await collegeService.getReport({ kind: 'leader' });
 
     if (res.success) {
       setReport(res.data?.report || []);
@@ -112,9 +112,9 @@ function Colleges() {
   }, []);
 
   useEffect(() => {
-    if (activeTab === 'colleges') fetchColleges();
+    if (activeTab === 'leaders') fetchLeaders();
     else fetchReport();
-  }, [activeTab, fetchColleges, fetchReport]);
+  }, [activeTab, fetchLeaders, fetchReport]);
 
   const openCreate = () => {
     setEditing(null);
@@ -123,12 +123,12 @@ function Colleges() {
     setShowModal(true);
   };
 
-  const openEdit = (college) => {
-    setEditing(college);
+  const openEdit = (leader) => {
+    setEditing(leader);
     setForm({
-      name: college.name || '',
-      city: college.city || '',
-      isActive: college.isActive ?? true,
+      name: leader.name || '',
+      city: leader.city || '',
+      isActive: leader.isActive ?? true,
     });
     setFormErrors({});
     setShowModal(true);
@@ -137,7 +137,7 @@ function Colleges() {
   const validate = () => {
     const errors = {};
 
-    if (!form.name.trim()) errors.name = 'College name is required';
+    if (!form.name.trim()) errors.name = 'Leader name is required';
     if (!form.city.trim()) errors.city = 'City is required';
 
     setFormErrors(errors);
@@ -154,7 +154,7 @@ function Colleges() {
     const payload = {
       name: form.name.trim(),
       city: form.city.trim(),
-      kind: 'college',
+      kind: 'leader',
       isActive: form.isActive,
     };
 
@@ -163,9 +163,9 @@ function Colleges() {
       : await collegeService.create(payload);
 
     if (res.success) {
-      toast.success(editing ? 'College updated' : 'College created');
+      toast.success(editing ? 'Leader updated' : 'Leader created');
       setShowModal(false);
-      fetchColleges();
+      fetchLeaders();
     } else {
       toast.error(res.message || 'Something went wrong');
     }
@@ -179,10 +179,10 @@ function Colleges() {
     const res = await collegeService.delete(deleteTarget._id);
 
     if (res.success) {
-      toast.success('College deleted');
-      fetchColleges();
+      toast.success('Leader deleted');
+      fetchLeaders();
     } else {
-      toast.error(res.message || 'Failed to delete college');
+      toast.error(res.message || 'Failed to delete leader');
     }
 
     setDeleteTarget(null);
@@ -193,28 +193,28 @@ function Colleges() {
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Colleges</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Leaders</h1>
           <p className="text-sm text-gray-500 mt-1">
-            Student organisations behind referral codes. Deactivating a college disables all of its
-            codes.
+            Individual ambassadors who distribute referral codes. Deactivating a leader disables
+            all of their codes.
           </p>
         </div>
 
         <div className="flex items-center gap-2">
           <button
-            onClick={() => (activeTab === 'colleges' ? fetchColleges() : fetchReport())}
+            onClick={() => (activeTab === 'leaders' ? fetchLeaders() : fetchReport())}
             className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
           >
             <RefreshCw className="h-4 w-4" />
             Refresh
           </button>
-          {activeTab === 'colleges' && (
+          {activeTab === 'leaders' && (
             <button
               onClick={openCreate}
               className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800"
             >
               <Plus className="h-4 w-4" />
-              Add College
+              Add Leader
             </button>
           )}
         </div>
@@ -223,16 +223,16 @@ function Colleges() {
       {/* Tabs */}
       <div className="flex items-center gap-1 border-b border-gray-200">
         <button
-          onClick={() => setActiveTab('colleges')}
+          onClick={() => setActiveTab('leaders')}
           className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
-            activeTab === 'colleges'
+            activeTab === 'leaders'
               ? 'border-gray-900 text-gray-900'
               : 'border-transparent text-gray-500 hover:text-gray-700'
           }`}
         >
           <span className="inline-flex items-center gap-2">
-            <Building2 className="h-4 w-4" />
-            All Colleges
+            <UserRound className="h-4 w-4" />
+            All Leaders
           </span>
         </button>
         <button
@@ -245,12 +245,12 @@ function Colleges() {
         >
           <span className="inline-flex items-center gap-2">
             <BarChart3 className="h-4 w-4" />
-            Student Report
+            Leader Report
           </span>
         </button>
       </div>
 
-      {activeTab === 'colleges' ? (
+      {activeTab === 'leaders' ? (
         <>
           {/* Filters */}
           <div className="flex flex-wrap items-center gap-3">
@@ -287,18 +287,18 @@ function Colleges() {
             {loading ? (
               <div className="flex items-center justify-center py-16 text-gray-500">
                 <Loader2 className="h-5 w-5 animate-spin mr-2" />
-                Loading colleges...
+                Loading leaders...
               </div>
-            ) : colleges.length === 0 ? (
+            ) : leaders.length === 0 ? (
               <div className="text-center py-16">
-                <Building2 className="h-10 w-10 text-gray-300 mx-auto mb-3" />
-                <p className="text-sm text-gray-500">No colleges found</p>
+                <UserRound className="h-10 w-10 text-gray-300 mx-auto mb-3" />
+                <p className="text-sm text-gray-500">No leaders found</p>
                 <button
                   onClick={openCreate}
                   className="mt-4 inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800"
                 >
                   <Plus className="h-4 w-4" />
-                  Add your first college
+                  Add your first leader
                 </button>
               </div>
             ) : (
@@ -306,7 +306,7 @@ function Colleges() {
                 <table className="w-full text-sm">
                   <thead className="bg-gray-50 border-b border-gray-200">
                     <tr>
-                      <th className="px-4 py-3 text-left font-medium text-gray-600">College</th>
+                      <th className="px-4 py-3 text-left font-medium text-gray-600">Leader</th>
                       <th className="px-4 py-3 text-left font-medium text-gray-600">City</th>
                       <th className="px-4 py-3 text-left font-medium text-gray-600">Codes</th>
                       <th className="px-4 py-3 text-left font-medium text-gray-600">Total Used</th>
@@ -315,43 +315,43 @@ function Colleges() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
-                    {colleges.map((college) => (
-                      <tr key={college._id} className="hover:bg-gray-50">
+                    {leaders.map((leader) => (
+                      <tr key={leader._id} className="hover:bg-gray-50">
                         <td className="px-4 py-3">
-                          <div className="font-medium text-gray-900">{college.name}</div>
+                          <div className="font-medium text-gray-900">{leader.name}</div>
                           <div className="text-xs text-gray-400">
-                            Added {formatDate(college.createdAt)}
+                            Added {formatDate(leader.createdAt)}
                           </div>
                         </td>
                         <td className="px-4 py-3 text-gray-600">
                           <span className="inline-flex items-center gap-1.5">
                             <MapPin className="h-3.5 w-3.5 text-gray-400" />
-                            {college.city}
+                            {leader.city}
                           </span>
                         </td>
                         <td className="px-4 py-3">
                           <span className="inline-flex items-center gap-1.5 text-gray-600">
                             <Ticket className="h-3.5 w-3.5 text-gray-400" />
-                            {college.codeCount ?? 0}
+                            {leader.codeCount ?? 0}
                           </span>
                         </td>
-                        <td className="px-4 py-3 text-gray-600">{college.totalUsed ?? 0}</td>
+                        <td className="px-4 py-3 text-gray-600">{leader.totalUsed ?? 0}</td>
                         <td className="px-4 py-3">
-                          <Badge variant={college.isActive ? 'success' : 'default'} size="sm">
-                            {college.isActive ? 'Active' : 'Inactive'}
+                          <Badge variant={leader.isActive ? 'success' : 'default'} size="sm">
+                            {leader.isActive ? 'Active' : 'Inactive'}
                           </Badge>
                         </td>
                         <td className="px-4 py-3">
                           <div className="flex items-center justify-end gap-1">
                             <button
-                              onClick={() => openEdit(college)}
+                              onClick={() => openEdit(leader)}
                               className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg"
                               title="Edit"
                             >
                               <Edit className="h-4 w-4" />
                             </button>
                             <button
-                              onClick={() => setDeleteTarget(college)}
+                              onClick={() => setDeleteTarget(leader)}
                               className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg"
                               title="Delete"
                             >
@@ -373,24 +373,23 @@ function Colleges() {
               totalPages={pagination.totalPages}
               totalItems={pagination.totalCount}
               itemsPerPage={pagination.limit}
-              itemLabel="colleges"
+              itemLabel="leaders"
               onPageChange={(page) => setPagination((prev) => ({ ...prev, currentPage: page }))}
             />
           )}
         </>
       ) : (
-        /* Report tab — students per college, from paid memberships */
         <div className="space-y-4">
           {reportTotals && (
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="bg-white border border-gray-200 rounded-xl p-4">
-                <div className="text-xs text-gray-500 uppercase tracking-wide">Colleges</div>
+                <div className="text-xs text-gray-500 uppercase tracking-wide">Leaders</div>
                 <div className="text-2xl font-bold text-gray-900 mt-1">
                   {reportTotals.colleges}
                 </div>
               </div>
               <div className="bg-white border border-gray-200 rounded-xl p-4">
-                <div className="text-xs text-gray-500 uppercase tracking-wide">Students</div>
+                <div className="text-xs text-gray-500 uppercase tracking-wide">Sign-ups</div>
                 <div className="text-2xl font-bold text-gray-900 mt-1">
                   {reportTotals.students}
                 </div>
@@ -413,9 +412,9 @@ function Colleges() {
             ) : report.length === 0 ? (
               <div className="text-center py-16">
                 <Users className="h-10 w-10 text-gray-300 mx-auto mb-3" />
-                <p className="text-sm text-gray-500">No student sign-ups yet</p>
+                <p className="text-sm text-gray-500">No sign-ups yet</p>
                 <p className="text-xs text-gray-400 mt-1">
-                  Students appear here once a referral-verified payment succeeds.
+                  Rows appear once a payment via a leader's referral code succeeds.
                 </p>
               </div>
             ) : (
@@ -423,9 +422,9 @@ function Colleges() {
                 <table className="w-full text-sm">
                   <thead className="bg-gray-50 border-b border-gray-200">
                     <tr>
-                      <th className="px-4 py-3 text-left font-medium text-gray-600">College</th>
+                      <th className="px-4 py-3 text-left font-medium text-gray-600">Leader</th>
                       <th className="px-4 py-3 text-left font-medium text-gray-600">City</th>
-                      <th className="px-4 py-3 text-left font-medium text-gray-600">Students</th>
+                      <th className="px-4 py-3 text-left font-medium text-gray-600">Sign-ups</th>
                       <th className="px-4 py-3 text-left font-medium text-gray-600">Revenue</th>
                       <th className="px-4 py-3 text-left font-medium text-gray-600">Last Joined</th>
                     </tr>
@@ -458,18 +457,18 @@ function Colleges() {
       <Modal
         isOpen={showModal}
         onClose={() => setShowModal(false)}
-        title={editing ? 'Edit College' : 'Add College'}
+        title={editing ? 'Edit Leader' : 'Add Leader'}
       >
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1.5">
-              College Name <span className="text-red-500">*</span>
+              Leader Name <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
               value={form.name}
               onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
-              placeholder="e.g. St. Xavier's College"
+              placeholder="e.g. Rahul Sharma"
               className={`w-full px-3 py-2 text-sm border rounded-lg outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent ${
                 formErrors.name ? 'border-red-300' : 'border-gray-300'
               }`}
@@ -503,7 +502,7 @@ function Colleges() {
             <span>
               <span className="block text-sm font-medium text-gray-700">Active</span>
               <span className="block text-xs text-gray-500">
-                Turning this off immediately blocks every referral code of this college.
+                Turning this off immediately blocks every referral code of this leader.
               </span>
             </span>
           </label>
@@ -522,7 +521,7 @@ function Colleges() {
               className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 disabled:opacity-50"
             >
               {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
-              {editing ? 'Save Changes' : 'Create College'}
+              {editing ? 'Save Changes' : 'Create Leader'}
             </button>
           </div>
         </form>
@@ -532,8 +531,8 @@ function Colleges() {
         isOpen={!!deleteTarget}
         onClose={() => setDeleteTarget(null)}
         onConfirm={handleDelete}
-        title="Delete College"
-        message={`Delete "${deleteTarget?.name}"? Its referral codes will stop working.`}
+        title="Delete Leader"
+        message={`Delete "${deleteTarget?.name}"? Their referral codes will stop working.`}
         confirmText="Delete"
         variant="danger"
       />
@@ -541,4 +540,4 @@ function Colleges() {
   );
 }
 
-export default Colleges;
+export default Leaders;

@@ -34,6 +34,7 @@ const collegeService = {
     if (params.sortBy) queryParams.append('sortBy', params.sortBy);
     if (params.sortOrder) queryParams.append('sortOrder', params.sortOrder);
     if (params.isActive !== undefined) queryParams.append('isActive', params.isActive);
+    if (params.kind) queryParams.append('kind', params.kind);
     if (params.search) queryParams.append('search', params.search);
 
     const queryString = queryParams.toString();
@@ -67,10 +68,14 @@ const collegeService = {
 
   /**
    * Students per college, counted from paid referral-tagged memberships
+   * @param {Object} params - { kind?: 'college' | 'leader' }
    */
-  getReport: async () => {
+  getReport: async (params = {}) => {
     console.log('[CollegeService] Fetching college report');
-    return handleApiResponse(api.get(COLLEGE_ENDPOINTS.REPORT));
+    const url = params.kind
+      ? `${COLLEGE_ENDPOINTS.REPORT}?kind=${params.kind}`
+      : COLLEGE_ENDPOINTS.REPORT;
+    return handleApiResponse(api.get(url));
   },
 };
 

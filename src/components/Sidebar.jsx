@@ -38,6 +38,7 @@ import {
   GraduationCap,
   Building2,
   KeyRound,
+  UserRound,
 } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
@@ -47,6 +48,7 @@ import MembershipRequestBadge from "./MembershipRequestBadge";
 import MotivataBlendBadge from "./MotivataBlendBadge";
 import RoundTableBadge from "./RoundTableBadge";
 import DoerRequestBadge from "./DoerRequestBadge";
+import EventRequestBadge from "./EventRequestBadge";
 
 /**
  * Sidebar Component
@@ -274,6 +276,13 @@ function Sidebar({ collapsed, isOpen, onClose }) {
           path: "/round-table-requests",
           showBadge: "roundTable",
         },
+        {
+          id: "event-requests",
+          label: "Event Invites",
+          icon: Calendar,
+          path: "/event-requests",
+          showBadge: "eventRequest",
+        },
       ],
     },
     {
@@ -287,6 +296,12 @@ function Sidebar({ collapsed, isOpen, onClose }) {
           label: "Colleges",
           icon: Building2,
           path: "/colleges",
+        },
+        {
+          id: "leaders",
+          label: "Leaders",
+          icon: UserRound,
+          path: "/leaders",
         },
         {
           id: "referral-codes",
@@ -484,6 +499,7 @@ function Sidebar({ collapsed, isOpen, onClose }) {
                         <MotivataBlendBadge />
                       )}
                       {child.showBadge === "roundTable" && <RoundTableBadge />}
+                      {child.showBadge === "eventRequest" && <EventRequestBadge />}
                     </Link>
                   </li>
                 );
