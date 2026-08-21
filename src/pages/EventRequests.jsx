@@ -349,8 +349,13 @@ function EventRequests() {
                     {/* Event */}
                     <td className="px-6 py-4">
                       <span className="text-sm text-gray-700">
-                        {request.eventId?.name ||
-                          (typeof request.eventId === 'string' ? request.eventId : 'N/A')}
+                        {request.eventId?.name
+                          ? request.eventId.name
+                          : (request.eventId?.startDate
+                              ? formatDate(request.eventId.startDate)
+                              : (typeof request.eventId === 'string' ? request.eventId : 'N/A')
+                            )
+                        }
                       </span>
                     </td>
 
