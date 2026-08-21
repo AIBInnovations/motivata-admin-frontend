@@ -3,6 +3,7 @@ import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { createRequire } from "module";
 
+// eslint-disable-next-line no-unused-vars
 const require = createRequire(import.meta.url);
 
 // https://vite.dev/config/
@@ -25,4 +26,4 @@ export default defineConfig({
       },
     },
   },
-});
+})
