@@ -255,7 +255,8 @@ function EventRequests() {
           >
             <option value="">All Status</option>
             <option value="PENDING">Pending</option>
-            <option value="APPROVED">Approved</option>
+            <option value="PAYMENT_SENT">Payment Sent</option>
+            <option value="COMPLETED">Completed</option>
             <option value="REJECTED">Rejected</option>
           </select>
 
@@ -376,6 +377,16 @@ function EventRequests() {
                     {/* Status */}
                     <td className="px-6 py-4">
                       <StatusBadge status={request.status} />
+                      {(request.status === 'PAYMENT_SENT' || request.status === 'COMPLETED') && request.paymentUrl && (
+                        <a
+                          href={request.paymentUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="block text-xs text-blue-600 hover:underline mt-1"
+                        >
+                          ₹{request.paymentAmount} link
+                        </a>
+                      )}
                     </td>
 
                     {/* Date */}
