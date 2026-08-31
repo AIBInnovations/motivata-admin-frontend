@@ -86,7 +86,7 @@ function RequestDetailsModal({ request, onClose, onApprove, onReject, title = 'R
         </div>
 
         {/* Admin Review Section */}
-        {(request.status === 'APPROVED' || request.status === 'REJECTED') && (
+        {(request.status === 'APPROVED' || request.status === 'REJECTED' || request.status === 'PAYMENT_SENT' || request.status === 'COMPLETED') && (
           <div className="p-4 bg-blue-50 rounded-lg space-y-4">
             <h3 className="font-semibold text-gray-900 border-b border-blue-200 pb-2">
               Admin Review
@@ -121,6 +121,23 @@ function RequestDetailsModal({ request, onClose, onApprove, onReject, title = 'R
                     <p className="font-medium text-gray-900 whitespace-pre-wrap">
                       {request.notes}
                     </p>
+                  </div>
+                </div>
+              )}
+
+              {request.paymentUrl && (
+                <div className="flex items-start gap-3 md:col-span-2">
+                  <FileText className="h-5 w-5 text-blue-500 mt-0.5" />
+                  <div>
+                    <p className="text-xs text-gray-500">Payment Link (₹{request.paymentAmount})</p>
+                    <a
+                      href={request.paymentUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-medium text-blue-600 hover:underline break-all"
+                    >
+                      {request.paymentUrl}
+                    </a>
                   </div>
                 </div>
               )}
