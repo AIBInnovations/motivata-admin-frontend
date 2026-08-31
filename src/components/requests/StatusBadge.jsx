@@ -20,6 +20,18 @@ const STATUS_CONFIG = {
     text: 'text-red-700',
     border: 'border-red-300',
   },
+  PAYMENT_SENT: {
+    label: 'Payment Sent',
+    bg: 'bg-blue-100',
+    text: 'text-blue-700',
+    border: 'border-blue-300',
+  },
+  COMPLETED: {
+    label: 'Completed',
+    bg: 'bg-emerald-100',
+    text: 'text-emerald-700',
+    border: 'border-emerald-300',
+  },
 };
 
 /**
