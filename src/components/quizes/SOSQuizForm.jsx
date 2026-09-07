@@ -27,6 +27,7 @@ const getInitialQuestionState = () => ({
     { text: '', value: 2 },
   ],
   points: 5,
+  isRequired: true,
 });
 
 /**
@@ -38,6 +39,8 @@ const QUESTION_TYPES = [
   { value: 'multiple-choice', label: 'Multiple Choice', description: 'Select multiple options' },
   { value: 'boolean', label: 'Yes/No', description: 'True or false question' },
   { value: 'text', label: 'Text', description: 'Free text response' },
+  { value: 'text-list', label: 'Text List (a, b, c…)', description: 'Several free text slots' },
+  { value: 'text-group', label: 'Text Group (labelled)', description: 'Labelled free text fields' },
 ];
 
 /**
@@ -82,6 +85,7 @@ function SOSQuizForm({
           title: quizToEdit.title || '',
           description: quizToEdit.description || '',
           questions: quizToEdit.questions?.map((q) => ({
+            _id: q._id,
             questionText: q.questionText || '',
             questionType: q.questionType || 'single-choice',
             options: q.options || [
@@ -89,6 +93,10 @@ function SOSQuizForm({
               { text: '', value: 2 },
             ],
             points: q.points || 5,
+            isRequired: q.isRequired !== false,
+            order: q.order,
+            maxEntries: q.maxEntries,
+            subFields: q.subFields || [],
           })) || [],
           isActive: quizToEdit.isActive ?? true,
         });
@@ -155,6 +163,15 @@ function SOSQuizForm({
           if (q.options.length < 2) {
             qErrors.options = 'At least 2 options are required';
           }
+        }
+        if (q.questionType === 'text-list' && !(q.maxEntries >= 1)) {
+          qErrors.maxEntries = 'Number of entry slots must be at least 1';
+        }
+        if (
+          q.questionType === 'text-group' &&
+          !(q.subFields || []).some((label) => label.trim())
+        ) {
+          qErrors.subFields = 'At least one field label is required';
         }
         if (Object.keys(qErrors).length > 0) {
           questionErrors[index] = qErrors;
@@ -245,7 +262,16 @@ function SOSQuizForm({
             ];
           } else if (value === 'boolean' || value === 'text') {
             updated.options = [];
+          } else if (value === 'text-list') {
+            updated.options = [];
+            updated.maxEntries = q.maxEntries || 5;
+          } else if (value === 'text-group') {
+            updated.options = [];
+            updated.subFields = q.subFields?.length ? q.subFields : ['Strength', 'Weakness'];
           }
+
+          if (value !== 'text-list') updated.maxEntries = undefined;
+          if (value !== 'text-group') updated.subFields = [];
         }
 
         return updated;
@@ -336,11 +362,24 @@ function SOSQuizForm({
       title: formData.title.trim(),
       description: formData.description.trim(),
       questions: formData.questions.map((q) => ({
+        ...(q._id ? { _id: q._id } : {}),
         questionText: q.questionText.trim(),
         questionType: q.questionType,
         points: q.points,
+        isRequired: q.isRequired !== false,
+        ...(q.order !== undefined ? { order: q.order } : {}),
+        ...(q.questionType === 'text-list' ? { maxEntries: q.maxEntries || 5 } : {}),
+        ...(q.questionType === 'text-group'
+          ? { subFields: (q.subFields || []).map((label) => label.trim()).filter(Boolean) }
+          : {}),
         ...(q.questionType === 'scale' || q.questionType === 'single-choice' || q.questionType === 'multiple-choice'
-          ? { options: q.options.map((opt) => ({ text: opt.text.trim(), value: opt.value })) }
+          ? {
+              options: q.options.map((opt) => ({
+                ...(opt._id ? { _id: opt._id } : {}),
+                text: opt.text.trim(),
+                value: opt.value,
+              })),
+            }
           : {}),
       })),
       isActive: formData.isActive,
@@ -614,6 +653,70 @@ function SOSQuizForm({
                           />
                         </div>
                       </div>
+
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          id={`required-${qIndex}`}
+                          checked={question.isRequired !== false}
+                          onChange={(e) =>
+                            handleQuestionChange(qIndex, 'isRequired', e.target.checked)
+                          }
+                          disabled={isLoading}
+                          className="h-4 w-4 rounded border-gray-300"
+                        />
+                        <label
+                          htmlFor={`required-${qIndex}`}
+                          className="text-xs font-medium text-gray-600"
+                        >
+                          Required — user cannot skip this question
+                        </label>
+                      </div>
+
+                      {question.questionType === 'text-list' && (
+                        <div>
+                          <label className="block text-xs font-medium text-gray-600 mb-1">
+                            Number of entry slots
+                          </label>
+                          <input
+                            type="number"
+                            value={question.maxEntries ?? 5}
+                            onChange={(e) =>
+                              handleQuestionChange(
+                                qIndex,
+                                'maxEntries',
+                                parseInt(e.target.value, 10) || 1
+                              )
+                            }
+                            min="1"
+                            max="20"
+                            disabled={isLoading}
+                            className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:border-gray-800 outline-none"
+                          />
+                        </div>
+                      )}
+
+                      {question.questionType === 'text-group' && (
+                        <div>
+                          <label className="block text-xs font-medium text-gray-600 mb-1">
+                            Field labels (comma separated)
+                          </label>
+                          <input
+                            type="text"
+                            value={(question.subFields || []).join(', ')}
+                            onChange={(e) =>
+                              handleQuestionChange(
+                                qIndex,
+                                'subFields',
+                                e.target.value.split(',').map((label) => label.trimStart())
+                              )
+                            }
+                            placeholder="Strength, Weakness"
+                            disabled={isLoading}
+                            className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:border-gray-800 outline-none"
+                          />
+                        </div>
+                      )}
 
                       {/* Options (for scale, single-choice, and multiple-choice) */}
                       {(question.questionType === 'scale' ||
