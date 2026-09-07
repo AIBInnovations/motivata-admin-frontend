@@ -4,6 +4,7 @@ import Modal from '../ui/Modal';
 import FileUpload from '../ui/FileUpload';
 import IconPicker from './IconPicker';
 import useChallengeIcons from '../../hooks/useChallengeIcons';
+import useChallengeCategories from '../../hooks/useChallengeCategories';
 
 /**
  * Challenge category options
@@ -31,6 +32,7 @@ const getInitialFormState = () => ({
   title: '',
   description: '',
   category: '',
+  subCategory: '',
   difficulty: 'medium',
   tasks: [],
   durationDays: '',
@@ -76,6 +78,14 @@ function ChallengeForm({
   const [durationChipError, setDurationChipError] = useState('');
 
   const { icons, isLoading: iconsLoading, error: iconsError } = useChallengeIcons();
+  const { categories: categoryCatalog, isLoading: categoriesLoading } = useChallengeCategories();
+
+  const categoryOptions = categoryCatalog.length
+    ? categoryCatalog.map((c) => ({ value: c.key, label: c.label }))
+    : CATEGORY_OPTIONS;
+
+  const subCategoryOptions =
+    categoryCatalog.find((c) => c.key === formData.category)?.subCategories ?? [];
 
   const isEditMode = !!challengeToEdit;
 
@@ -87,6 +97,7 @@ function ChallengeForm({
           title: challengeToEdit.title || '',
           description: challengeToEdit.description || '',
           category: challengeToEdit.category || '',
+          subCategory: challengeToEdit.subCategory || '',
           difficulty: challengeToEdit.difficulty || 'medium',
           tasks: challengeToEdit.tasks?.map((t) => ({
             title: t.title || '',
@@ -205,7 +216,11 @@ function ChallengeForm({
    * @param {any} value - New value
    */
   const handleChange = (field, value) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+    setFormData((prev) =>
+      field === 'category'
+        ? { ...prev, category: value, subCategory: '' }
+        : { ...prev, [field]: value }
+    );
     // Clear error for this field
     if (errors[field]) {
       setErrors((prev) => {
@@ -346,6 +361,7 @@ function ChallengeForm({
       title: formData.title.trim(),
       description: formData.description.trim(),
       category: formData.category,
+      subCategory: formData.subCategory || null,
       difficulty: formData.difficulty,
       icon: formData.icon ?? null,
       tasks: formData.tasks.map((task, index) => ({
@@ -467,7 +483,7 @@ function ChallengeForm({
                     } ${isLoading ? 'bg-gray-100' : ''}`}
                   >
                     <option value="">Select a category</option>
-                    {CATEGORY_OPTIONS.map((cat) => (
+                    {categoryOptions.map((cat) => (
                       <option key={cat.value} value={cat.value}>
                         {cat.label}
                       </option>
@@ -475,6 +491,33 @@ function ChallengeForm({
                   </select>
                   {errors.category && (
                     <p className="text-red-600 text-sm mt-1">{errors.category}</p>
+                  )}
+                </div>
+
+                {/* Sub-category */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Sub-category
+                  </label>
+                  <select
+                    value={formData.subCategory}
+                    onChange={(e) => handleChange('subCategory', e.target.value)}
+                    disabled={isLoading || categoriesLoading || !formData.category}
+                    className={`w-full px-3 py-2 border rounded-lg focus:border-gray-800 outline-none transition-colors ${
+                      errors.subCategory ? 'border-red-500' : 'border-gray-300'
+                    } ${isLoading || !formData.category ? 'bg-gray-100' : ''}`}
+                  >
+                    <option value="">
+                      {formData.category ? 'None' : 'Pick a category first'}
+                    </option>
+                    {subCategoryOptions.map((sub) => (
+                      <option key={sub.key} value={sub.key}>
+                        {sub.label}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.subCategory && (
+                    <p className="text-red-600 text-sm mt-1">{errors.subCategory}</p>
                   )}
                 </div>
 
