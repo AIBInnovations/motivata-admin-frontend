@@ -15,6 +15,7 @@ const CHALLENGE_ENDPOINTS = {
   STATS: (id) => `/web/challenges/${id}/stats`,
   PARTICIPANTS: (id) => `/web/challenges/${id}/participants`,
   ICONS: '/web/challenges/icons',
+  CATEGORIES: '/web/challenges/categories',
 };
 
 const challengeService = {
@@ -221,6 +222,16 @@ const challengeService = {
     }
 
     return challengeService._iconsPromise;
+  },
+
+  /**
+   * Get the category → sub-category catalog with live counts.
+   * Not cached — counts change as challenges are created or removed.
+   * @returns {Promise<Object>} API response with { categories: [...] }
+   */
+  getCategories: async () => {
+    console.log('[ChallengeService] Fetching categories');
+    return handleApiResponse(api.get(CHALLENGE_ENDPOINTS.CATEGORIES));
   },
 };
 
