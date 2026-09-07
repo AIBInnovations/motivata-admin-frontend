@@ -2,6 +2,8 @@ import { useState } from "react";
 import {
   LayoutDashboard,
   Calendar,
+  CalendarDays,
+  BarChart2,
   Ticket,
   UserCog,
   ShieldCheck,
@@ -197,6 +199,24 @@ function Sidebar({ collapsed, isOpen, onClose }) {
           label: "Quizes",
           icon: ClipboardList,
           path: "/quizes",
+        },
+        {
+          id: "sos-articles",
+          label: "SOS Articles",
+          icon: FileText,
+          path: "/sos-articles",
+        },
+        {
+          id: "daily-sos",
+          label: "Daily SOS",
+          icon: CalendarDays,
+          path: "/daily-sos",
+        },
+        {
+          id: "qol-factors",
+          label: "Life Factors",
+          icon: BarChart2,
+          path: "/qol-factors",
         },
         {
           id: "challenges",

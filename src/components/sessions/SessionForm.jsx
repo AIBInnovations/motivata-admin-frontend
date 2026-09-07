@@ -29,6 +29,7 @@ const getInitialFormState = () => ({
   sessionType: 'OTO',
   category: 'mental_wellness',
   isLive: false,
+  membersOnly: false,
   host: '',
   hostEmail: '',
   hostPhone: '',
@@ -80,6 +81,7 @@ function SessionForm({
           sessionType: sessionToEdit.sessionType || 'OTO',
           category: sessionToEdit.category || 'mental_wellness',
           isLive: sessionToEdit.isLive ?? false,
+          membersOnly: sessionToEdit.membersOnly ?? false,
           host: sessionToEdit.host || '',
           hostEmail: sessionToEdit.hostEmail || '',
           hostPhone: sessionToEdit.hostPhone || '',
@@ -253,6 +255,7 @@ function SessionForm({
       sessionType: formData.sessionType,
       category: formData.category,
       isLive: formData.isLive,
+      membersOnly: formData.membersOnly,
       host: formData.host.trim(),
     };
 
@@ -692,6 +695,22 @@ function SessionForm({
           </label>
           <span className="text-sm text-gray-700">
             {formData.isLive ? 'Live (Available for booking)' : 'Not Live'}
+          </span>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <label className="relative inline-flex items-center cursor-pointer">
+            <input
+              type="checkbox"
+              checked={formData.membersOnly}
+              onChange={(e) => handleChange('membersOnly', e.target.checked)}
+              disabled={isLoading}
+              className="sr-only peer"
+            />
+            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-0 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
+          </label>
+          <span className="text-sm text-gray-700">
+            {formData.membersOnly ? 'Members only' : 'Open to everyone'}
           </span>
         </div>
 

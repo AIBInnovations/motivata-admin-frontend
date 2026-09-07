@@ -14,6 +14,9 @@ import CashTickets from './pages/CashTickets';
 import Vouchers from './pages/Vouchers';
 import Sessions from './pages/Sessions';
 import Quizes from './pages/Quizes';
+import SOSArticles from './pages/SOSArticles';
+import DailySOS from './pages/DailySOS';
+import QoLFactors from './pages/QoLFactors';
 import Challenges from './pages/Challenges';
 import Polls from './pages/Polls';
 import Stories from './pages/Stories';
@@ -87,6 +90,9 @@ function App() {
             <Route path="/vouchers" element={<Vouchers />} />
             <Route path="/sessions" element={<Sessions />} />
             <Route path="/quizes" element={<Quizes />} />
+            <Route path="/sos-articles" element={<SOSArticles />} />
+            <Route path="/daily-sos" element={<DailySOS />} />
+            <Route path="/qol-factors" element={<QoLFactors />} />
             <Route path="/challenges" element={<Challenges />} />
             <Route path="/polls" element={<Polls />} />
             <Route path="/stories" element={<Stories />} />
