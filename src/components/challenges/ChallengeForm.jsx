@@ -186,9 +186,7 @@ function ChallengeForm({
     }
 
     // Tasks validation
-    if (data.tasks.length === 0) {
-      newErrors.tasks = 'At least one task is required';
-    } else {
+    {
       const taskErrors = [];
       data.tasks.forEach((task, index) => {
         const tErrors = {};
