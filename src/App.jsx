@@ -16,6 +16,8 @@ import Sessions from './pages/Sessions';
 import Quizes from './pages/Quizes';
 import SOSArticles from './pages/SOSArticles';
 import DailySOS from './pages/DailySOS';
+import DailyChallenges from './pages/DailyChallenges';
+import ChallengeRewards from './pages/ChallengeRewards';
 import QoLFactors from './pages/QoLFactors';
 import Challenges from './pages/Challenges';
 import Polls from './pages/Polls';
@@ -28,6 +30,7 @@ import Clubs from './pages/Clubs';
 import ClubJoinRequests from './pages/ClubJoinRequests';
 import AdminClubPosts from './pages/AdminClubPosts';
 import Settings from './pages/Settings';
+import FeatureAccess from './pages/FeatureAccess';
 import Services from './pages/Services';
 import ServiceOrders from './pages/ServiceOrders';
 import ServiceRequests from './pages/ServiceRequests';
@@ -92,6 +95,8 @@ function App() {
             <Route path="/quizes" element={<Quizes />} />
             <Route path="/sos-articles" element={<SOSArticles />} />
             <Route path="/daily-sos" element={<DailySOS />} />
+            <Route path="/daily-challenges" element={<DailyChallenges />} />
+            <Route path="/challenge-rewards" element={<ChallengeRewards />} />
             <Route path="/qol-factors" element={<QoLFactors />} />
             <Route path="/challenges" element={<Challenges />} />
             <Route path="/polls" element={<Polls />} />
@@ -99,6 +104,7 @@ function App() {
             <Route path="/memberships" element={<Memberships />} />
             <Route path="/membership-requests" element={<MembershipRequests />} />
             <Route path="/settings" element={<Settings />} />
+            <Route path="/feature-access" element={<FeatureAccess />} />
             <Route path="/clubs" element={<Clubs />} />
             <Route path="/club-join-requests" element={<ClubJoinRequests />} />
             <Route path="/admin-club-posts" element={<AdminClubPosts />} />
