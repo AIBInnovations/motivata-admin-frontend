@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, Component, memo } from 'react';
 import { createPortal } from 'react-dom';
 import { Html5Qrcode } from 'html5-qrcode';
 import { toast } from 'react-toastify';
+import challengeRewardService from '../services/challenge-reward.service';
 import { MdQrCodeScanner, MdCameraswitch, MdClose, MdCheckCircle, MdContentCopy, MdWarning, MdCardGiftcard } from 'react-icons/md';
 import { FaCamera, FaCameraRetro } from 'react-icons/fa';
 import { tokenStorage } from '../utils/storage';
@@ -106,6 +107,8 @@ function ScanQR() {
   const [isVerified, setIsVerified] = useState(false);
   const [validationStatus, setValidationStatus] = useState(null); // API validation response
   const [isValidating, setIsValidating] = useState(false);
+  const [rewardStatus, setRewardStatus] = useState(null);
+  const [isRedeeming, setIsRedeeming] = useState(false);
 
   const html5QrCodeRef = useRef(null);
   const scannerContainerId = useRef(`qr-scanner-${Date.now()}`).current; // Unique ID per component instance
@@ -649,6 +652,47 @@ function ScanQR() {
   };
 
   /**
+   * Look up a scanned reward code without consuming it
+   */
+  const validateRewardCode = async (code) => {
+    setIsValidating(true);
+    try {
+      const res = await challengeRewardService.verifyCode(code);
+      if (!res.success) {
+        return { found: false, error: res.error || 'Could not verify this code' };
+      }
+      return { found: true, ...res.data };
+    } finally {
+      setIsValidating(false);
+    }
+  };
+
+  /**
+   * Consume a reward code - one time only
+   */
+  const handleRedeemReward = async () => {
+    if (!rewardStatus?.claim?.redemptionCode || isRedeeming) return;
+
+    setIsRedeeming(true);
+    const res = await challengeRewardService.redeemCode(rewardStatus.claim.redemptionCode);
+    setIsRedeeming(false);
+
+    if (res.success) {
+      toast.success('Reward redeemed');
+      if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+      setRewardStatus((prev) => ({
+        ...prev,
+        valid: false,
+        alreadyRedeemed: true,
+        claim: { ...prev.claim, status: 'redeemed', redeemedAt: new Date().toISOString() },
+      }));
+    } else {
+      toast.error(res.error || 'Could not redeem this reward');
+      if (navigator.vibrate) navigator.vibrate([300, 100, 300]);
+    }
+  };
+
+  /**
    * Validate ticket with backend API - tries both regular and cash endpoints
    */
   const validateTicket = async (params) => {
@@ -693,6 +737,7 @@ function ScanQR() {
   const onScanSuccess = async (decodedText, decodedResult) => {
     console.log('[onScanSuccess] QR Code scanned:', decodedText);
     setScannedResult(decodedText);
+    setRewardStatus(null);
 
     let parsedData = null;
 
@@ -756,7 +801,37 @@ function ScanQR() {
     const enrollmentId = params.enrollmentId || params.id;
     const hasRequiredParams = enrollmentId && params.eventId && params.phone;
 
-    if (parsedData.type === 'url' && hasRequiredParams) {
+    const rewardCode =
+      params.code ||
+      (parsedData.type === 'text' && /^MOT-[A-Z0-9]{5}-[A-Z0-9]{5}$/i.test(parsedData.text?.trim() || '')
+        ? parsedData.text.trim()
+        : null);
+
+    if (rewardCode) {
+      console.log('[onScanSuccess] Reward code detected:', rewardCode);
+      toast.info('Checking reward...');
+
+      const result = await validateRewardCode(rewardCode);
+      setRewardStatus(result.found ? result : null);
+
+      if (!result.found) {
+        toast.error(result.error || 'No reward found for this code');
+        if (navigator.vibrate) navigator.vibrate([300, 100, 300]);
+        setIsVerified(false);
+      } else if (result.alreadyRedeemed) {
+        toast.warning('This reward was already redeemed', { autoClose: 5000 });
+        if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 100]);
+        setIsVerified(true);
+      } else if (result.expired) {
+        toast.error('This reward has expired');
+        if (navigator.vibrate) navigator.vibrate([300, 100, 300]);
+        setIsVerified(false);
+      } else {
+        toast.success('Reward valid - tap Redeem to use it');
+        if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+        setIsVerified(true);
+      }
+    } else if (parsedData.type === 'url' && hasRequiredParams) {
       console.log('[onScanSuccess] Validating ticket with API...', {
         enrollmentId,
         eventId: params.eventId,
@@ -1117,6 +1192,95 @@ function ScanQR() {
                   </>
                 )}
               </div>
+
+              {/* Reward redemption - challenge rewards scanned from the app */}
+              {rewardStatus && (
+                <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 mb-4 text-left">
+                  <div className="flex items-start justify-between gap-3 mb-4">
+                    <div>
+                      <p className="text-xs font-semibold tracking-wide text-gray-500 uppercase">
+                        Challenge Reward
+                      </p>
+                      <h3 className="text-lg font-bold text-gray-900 mt-1">
+                        {rewardStatus.reward?.title || 'Reward'}
+                      </h3>
+                      {rewardStatus.reward?.rewardValue && (
+                        <p className="text-sm text-gray-600 mt-0.5">
+                          {rewardStatus.reward.rewardValue}
+                        </p>
+                      )}
+                    </div>
+                    <span
+                      className={`px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap ${
+                        rewardStatus.alreadyRedeemed
+                          ? 'bg-amber-100 text-amber-800'
+                          : rewardStatus.expired
+                            ? 'bg-red-100 text-red-800'
+                            : 'bg-green-100 text-green-800'
+                      }`}
+                    >
+                      {rewardStatus.alreadyRedeemed
+                        ? 'ALREADY USED'
+                        : rewardStatus.expired
+                          ? 'EXPIRED'
+                          : 'VALID'}
+                    </span>
+                  </div>
+
+                  <dl className="grid grid-cols-2 gap-3 text-sm">
+                    <div>
+                      <dt className="text-gray-500">Member</dt>
+                      <dd className="font-medium text-gray-900">
+                        {rewardStatus.user?.name || '—'}
+                      </dd>
+                      <dd className="text-gray-600">{rewardStatus.user?.phone || ''}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-gray-500">Challenge</dt>
+                      <dd className="font-medium text-gray-900">
+                        {rewardStatus.challenge?.title || '—'}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-gray-500">Code</dt>
+                      <dd className="font-mono font-medium text-gray-900">
+                        {rewardStatus.claim?.redemptionCode}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-gray-500">Claimed</dt>
+                      <dd className="font-medium text-gray-900">
+                        {rewardStatus.claim?.claimedAt
+                          ? new Date(rewardStatus.claim.claimedAt).toLocaleString('en-IN')
+                          : '—'}
+                      </dd>
+                    </div>
+                  </dl>
+
+                  {rewardStatus.alreadyRedeemed ? (
+                    <p className="mt-4 text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-lg p-3">
+                      Redeemed on{' '}
+                      {rewardStatus.claim?.redeemedAt
+                        ? new Date(rewardStatus.claim.redeemedAt).toLocaleString('en-IN')
+                        : 'an earlier date'}
+                      . Do not hand this out again.
+                    </p>
+                  ) : rewardStatus.expired ? (
+                    <p className="mt-4 text-sm text-red-800 bg-red-50 border border-red-200 rounded-lg p-3">
+                      This reward expired and cannot be redeemed.
+                    </p>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={handleRedeemReward}
+                      disabled={isRedeeming}
+                      className="mt-4 w-full py-3 bg-gray-900 text-white font-semibold rounded-lg disabled:opacity-50"
+                    >
+                      {isRedeeming ? 'Redeeming…' : 'Redeem Reward'}
+                    </button>
+                  )}
+                </div>
+              )}
 
               {/* Enrollment Information from API - handles both regular and cash tickets */}
               {validationStatus?.data && (validationStatus.data.user || validationStatus.data.enrollment) && (() => {

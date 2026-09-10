@@ -31,6 +31,7 @@ const DIFFICULTY_OPTIONS = [
 const getInitialFormState = () => ({
   title: '',
   description: '',
+  leaderName: 'Motivata',
   category: '',
   subCategory: '',
   difficulty: 'medium',
@@ -96,6 +97,7 @@ function ChallengeForm({
         setFormData({
           title: challengeToEdit.title || '',
           description: challengeToEdit.description || '',
+          leaderName: challengeToEdit.leaderName || 'Motivata',
           category: challengeToEdit.category || '',
           subCategory: challengeToEdit.subCategory || '',
           difficulty: challengeToEdit.difficulty || 'medium',
@@ -144,6 +146,10 @@ function ChallengeForm({
       newErrors.description = 'Description must be less than 2000 characters';
     }
 
+    if (data.leaderName && data.leaderName.length > 100) {
+      newErrors.leaderName = 'Leader name must be less than 100 characters';
+    }
+
     // Category validation (required)
     if (!data.category) {
       newErrors.category = 'Category is required';
@@ -186,9 +192,7 @@ function ChallengeForm({
     }
 
     // Tasks validation
-    if (data.tasks.length === 0) {
-      newErrors.tasks = 'At least one task is required';
-    } else {
+    {
       const taskErrors = [];
       data.tasks.forEach((task, index) => {
         const tErrors = {};
@@ -360,6 +364,7 @@ function ChallengeForm({
     const submitData = {
       title: formData.title.trim(),
       description: formData.description.trim(),
+      leaderName: formData.leaderName.trim() || 'Motivata',
       category: formData.category,
       subCategory: formData.subCategory || null,
       difficulty: formData.difficulty,
@@ -464,6 +469,28 @@ function ChallengeForm({
                 />
                 {errors.description && (
                   <p className="text-red-600 text-sm mt-1">{errors.description}</p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Leader Name
+                </label>
+                <input
+                  type="text"
+                  value={formData.leaderName}
+                  onChange={(e) => handleChange('leaderName', e.target.value)}
+                  placeholder="Motivata"
+                  disabled={isLoading}
+                  className={`w-full px-3 py-2 border rounded-lg focus:border-gray-800 outline-none transition-colors ${
+                    errors.leaderName ? 'border-red-500' : 'border-gray-300'
+                  } ${isLoading ? 'bg-gray-100' : ''}`}
+                />
+                <p className="text-gray-500 text-xs mt-1">
+                  Shown under the challenge title in the app. Leave blank for "Motivata".
+                </p>
+                {errors.leaderName && (
+                  <p className="text-red-600 text-sm mt-1">{errors.leaderName}</p>
                 )}
               </div>
 
