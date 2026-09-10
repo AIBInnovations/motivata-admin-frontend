@@ -225,6 +225,18 @@ function Sidebar({ collapsed, isOpen, onClose }) {
           path: "/challenges",
         },
         {
+          id: "daily-challenges",
+          label: "Daily Challenges",
+          icon: CalendarDays,
+          path: "/daily-challenges",
+        },
+        {
+          id: "challenge-rewards",
+          label: "Challenge Rewards",
+          icon: Gift,
+          path: "/challenge-rewards",
+        },
+        {
           id: "polls",
           label: "Polls",
           icon: BarChart3,
@@ -336,6 +348,13 @@ function Sidebar({ collapsed, isOpen, onClose }) {
       label: "Memberships",
       icon: Crown,
       path: "/memberships",
+      type: "single",
+    },
+    {
+      id: "feature-access",
+      label: "Feature Access",
+      icon: ShieldCheck,
+      path: "/feature-access",
       type: "single",
     },
     {
