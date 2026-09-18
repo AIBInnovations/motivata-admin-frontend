@@ -664,7 +664,7 @@ function Quizes() {
                         </td>
                         <td className="px-6 py-4">
                           <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${typeColors[program.type]}`}>
-                            {program.type === 'GSOS' ? 'General' : 'Intensive'}
+                            {program.type === 'GSOS' ? 'Simple' : 'Intensive'}
                           </span>
                         </td>
                         <td className="px-6 py-4">
@@ -772,7 +772,7 @@ function Quizes() {
                       </div>
                       <div className="bg-gray-50 rounded-lg p-2">
                         <p className="text-xs text-gray-500">Type</p>
-                        <p className="font-semibold text-gray-900 text-sm">{program.type === 'GSOS' ? 'General' : 'Intensive'}</p>
+                        <p className="font-semibold text-gray-900 text-sm">{program.type === 'GSOS' ? 'Simple' : 'Intensive'}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2 pt-3 border-t border-gray-100">

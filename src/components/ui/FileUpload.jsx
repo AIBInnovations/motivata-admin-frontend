@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from 'react';
-import { Upload, X, Image, FileVideo, Loader2, AlertCircle, Check } from 'lucide-react';
+import { Upload, X, Image, FileVideo, Music, Loader2, AlertCircle, Check } from 'lucide-react';
 import { uploadSingleAsset, uploadMultipleAssets, validateFile, validateFiles, formatFileSize } from '../../services/asset.service';
 
 /**
@@ -54,6 +54,8 @@ function FileUpload({
     switch (type) {
       case 'video':
         return 'video/*';
+      case 'audio':
+        return 'audio/*';
       case 'any':
         return 'image/*,video/*';
       default:
@@ -65,6 +67,8 @@ function FileUpload({
     switch (type) {
       case 'video':
         return ['video/mp4', 'video/webm', 'video/ogg', 'video/quicktime'];
+      case 'audio':
+        return ['audio/mpeg', 'audio/mp3', 'audio/mp4', 'audio/x-m4a', 'audio/aac', 'audio/wav', 'audio/x-wav', 'audio/ogg', 'audio/webm'];
       case 'any':
         return [
           'image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml',
@@ -215,6 +219,32 @@ function FileUpload({
   };
 
   const renderPreview = (url, index = null) => {
+    if (type === 'audio') {
+      return (
+        <div
+          key={index !== null ? index : 'single'}
+          className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200"
+        >
+          <div className="w-10 h-10 bg-gray-200 rounded flex items-center justify-center flex-shrink-0">
+            <Music className="h-5 w-5 text-gray-500" />
+          </div>
+          <div className="flex-1 min-w-0 space-y-1">
+            <audio controls preload="none" src={url} className="w-full h-9" />
+            <p className="text-xs text-gray-500 truncate">{url}</p>
+          </div>
+          {!disabled && (
+            <button
+              type="button"
+              onClick={() => index !== null ? handleRemoveValue(index) : handleClearSingle()}
+              className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
+        </div>
+      );
+    }
+
     const isVideo = isVideoUrl(url);
 
     return (
@@ -324,7 +354,7 @@ function FileUpload({
               <div>
                 <p className="text-sm text-gray-600">{placeholder}</p>
                 <p className="text-xs text-gray-400 mt-1">
-                  {type === 'video' ? 'MP4, WebM, OGG' : type === 'any' ? 'Images or videos' : 'PNG, JPG, GIF, WebP, SVG'}
+                  {type === 'video' ? 'MP4, WebM, OGG' : type === 'audio' ? 'MP3, M4A, AAC, WAV, OGG' : type === 'any' ? 'Images or videos' : 'PNG, JPG, GIF, WebP, SVG'}
                   {' '}up to {formatFileSize(maxSize)}
                 </p>
               </div>
