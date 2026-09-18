@@ -15,6 +15,7 @@ import sosProgramService from '../services/sos-program.service';
 import Modal from '../components/ui/Modal';
 import ConfirmDialog from '../components/ui/ConfirmDialog';
 import Badge from '../components/ui/Badge';
+import FileUpload from '../components/ui/FileUpload';
 
 const defaultForm = {
   programId: '',
@@ -385,16 +386,18 @@ function SOSArticles() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Audio URL <span className="text-gray-400 font-normal">(optional)</span>
-            </label>
-            <input
-              type="text"
+            <FileUpload
+              label="Audio (optional)"
               value={form.audioUrl}
-              onChange={(e) => setForm((prev) => ({ ...prev, audioUrl: e.target.value }))}
-              placeholder="https://..."
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-gray-800 outline-none"
+              onUpload={(url) => setForm((prev) => ({ ...prev, audioUrl: url || '' }))}
+              type="audio"
+              folder="sos-articles-audio"
+              maxSize={50 * 1024 * 1024}
+              placeholder="Drop an audio file here or click to upload"
             />
+            <p className="text-xs text-gray-500 mt-1">
+              Plays at the top of the article in the app. A Google Drive share link will not play — upload the file itself.
+            </p>
           </div>
 
           <div className="flex items-center gap-3">

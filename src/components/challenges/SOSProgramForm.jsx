@@ -20,7 +20,7 @@ const getInitialFormState = () => ({
  * Program type options
  */
 const PROGRAM_TYPES = [
-  { value: 'GSOS', label: 'General SOS (GSOS)', description: 'Single day quick programs' },
+  { value: 'GSOS', label: 'Simple SOS (GSOS)', description: 'Single day quick programs' },
   { value: 'ISOS', label: 'Intensive SOS (ISOS)', description: 'Multi-day structured programs (7D, 15D, 30D)' },
 ];
 

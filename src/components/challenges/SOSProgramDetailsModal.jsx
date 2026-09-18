@@ -139,7 +139,7 @@ function SOSProgramDetailsModal({
                         typeColors[program.type]
                       }`}
                     >
-                      {program.type === 'GSOS' ? 'General SOS' : 'Intensive SOS'}
+                      {program.type === 'GSOS' ? 'Simple SOS' : 'Intensive SOS'}
                     </span>
                     <span
                       className={`px-2.5 py-1 rounded-full text-xs font-medium ${
