@@ -104,7 +104,7 @@ const validateForm = (data, isEditMode = false) => {
 
   // Google Maps link validation (optional, but must be valid URL if provided)
   if (data.gmapLink && data.gmapLink.trim()) {
-    const gmapPattern = /^https?:\/\/(www\.)?(google\.[a-z.]+\/maps|maps\.google\.[a-z.]+|goo\.gl\/maps|maps\.app\.goo\.gl)\/.+/i;
+    const gmapPattern = /^https?:\/\/(www\.)?(google\.[a-z.]+\/maps|maps\.google\.[a-z.]+|goo\.gl\/maps|maps\.app\.goo\.gl|share\.google|g\.co\/kgs|g\.page)([/?].*)?$/i;
     const generalUrlPattern = /^https?:\/\/.+/;
     if (!generalUrlPattern.test(data.gmapLink.trim())) {
       errors.gmapLink = 'Please provide a valid URL';
@@ -558,6 +558,15 @@ function EventForm({
         {serverError && (
           <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
             {serverError}
+            {Array.isArray(validationErrors) && validationErrors.length > 0 && (
+              <ul className="mt-2 list-disc list-inside space-y-0.5">
+                {validationErrors.map((err, index) => (
+                  <li key={`${err.field}-${index}`}>
+                    {err.field ? `${err.field}: ` : ''}{err.message}
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         )}
 

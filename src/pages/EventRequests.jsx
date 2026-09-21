@@ -12,12 +12,13 @@ import {
   Mail,
   Calendar,
   AlertCircle,
+  RefreshCcw,
 } from 'lucide-react';
 import eventRequestService from '../services/eventRequest.service';
 import Pagination from '../components/ui/Pagination';
 import StatusBadge from '../components/requests/StatusBadge';
 import StatsCards from '../components/requests/StatsCards';
-import ApproveModal from '../components/requests/ApproveModal';
+import EventApproveModal from '../components/requests/EventApproveModal';
 import RejectModal from '../components/requests/RejectModal';
 import RequestDetailsModal from '../components/requests/RequestDetailsModal';
 
@@ -52,6 +53,7 @@ function EventRequests() {
 
   // Modal states
   const [showApproveModal, setShowApproveModal] = useState(false);
+  const [approveMode, setApproveMode] = useState('approve');
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState(null);
@@ -141,6 +143,13 @@ function EventRequests() {
    */
   const handleApproveClick = (request) => {
     setSelectedRequest(request);
+    setApproveMode('approve');
+    setShowApproveModal(true);
+  };
+
+  const handleReissueClick = (request) => {
+    setSelectedRequest(request);
+    setApproveMode('reissue');
     setShowApproveModal(true);
   };
 
@@ -162,6 +171,16 @@ function EventRequests() {
       fetchStats();
     } else {
       throw new Error(result.message || 'Failed to approve request');
+    }
+  };
+
+  const handleReissue = async (id, data) => {
+    const result = await eventRequestService.reissuePaymentLink(id, data);
+    if (result.success) {
+      fetchRequests();
+      fetchStats();
+    } else {
+      throw new Error(result.message || 'Failed to send a new payment link');
     }
   };
 
@@ -387,6 +406,11 @@ function EventRequests() {
                           ₹{request.paymentAmount} link
                         </a>
                       )}
+                      {(request.tierName || request.couponCode) && (
+                        <span className="block text-xs text-gray-500 mt-1">
+                          {[request.tierName, request.couponCode && `Code ${request.couponCode}`].filter(Boolean).join(' · ')}
+                        </span>
+                      )}
                     </td>
 
                     {/* Date */}
@@ -417,6 +441,16 @@ function EventRequests() {
                             title="Approve Request"
                           >
                             <CheckCircle className="h-4 w-4" />
+                          </button>
+                        )}
+
+                        {request.status === 'PAYMENT_SENT' && (
+                          <button
+                            onClick={() => handleReissueClick(request)}
+                            className="p-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                            title="Change amount & send new link"
+                          >
+                            <RefreshCcw className="h-4 w-4" />
                           </button>
                         )}
 
@@ -453,14 +487,14 @@ function EventRequests() {
 
       {/* Modals */}
       {showApproveModal && selectedRequest && (
-        <ApproveModal
+        <EventApproveModal
           request={selectedRequest}
+          mode={approveMode}
           onClose={() => {
             setShowApproveModal(false);
             setSelectedRequest(null);
           }}
-          onApprove={handleApprove}
-          title="Approve Event Request"
+          onSubmit={approveMode === 'reissue' ? handleReissue : handleApprove}
         />
       )}
 
