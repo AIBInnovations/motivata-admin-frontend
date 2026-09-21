@@ -49,6 +49,8 @@ import Recommendations from './pages/Recommendations';
 import Colleges from './pages/Colleges';
 import Leaders from './pages/Leaders';
 import ReferralCodes from './pages/ReferralCodes';
+import Community from './pages/Community';
+import Occupations from './pages/Occupations';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { PendingCountsProvider } from './contexts/PendingCountsContext';
@@ -106,6 +108,8 @@ function App() {
             <Route path="/settings" element={<Settings />} />
             <Route path="/feature-access" element={<FeatureAccess />} />
             <Route path="/clubs" element={<Clubs />} />
+            <Route path="/community" element={<Community />} />
+            <Route path="/occupations" element={<Occupations />} />
             <Route path="/club-join-requests" element={<ClubJoinRequests />} />
             <Route path="/admin-club-posts" element={<AdminClubPosts />} />
             <Route path="/scan-qr" element={<ScanQR />} />

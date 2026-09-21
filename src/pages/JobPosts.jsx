@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Loader2, Plus, Trash2, RefreshCw, XCircle, Briefcase, Users, ToggleLeft, ToggleRight, Upload, X, Pencil } from 'lucide-react';
+import { Loader2, Plus, Trash2, RefreshCw, XCircle, Briefcase, Users, ToggleLeft, ToggleRight, Upload, X, Pencil, CheckCircle, Ban } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import jobsService from '../services/jobs.service';
 import Modal from '../components/ui/Modal';
@@ -48,6 +48,9 @@ function JobPosts() {
   const [success, setSuccess] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
   const [togglingId, setTogglingId] = useState(null);
+  const [approvalFilter, setApprovalFilter] = useState('');
+  const [pendingCount, setPendingCount] = useState(0);
+  const [reviewingId, setReviewingId] = useState(null);
 
   // Create form — image upload state
   const [jobImage, setJobImage] = useState(null); // { status: 'uploading'|'done'|'error', url, errorMsg }
@@ -144,11 +147,50 @@ function JobPosts() {
     fetchFilterOptions();
   }, []);
 
-  const fetchJobs = async () => {
+  const fetchJobs = async (approval = approvalFilter) => {
     setIsLoading(true);
-    const result = await jobsService.getJobs();
-    if (result.success) setJobs(result.data?.jobs || []);
+    const result = await jobsService.getJobs(approval ? { approval, limit: 100 } : { limit: 100 });
+    if (result.success) {
+      setJobs(result.data?.jobs || []);
+      setPendingCount(result.data?.pendingApprovalCount || 0);
+    }
     setIsLoading(false);
+  };
+
+  const changeApprovalFilter = (value) => {
+    setApprovalFilter(value);
+    fetchJobs(value);
+  };
+
+  const handleApprove = async (job) => {
+    if (!window.confirm(`Approve "${job.title}"? It goes live for everyone and all app users get a notification.`)) return;
+    setReviewingId(job._id);
+    const result = await jobsService.approveJob(job._id);
+    if (result.success) {
+      setSuccess('Opportunity approved and live');
+      fetchJobs();
+    } else {
+      setError(result.message || 'Failed to approve');
+    }
+    setReviewingId(null);
+  };
+
+  const handleReject = async (job) => {
+    const reason = window.prompt('Reason for not approving (the member will see this):');
+    if (reason === null) return;
+    if (!reason.trim()) {
+      setError('Please give a reason');
+      return;
+    }
+    setReviewingId(job._id);
+    const result = await jobsService.rejectJob(job._id, reason.trim());
+    if (result.success) {
+      setSuccess('Opportunity rejected');
+      fetchJobs();
+    } else {
+      setError(result.message || 'Failed to reject');
+    }
+    setReviewingId(null);
   };
 
   const fetchFilterOptions = async () => {
@@ -389,7 +431,29 @@ function JobPosts() {
       {/* Jobs List */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200">
         <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-base font-semibold text-gray-900">All Jobs ({jobs.length})</h2>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <h2 className="text-base font-semibold text-gray-900">Opportunities ({jobs.length})</h2>
+            <div className="flex gap-2">
+              {[
+                { value: '', label: 'All' },
+                { value: 'PENDING', label: `Waiting for approval${pendingCount ? ` (${pendingCount})` : ''}` },
+                { value: 'APPROVED', label: 'Live / approved' },
+                { value: 'REJECTED', label: 'Rejected' },
+              ].map((opt) => (
+                <button
+                  key={opt.value || 'all'}
+                  onClick={() => changeApprovalFilter(opt.value)}
+                  className={`px-3 py-1.5 text-xs font-medium rounded-lg border ${
+                    approvalFilter === opt.value
+                      ? 'bg-gray-900 text-white border-gray-900'
+                      : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
 
         {isLoading ? (
@@ -415,8 +479,23 @@ function JobPosts() {
                       <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${job.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
                         {job.isActive ? 'Active' : 'Inactive'}
                       </span>
+                      {job.approvalStatus === 'PENDING' && (
+                        <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-yellow-100 text-yellow-800">Waiting for approval</span>
+                      )}
+                      {job.approvalStatus === 'REJECTED' && (
+                        <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-red-100 text-red-700">Rejected</span>
+                      )}
                     </div>
                     <p className="text-sm text-gray-600">{job.company} · {job.location}</p>
+                    {job.postedByUser && (
+                      <p className="text-xs text-gray-500 mt-0.5">
+                        Posted by member: {job.postedByUser.name || job.postedByName}
+                        {job.postedByUser.phone ? ` · ${job.postedByUser.phone}` : ''}
+                      </p>
+                    )}
+                    {job.approvalStatus === 'REJECTED' && job.rejectionReason && (
+                      <p className="text-xs text-red-600 mt-0.5">Reason: {job.rejectionReason}</p>
+                    )}
                     {job.salary && <p className="text-xs text-gray-500 mt-0.5">{job.salary}</p>}
                     <div className="flex items-center gap-3 mt-2 text-xs text-gray-400">
                       <span className="flex items-center gap-1"><Users className="h-3 w-3" />{job.applicationCount} applications</span>
@@ -425,6 +504,20 @@ function JobPosts() {
                     </div>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
+                    {canManage && job.approvalStatus === 'PENDING' && (
+                      <>
+                        <button onClick={() => handleApprove(job)} disabled={reviewingId === job._id}
+                          className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50">
+                          {reviewingId === job._id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CheckCircle className="h-3.5 w-3.5" />}
+                          Approve
+                        </button>
+                        <button onClick={() => handleReject(job)} disabled={reviewingId === job._id}
+                          className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50">
+                          <Ban className="h-3.5 w-3.5" />
+                          Reject
+                        </button>
+                      </>
+                    )}
                     <button onClick={() => handleToggleActive(job)} disabled={togglingId === job._id}
                       className="p-2 text-gray-400 hover:text-gray-700 rounded-lg transition-colors" title={job.isActive ? 'Deactivate' : 'Activate'}>
                       {togglingId === job._id ? <Loader2 className="h-4 w-4 animate-spin" /> : job.isActive ? <ToggleRight className="h-5 w-5 text-green-500" /> : <ToggleLeft className="h-5 w-5" />}
