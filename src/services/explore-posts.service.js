@@ -14,6 +14,9 @@ const explorePostsService = {
 
   deletePost: (postId) =>
     handleApiResponse(api.delete(ENDPOINTS.POST_BY_ID(postId))),
+
+  getCategories: () =>
+    handleApiResponse(api.get('/web/connect/content-categories')),
 };
 
 export default explorePostsService;

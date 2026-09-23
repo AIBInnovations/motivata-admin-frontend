@@ -99,6 +99,18 @@ const eventRequestService = {
     return result;
   },
 
+  reissuePaymentLink: async (id, data = {}) => {
+    const result = await handleApiResponse(
+      api.post(`${EVENT_REQUEST_ENDPOINTS.BASE}/${id}/reissue-payment-link`, data)
+    );
+
+    if (!result.success) {
+      console.error('[EventRequestService] Failed to reissue payment link:', result.message);
+    }
+
+    return result;
+  },
+
   /**
    * Reject a request (admin only)
    */

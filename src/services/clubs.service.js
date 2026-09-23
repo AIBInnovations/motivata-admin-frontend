@@ -44,6 +44,9 @@ const clubsService = {
 
   // ============ MEMBERS ============
   // Uses app endpoint (Auth: Optional - works for admins)
+  setMemberRole: async (clubId, userId, role) =>
+    handleApiResponse(api.put(`${CLUBS_ENDPOINTS.CLUBS}/${clubId}/members/${userId}/role`, { role })),
+
   getClubMembers: async (clubId, params = {}) => {
     console.log('[ClubsService] Fetching club members:', clubId);
     return handleApiResponse(api.get(`${CLUBS_ENDPOINTS.CONNECT_CLUBS}/${clubId}/members`, { params }));

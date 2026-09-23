@@ -36,8 +36,15 @@ const defaultClubForm = {
   description: '',
   thumbnail: '',
   requiresApproval: false,
+  accessLevel: 'OPEN',
   postPermissions: ['MEMBERS'],
 };
+
+const ACCESS_LEVELS = [
+  { value: 'OPEN', label: 'Open club — anyone can join' },
+  { value: 'DOERS', label: "Doer's club — Doers and Members only" },
+  { value: 'MEMBERS', label: 'Members only' },
+];
 
 const defaultPagination = {
   currentPage: 1,
@@ -75,6 +82,7 @@ function Clubs() {
   const [memberPagination, setMemberPagination] = useState(defaultPagination);
   const [isLoadingMembers, setIsLoadingMembers] = useState(false);
   const [memberError, setMemberError] = useState(null);
+  const [roleUpdatingId, setRoleUpdatingId] = useState(null);
 
   // Posts state
   const [posts, setPosts] = useState([]);
@@ -280,6 +288,7 @@ function Clubs() {
       description: clubForm.description.trim(),
       thumbnail: clubForm.thumbnail.trim() || undefined,
       requiresApproval: clubForm.requiresApproval,
+      accessLevel: clubForm.accessLevel,
       postPermissions: clubForm.postPermissions,
     };
 
@@ -300,6 +309,7 @@ function Clubs() {
       description: club.description || '',
       thumbnail: club.thumbnail || '',
       requiresApproval: club.requiresApproval || false,
+      accessLevel: club.accessLevel || 'OPEN',
       postPermissions: club.postPermissions || ['MEMBERS'],
     });
     setShowClubModal(true);
@@ -316,6 +326,7 @@ function Clubs() {
       description: clubForm.description.trim(),
       thumbnail: clubForm.thumbnail.trim() || undefined,
       requiresApproval: clubForm.requiresApproval,
+      accessLevel: clubForm.accessLevel,
       postPermissions: clubForm.postPermissions,
     };
 
@@ -329,6 +340,23 @@ function Clubs() {
       setClubError(result.message || 'Failed to update club');
     }
     setIsSubmittingClub(false);
+  };
+
+  const handleToggleClubAdmin = async (member) => {
+    if (!selectedClub) return;
+    const nextRole = member.clubRole === 'ADMIN' ? 'MEMBER' : 'ADMIN';
+    const question = nextRole === 'ADMIN'
+      ? `Make ${member.name} a club admin? They will be able to post in ${selectedClub.name}.`
+      : `Remove club admin rights from ${member.name}?`;
+    if (!window.confirm(question)) return;
+    setRoleUpdatingId(member.id);
+    const result = await clubsService.setMemberRole(selectedClub._id, member.id, nextRole);
+    if (result.success) {
+      setMembers((prev) => prev.map((m) => (m.id === member.id ? { ...m, clubRole: nextRole } : m)));
+    } else {
+      setMemberError(result.message || 'Failed to update role');
+    }
+    setRoleUpdatingId(null);
   };
 
   const handleDeleteClub = async () => {
@@ -512,6 +540,19 @@ function Clubs() {
                     }`}
                   />
                 </button>
+              </div>
+              <div>
+                <label className="text-sm font-semibold text-gray-900">Who can join</label>
+                <select
+                  value={clubForm.accessLevel}
+                  onChange={(e) => setClubForm({ ...clubForm, accessLevel: e.target.value })}
+                  disabled={isSubmittingClub}
+                  className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:border-gray-800 bg-white"
+                >
+                  {ACCESS_LEVELS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
               </div>
               <PostPermissionsSelector
                 value={clubForm.postPermissions}
@@ -708,11 +749,26 @@ function Clubs() {
                       {member.name?.charAt(0)?.toUpperCase() || 'U'}
                     </div>
                     <div>
-                      <h3 className="text-sm font-semibold text-gray-900">{member.name || 'Unknown'}</h3>
+                      <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
+                        {member.name || 'Unknown'}
+                        {member.clubRole === 'ADMIN' && (
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-gray-900 text-white">Club admin</span>
+                        )}
+                      </h3>
                       <p className="text-xs text-gray-500">{member.email || member.phone || '-'}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-4 text-sm text-gray-600">
+                    {canManage && (
+                      <button
+                        onClick={() => handleToggleClubAdmin(member)}
+                        disabled={roleUpdatingId === member.id}
+                        className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50"
+                      >
+                        {roleUpdatingId === member.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ShieldCheck className="h-3.5 w-3.5" />}
+                        {member.clubRole === 'ADMIN' ? 'Remove admin' : 'Make club admin'}
+                      </button>
+                    )}
                     <span>{member.followerCount || 0} followers</span>
                     <span className="text-xs text-gray-400">
                       Joined {formatDate(member.joinedAt)}
@@ -1041,6 +1097,19 @@ function Clubs() {
                 }`}
               />
             </button>
+          </div>
+          <div>
+            <label className="text-sm font-semibold text-gray-900">Who can join</label>
+            <select
+              value={clubForm.accessLevel}
+              onChange={(e) => setClubForm({ ...clubForm, accessLevel: e.target.value })}
+              disabled={isSubmittingClub}
+              className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:border-gray-800 bg-white"
+            >
+              {ACCESS_LEVELS.map((opt) => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
+            </select>
           </div>
           <PostPermissionsSelector
             value={clubForm.postPermissions}

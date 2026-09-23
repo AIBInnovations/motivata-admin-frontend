@@ -23,6 +23,8 @@ const jobsService = {
   getJobs: (params = {}) => handleApiResponse(api.get(ENDPOINTS.JOBS, { params })),
   updateJob: (id, data) => handleApiResponse(api.put(ENDPOINTS.JOB(id), data)),
   deleteJob: (id) => handleApiResponse(api.delete(ENDPOINTS.JOB(id))),
+  approveJob: (id) => handleApiResponse(api.post(`${ENDPOINTS.JOB(id)}/approve`)),
+  rejectJob: (id, reason) => handleApiResponse(api.post(`${ENDPOINTS.JOB(id)}/reject`, { reason })),
   getJobApplications: (jobId, params = {}) => handleApiResponse(api.get(ENDPOINTS.JOB_APPLICATIONS(jobId), { params })),
   getAllApplications: (params = {}) => handleApiResponse(api.get(ENDPOINTS.ALL_APPLICATIONS, { params })),
   updateApplicationStatus: (applicationId, status) => handleApiResponse(api.put(ENDPOINTS.APPLICATION_STATUS(applicationId), { status })),

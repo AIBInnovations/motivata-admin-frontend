@@ -152,6 +152,11 @@ function EventDetailsModal({
                   Members Only
                 </span>
               )}
+              {event.audience === 'DOERS_EXCLUSIVE' && (
+                <span className="px-3 py-1 rounded-full text-sm font-medium bg-amber-100 text-amber-700">
+                  Doer's Exclusive
+                </span>
+              )}
               {event.isDeleted && (
                 <span className="px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-700">
                   Deleted

@@ -170,6 +170,11 @@ function EventTable({
                             Members Only
                           </span>
                         )}
+                        {event.audience === 'DOERS_EXCLUSIVE' && (
+                          <span className="hidden sm:inline-flex px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-100 text-amber-700">
+                            Doer's Exclusive
+                          </span>
+                        )}
                       </div>
                       {event.city && (
                         <p className="text-sm text-gray-500 truncate">{event.city}</p>

@@ -14,10 +14,18 @@ import FileUpload from '../components/ui/FileUpload';
 
 const defaultForm = {
   title: '',
+  subHeading: '',
+  category: '',
   content: '',
   caption: '',
+  videoUrl: '',
+  linkUrl: '',
   mediaUrls: [],
 };
+
+const LINK_PATTERN = /^https?:\/\/\S+$/i;
+
+const countWords = (text) => text.trim().split(/\s+/).filter(Boolean).length;
 
 function ExplorePosts() {
   const { hasRole } = useAuth();
@@ -30,9 +38,17 @@ function ExplorePosts() {
   const [deletingId, setDeletingId] = useState(null);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
+  const [categories, setCategories] = useState([]);
+  const [maxWords, setMaxWords] = useState(100);
 
   useEffect(() => {
     fetchPosts();
+    explorePostsService.getCategories().then((res) => {
+      if (res.success) {
+        setCategories(res.data?.categories || []);
+        setMaxWords(res.data?.maxWords || 100);
+      }
+    });
   }, []);
 
   const fetchPosts = async () => {
@@ -62,6 +78,18 @@ function ExplorePosts() {
       setError('Please upload at least one photo');
       return;
     }
+    if (countWords(form.content) > maxWords) {
+      setError(`Text cannot be more than ${maxWords} words`);
+      return;
+    }
+    if (form.videoUrl.trim() && !LINK_PATTERN.test(form.videoUrl.trim())) {
+      setError('Video link must start with http:// or https://');
+      return;
+    }
+    if (form.linkUrl.trim() && !LINK_PATTERN.test(form.linkUrl.trim())) {
+      setError('Link must start with http:// or https://');
+      return;
+    }
 
     setIsSubmitting(true);
     setError(null);
@@ -69,8 +97,12 @@ function ExplorePosts() {
 
     const result = await explorePostsService.createPost({
       title: form.title.trim(),
+      subHeading: form.subHeading.trim(),
+      category: form.category,
       content: form.content.trim(),
       caption: form.caption.trim(),
+      videoUrl: form.videoUrl.trim(),
+      linkUrl: form.linkUrl.trim(),
       mediaUrls: form.mediaUrls,
     });
 
@@ -151,18 +183,75 @@ function ExplorePosts() {
             />
           </div>
 
+          <div className="space-y-1">
+            <label className="text-sm font-semibold text-gray-900">
+              Sub-heading <span className="text-gray-400 text-xs">(Optional)</span>
+            </label>
+            <input
+              type="text"
+              value={form.subHeading}
+              onChange={(e) => setForm({ ...form, subHeading: e.target.value })}
+              maxLength={200}
+              placeholder="A short line under the title..."
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-gray-800 outline-none text-sm"
+            />
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-sm font-semibold text-gray-900">Category</label>
+            <select
+              value={form.category}
+              onChange={(e) => setForm({ ...form, category: e.target.value })}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-gray-800 outline-none text-sm bg-white"
+            >
+              <option value="">— Choose a category —</option>
+              {categories.map((c) => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+          </div>
+
           {/* Content */}
           <div className="space-y-1">
-            <label className="text-sm font-semibold text-gray-900">Content / Context</label>
+            <label className="text-sm font-semibold text-gray-900">Text</label>
             <textarea
               value={form.content}
               onChange={(e) => setForm({ ...form, content: e.target.value })}
               rows={5}
               maxLength={5000}
-              placeholder="Write the full content or context for this post..."
+              placeholder={`Write up to ${maxWords} words about this post...`}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-gray-800 outline-none resize-none text-sm"
             />
-            <p className="text-xs text-gray-400">{form.content.length}/5000</p>
+            <p className={`text-xs ${countWords(form.content) > maxWords ? 'text-red-600' : 'text-gray-400'}`}>
+              {countWords(form.content)}/{maxWords} words
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-1">
+              <label className="text-sm font-semibold text-gray-900">
+                Video link <span className="text-gray-400 text-xs">(YouTube / Instagram, optional)</span>
+              </label>
+              <input
+                type="url"
+                value={form.videoUrl}
+                onChange={(e) => setForm({ ...form, videoUrl: e.target.value })}
+                placeholder="https://youtube.com/watch?v=..."
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-gray-800 outline-none text-sm"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-sm font-semibold text-gray-900">
+                External link <span className="text-gray-400 text-xs">(Optional)</span>
+              </label>
+              <input
+                type="url"
+                value={form.linkUrl}
+                onChange={(e) => setForm({ ...form, linkUrl: e.target.value })}
+                placeholder="https://..."
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-gray-800 outline-none text-sm"
+              />
+            </div>
           </div>
 
           {/* Caption */}
@@ -263,6 +352,11 @@ function ExplorePosts() {
                 {/* Info */}
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-gray-900 truncate">{post.title}</p>
+                  {(post.category || post.subHeading) && (
+                    <p className="text-xs text-gray-500 truncate">
+                      {[post.category, post.subHeading].filter(Boolean).join(' · ')}
+                    </p>
+                  )}
                   {post.content && (
                     <p className="text-xs text-gray-500 mt-1 line-clamp-2">{post.content}</p>
                   )}

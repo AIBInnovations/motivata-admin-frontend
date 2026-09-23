@@ -41,6 +41,8 @@ import {
   Building2,
   KeyRound,
   UserRound,
+  MessagesSquare,
+  BriefcaseBusiness,
 } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
@@ -179,6 +181,18 @@ function Sidebar({ collapsed, isOpen, onClose }) {
           label: "Explore Posts",
           icon: Globe,
           path: "/explore-posts",
+        },
+        {
+          id: "community",
+          label: "Weekly Updates & Help",
+          icon: MessagesSquare,
+          path: "/community",
+        },
+        {
+          id: "occupations",
+          label: "Occupations",
+          icon: BriefcaseBusiness,
+          path: "/occupations",
         },
       ],
     },

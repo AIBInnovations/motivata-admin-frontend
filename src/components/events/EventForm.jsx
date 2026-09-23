@@ -104,7 +104,7 @@ const validateForm = (data, isEditMode = false) => {
 
   // Google Maps link validation (optional, but must be valid URL if provided)
   if (data.gmapLink && data.gmapLink.trim()) {
-    const gmapPattern = /^https?:\/\/(www\.)?(google\.[a-z.]+\/maps|maps\.google\.[a-z.]+|goo\.gl\/maps|maps\.app\.goo\.gl)\/.+/i;
+    const gmapPattern = /^https?:\/\/(www\.)?(google\.[a-z.]+\/maps|maps\.google\.[a-z.]+|goo\.gl\/maps|maps\.app\.goo\.gl|share\.google|g\.co\/kgs|g\.page)([/?].*)?$/i;
     const generalUrlPattern = /^https?:\/\/.+/;
     if (!generalUrlPattern.test(data.gmapLink.trim())) {
       errors.gmapLink = 'Please provide a valid URL';
@@ -558,6 +558,15 @@ function EventForm({
         {serverError && (
           <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
             {serverError}
+            {Array.isArray(validationErrors) && validationErrors.length > 0 && (
+              <ul className="mt-2 list-disc list-inside space-y-0.5">
+                {validationErrors.map((err, index) => (
+                  <li key={`${err.field}-${index}`}>
+                    {err.field ? `${err.field}: ` : ''}{err.message}
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         )}
 
@@ -679,11 +688,12 @@ function EventForm({
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-gray-800 outline-none disabled:bg-gray-100"
             >
               <option value="ALL">Open for All</option>
+              <option value="DOERS_EXCLUSIVE">Doer's Exclusive</option>
               <option value="MEMBERS_ONLY">Members Only</option>
               <option value="INVITE_ONLY">Invite Only (Request Invite)</option>
             </select>
             <p className="mt-1 text-xs text-gray-500">
-              "Members Only" — only members can book. "Invite Only" — users request an invite; admin approves and sends payment link manually.
+              "Doer's Exclusive" — Doers and Members can book. "Members Only" — only Members can book. Everyone can still see these events. "Invite Only" — users request an invite; admin approves and sends payment link manually.
             </p>
           </div>
 
