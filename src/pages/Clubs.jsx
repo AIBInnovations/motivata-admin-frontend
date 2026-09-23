@@ -279,7 +279,10 @@ function Clubs() {
 
   const handleCreateClub = async (e) => {
     e.preventDefault();
-    if (!canManage) return;
+    if (!canManage) {
+      setClubError('Your account cannot create clubs. Ask a Super Admin to change your role.');
+      return;
+    }
     setIsSubmittingClub(true);
     setClubError(null);
 
