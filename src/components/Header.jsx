@@ -1,5 +1,15 @@
-import { useState } from 'react';
-import { Search, X } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { ChevronDown, LogOut } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
+
+const getInitials = (name) =>
+  name
+    .split(' ')
+    .map((n) => n[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2);
 
 /**
  * Header Component
@@ -7,8 +17,40 @@ import { Search, X } from 'lucide-react';
  * Profile removed - now in sidebar above logout button
  */
 function Header({ toggleSidebar }) {
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+  const navigate = useNavigate();
+  const { logout, admin } = useAuth();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef(null);
+
+  const displayName = admin?.name || admin?.username || 'Admin';
+  const displayEmail = admin?.email || '';
+  const displayRole = admin?.role || 'Administrator';
+
+  useEffect(() => {
+    if (!menuOpen) return undefined;
+
+    const handleClickOutside = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setMenuOpen(false);
+      }
+    };
+    const handleEscape = (e) => {
+      if (e.key === 'Escape') setMenuOpen(false);
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleEscape);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [menuOpen]);
+
+  const handleLogout = () => {
+    setMenuOpen(false);
+    logout();
+    navigate('/login');
+  };
 
   return (
     <header className="bg-white/80 backdrop-blur-sm border-b border-gray-200 px-4 lg:px-6 py-3 lg:py-4 flex items-center justify-between flex-shrink-0 sticky top-0 z-30 shadow-sm">
@@ -42,62 +84,53 @@ function Header({ toggleSidebar }) {
       </div>
 
       {/* Right Actions */}
-      <div className="flex items-center gap-2">
-        {/* Search Bar - Desktop */}
-        <div className="relative hidden md:block">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
-          <input
-            type="text"
-            placeholder="Search anything..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 pr-4 py-2 w-64 lg:w-80 bg-gray-50 border border-gray-200 rounded-lg focus:border-gray-800 outline-none text-sm transition-all placeholder:text-gray-400"
-          />
-          {searchQuery && (
-            <button
-              onClick={() => setSearchQuery('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 hover:bg-gray-200 rounded"
-            >
-              <X className="h-3.5 w-3.5 text-gray-400" />
-            </button>
-          )}
-        </div>
-
-        {/* Search Button - Mobile */}
+      <div className="relative" ref={menuRef}>
         <button
-          onClick={() => setSearchOpen(!searchOpen)}
-          className="md:hidden p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-all active:scale-95"
-          aria-label="Search"
+          onClick={() => setMenuOpen((open) => !open)}
+          className="flex items-center gap-2.5 pl-1 pr-2 py-1 rounded-full hover:bg-gray-100 transition-colors"
+          aria-haspopup="menu"
+          aria-expanded={menuOpen}
+          aria-label="Account menu"
         >
-          <Search className="h-5 w-5" />
+          <span className="w-9 h-9 rounded-full bg-gradient-to-br from-gray-800 via-purple-600 to-pink-600 flex items-center justify-center text-white font-bold text-sm shadow-sm">
+            {getInitials(displayName)}
+          </span>
+          <span className="hidden md:flex flex-col items-start leading-tight">
+            <span className="text-sm font-semibold text-gray-900 max-w-[160px] truncate">
+              {displayName}
+            </span>
+            <span className="text-[11px] text-gray-500">{displayRole}</span>
+          </span>
+          <ChevronDown
+            className={`h-4 w-4 text-gray-500 transition-transform ${menuOpen ? 'rotate-180' : ''}`}
+          />
         </button>
-      </div>
 
-      {/* Mobile Search Overlay */}
-      {searchOpen && (
-        <div className="md:hidden fixed inset-x-0 top-[57px] bg-white border-b border-gray-200 p-4 shadow-lg z-40 animate-in slide-in-from-top">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search anything..."
-              autoFocus
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-10 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:border-gray-800 outline-none text-sm"
-            />
+        {menuOpen && (
+          <div
+            role="menu"
+            className="absolute right-0 mt-2 w-64 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden z-40"
+          >
+            <div className="px-4 py-3 border-b border-gray-100">
+              <p className="text-sm font-bold text-gray-900 truncate">{displayName}</p>
+              {displayEmail && (
+                <p className="text-xs text-gray-600 truncate">{displayEmail}</p>
+              )}
+              <span className="inline-flex items-center mt-1.5 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-blue-100 text-gray-900 border border-blue-200">
+                {displayRole}
+              </span>
+            </div>
             <button
-              onClick={() => {
-                setSearchOpen(false);
-                setSearchQuery('');
-              }}
-              className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-200 rounded"
+              role="menuitem"
+              onClick={handleLogout}
+              className="w-full flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50 transition-colors"
             >
-              <X className="h-4 w-4 text-gray-400" />
+              <LogOut className="h-4 w-4" />
+              Logout
             </button>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </header>
   );
 }

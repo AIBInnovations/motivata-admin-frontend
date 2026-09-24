@@ -11,7 +11,6 @@ import {
   Gift,
   Tag,
   X,
-  LogOut,
   Video,
   ClipboardList,
   Trophy,
@@ -44,8 +43,7 @@ import {
   MessagesSquare,
   BriefcaseBusiness,
 } from "lucide-react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
-import { useAuth } from "../contexts/AuthContext";
+import { Link, useLocation } from "react-router-dom";
 import MotivataLogo from "../assets/logo/Motivata.png";
 import MotivataLogoSmall from "../assets/logo/logo2.png";
 import MembershipRequestBadge from "./MembershipRequestBadge";
@@ -59,9 +57,7 @@ import EventRequestBadge from "./EventRequestBadge";
  * Modern, responsive sidebar with nested menu structure
  */
 function Sidebar({ collapsed, isOpen, onClose }) {
-  const navigate = useNavigate();
   const location = useLocation();
-  const { logout, admin } = useAuth();
   const [expandedSections, setExpandedSections] = useState({
     clubs: true,
     services: true,
@@ -69,11 +65,6 @@ function Sidebar({ collapsed, isOpen, onClose }) {
     "registration-requests": true,
     "student-referrals": true,
   });
-
-  const handleLogout = () => {
-    logout();
-    navigate("/login");
-  };
 
   const toggleSection = (sectionId) => {
     setExpandedSections((prev) => ({
@@ -438,21 +429,6 @@ function Sidebar({ collapsed, isOpen, onClose }) {
     },
   ];
 
-  // Get display name or fallback
-  const displayName = admin?.name || admin?.username || "Admin";
-  const displayEmail = admin?.email || "admin@motivata.com";
-  const displayRole = admin?.role || "Administrator";
-
-  // Get initials for avatar
-  const getInitials = (name) => {
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2);
-  };
-
   const renderMenuItem = (item) => {
     if (item.type === "single") {
       const isActive = isActivePath(item.path);
@@ -614,67 +590,6 @@ function Sidebar({ collapsed, isOpen, onClose }) {
           {menuStructure.map((item) => renderMenuItem(item))}
         </ul>
       </nav>
-
-      {/* Profile & Logout Section - Fixed at bottom */}
-      <div className="border-t border-gray-200/80 shrink-0 bg-white/50 backdrop-blur-sm">
-        {/* Profile Section */}
-        <div className={`p-4 ${collapsed ? "lg:p-2" : ""}`}>
-          <div
-            className={`
-              flex items-center gap-3 p-3 rounded-xl
-              bg-gradient-to-br from-gray-50 to-gray-100/50
-              border border-gray-200/50
-              transition-all duration-200 hover:shadow-md
-              ${collapsed ? "lg:justify-center lg:p-2" : ""}
-            `}
-            title={collapsed ? `${displayName} - ${displayRole}` : ""}>
-            {/* Avatar with initials */}
-            <div className="relative shrink-0">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-gray-800 via-purple-600 to-pink-600 flex items-center justify-center text-white font-bold text-sm shadow-md ring-2 ring-white">
-                {getInitials(displayName)}
-              </div>
-              {/* Online status indicator */}
-              <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white shadow-sm" />
-            </div>
-
-            {!collapsed && (
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-bold text-gray-900 truncate">
-                  {displayName}
-                </p>
-                <p className="text-xs text-gray-600 truncate">{displayEmail}</p>
-                <div className="flex items-center gap-1 mt-1">
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold bg-blue-100 text-gray-900 border border-blue-200">
-                    {displayRole}
-                  </span>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Logout Button */}
-        <div className="p-4 pt-0">
-          <button
-            onClick={handleLogout}
-            className={`
-              w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl
-              bg-gradient-to-r from-red-50 to-red-100/50
-              text-red-600 font-semibold text-sm
-              border border-red-200
-              hover:from-red-100 hover:to-red-200/50
-              hover:border-red-300 hover:shadow-md
-              active:scale-[0.98]
-              transition-all duration-200
-              group
-              ${collapsed ? "lg:px-2" : ""}
-            `}
-            title="Logout">
-            <LogOut className="h-4 w-4 shrink-0 group-hover:scale-110 transition-transform" />
-            {!collapsed && <span>Logout</span>}
-          </button>
-        </div>
-      </div>
     </aside>
   );
 }
