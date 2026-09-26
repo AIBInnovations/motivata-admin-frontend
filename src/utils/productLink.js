@@ -7,3 +7,5 @@ export const slugify = (name = '') =>
     .replace(/^-|-$/g, '');
 
 export const productLink = (name) => `${WEBSITE_URL}/new-services?open=${slugify(name)}`;
+
+export const eventLink = (event) => `${WEBSITE_URL}/events/${event.slug || event._id}`;
