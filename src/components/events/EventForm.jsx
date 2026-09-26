@@ -11,6 +11,7 @@ import seatArrangementService from '../../services/seatArrangement.service';
  */
 const getInitialFormState = (event = null, seatArrangement = null) => ({
   name: event?.name || '',
+  slug: event?.slug || '',
   description: event?.description || '',
   imageUrls: event?.imageUrls || [],
   thumbnail: {
@@ -78,6 +79,10 @@ const validateForm = (data, isEditMode = false) => {
     errors.name = 'Name is required';
   } else if (data.name.length > 200) {
     errors.name = 'Name must be 200 characters or less';
+  }
+
+  if (data.slug && !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(data.slug)) {
+    errors.slug = 'Use only lowercase letters, numbers and single hyphens, e.g. community-townhall';
   }
 
   // Description validation
@@ -464,6 +469,10 @@ function EventForm({
       audience: formData.audience || 'ALL',
     };
 
+    if (formData.slug.trim()) {
+      submitData.slug = formData.slug.trim();
+    }
+
     // Add optional fields
     if (formData.venue.trim()) {
       submitData.venueName = formData.venue.trim();
@@ -593,6 +602,41 @@ function EventForm({
               placeholder="Enter event name"
             />
             {errors.name && <p className="mt-1 text-sm text-red-500">{errors.name}</p>}
+          </div>
+
+          <div>
+            <label htmlFor="slug" className="block text-sm font-medium text-gray-700 mb-1">
+              Share link
+            </label>
+            <div className={`flex items-center border rounded-lg overflow-hidden focus-within:border-gray-800 ${errors.slug ? 'border-red-500' : 'border-gray-300'}`}>
+              <span className="px-3 py-2 bg-gray-50 text-gray-500 text-sm border-r border-gray-200 whitespace-nowrap">motivata.in/events/</span>
+              <input
+                type="text"
+                id="slug"
+                name="slug"
+                value={formData.slug}
+                onChange={(e) => {
+                  const value = e.target.value.toLowerCase().replace(/\s+/g, '-');
+                  setFormData((prev) => ({ ...prev, slug: value }));
+                  if (errors.slug) {
+                    setErrors((prev) => ({ ...prev, slug: null }));
+                  }
+                }}
+                disabled={isLoading}
+                maxLength={80}
+                className="flex-1 min-w-0 px-3 py-2 outline-none disabled:bg-gray-100"
+                placeholder={isEditMode ? '' : 'made from the event name'}
+              />
+            </div>
+            {errors.slug ? (
+              <p className="mt-1 text-sm text-red-500">{errors.slug}</p>
+            ) : (
+              <p className="mt-1 text-xs text-gray-500">
+                {isEditMode
+                  ? 'Changing this stops links you have already shared from working.'
+                  : 'Leave empty to create it from the event name.'}
+              </p>
+            )}
           </div>
 
           {/* Description */}
