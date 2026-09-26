@@ -1,4 +1,6 @@
 import { Eye, Edit, Trash2, Loader2, Star } from 'lucide-react';
+import CopyLinkButton from '../ui/CopyLinkButton';
+import { productLink } from '../../utils/productLink';
 
 /**
  * Format currency
@@ -207,6 +209,9 @@ function ServiceTable({
                 {/* Actions */}
                 <td className="px-6 py-4">
                   <div className="flex items-center justify-end gap-1">
+                    {service.isActive && (
+                      <CopyLinkButton url={productLink(service.name)} label="Copy website link" iconOnly />
+                    )}
                     <button
                       onClick={() => onView(service)}
                       className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"

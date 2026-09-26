@@ -24,6 +24,8 @@ import membershipService from '../services/membership.service';
 import Modal from '../components/ui/Modal';
 import Pagination from '../components/ui/Pagination';
 import ConfirmDialog from '../components/ui/ConfirmDialog';
+import CopyLinkButton from '../components/ui/CopyLinkButton';
+import { productLink } from '../utils/productLink';
 
 const defaultPlanForm = {
   name: '',
@@ -730,6 +732,9 @@ function Memberships() {
                       >
                         Edit
                       </button>
+                      {plan.isActive && !plan.isDeleted && plan.isAvailable !== false && (
+                        <CopyLinkButton url={productLink(plan.name)} className="w-full" />
+                      )}
                       {/* Delete/Restore buttons removed - plans cannot be deleted */}
                     </div>
                   </div>
