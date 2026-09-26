@@ -1,6 +1,8 @@
 import { Eye, Edit, Trash2, RotateCcw, Trash, Loader2 } from 'lucide-react';
 import { getEventStatus, getStatusColor, formatDateTime } from '../../utils/eventStatus';
 import { getCategoryLabel } from '../../hooks/useEventsManagement';
+import CopyLinkButton from '../ui/CopyLinkButton';
+import { eventLink } from '../../utils/productLink';
 
 /**
  * Format date for display
@@ -257,6 +259,10 @@ function EventTable({
                 {/* Actions */}
                 <td className="px-6 py-4">
                   <div className="flex items-center justify-end gap-1">
+                    {!showDeleted && (
+                      <CopyLinkButton url={eventLink(event)} label="Copy share link" iconOnly />
+                    )}
+
                     {/* View */}
                     <button
                       onClick={() => onView(event)}

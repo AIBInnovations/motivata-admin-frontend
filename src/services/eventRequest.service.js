@@ -4,6 +4,7 @@ const EVENT_REQUEST_ENDPOINTS = {
   BASE: '/web/event-requests/admin/requests',
   STATS: '/web/event-requests/admin/stats',
   PENDING_COUNT: '/web/event-requests/admin/pending-count',
+  BULK_PAYMENT_LINKS: '/web/event-requests/admin/bulk-payment-links',
 };
 
 /**
@@ -94,6 +95,18 @@ const eventRequestService = {
       console.log('[EventRequestService] Request approved');
     } else {
       console.error('[EventRequestService] Failed to approve request:', result.message);
+    }
+
+    return result;
+  },
+
+  bulkSendPaymentLinks: async (data) => {
+    const result = await handleApiResponse(
+      api.post(EVENT_REQUEST_ENDPOINTS.BULK_PAYMENT_LINKS, data, { timeout: 180000 })
+    );
+
+    if (!result.success) {
+      console.error('[EventRequestService] Failed to send bulk payment links:', result.message);
     }
 
     return result;

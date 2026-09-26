@@ -13,6 +13,7 @@ import {
   Calendar,
   AlertCircle,
   RefreshCcw,
+  Send,
 } from 'lucide-react';
 import eventRequestService from '../services/eventRequest.service';
 import Pagination from '../components/ui/Pagination';
@@ -21,6 +22,7 @@ import StatsCards from '../components/requests/StatsCards';
 import EventApproveModal from '../components/requests/EventApproveModal';
 import RejectModal from '../components/requests/RejectModal';
 import RequestDetailsModal from '../components/requests/RequestDetailsModal';
+import BulkPaymentLinksModal from '../components/requests/BulkPaymentLinksModal';
 
 /**
  * EventRequests Page Component
@@ -56,6 +58,7 @@ function EventRequests() {
   const [approveMode, setApproveMode] = useState('approve');
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [showBulkModal, setShowBulkModal] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState(null);
 
   /**
@@ -220,17 +223,26 @@ function EventRequests() {
           </p>
         </div>
 
-        <button
-          onClick={() => {
-            fetchRequests();
-            fetchStats();
-          }}
-          disabled={isLoading}
-          className="flex items-center gap-2 px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition-colors disabled:opacity-50"
-        >
-          <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
-          Refresh
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowBulkModal(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+          >
+            <Send className="h-4 w-4" />
+            Send payment links in bulk
+          </button>
+          <button
+            onClick={() => {
+              fetchRequests();
+              fetchStats();
+            }}
+            disabled={isLoading}
+            className="flex items-center gap-2 px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition-colors disabled:opacity-50"
+          >
+            <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+            Refresh
+          </button>
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -495,6 +507,16 @@ function EventRequests() {
             setSelectedRequest(null);
           }}
           onSubmit={approveMode === 'reissue' ? handleReissue : handleApprove}
+        />
+      )}
+
+      {showBulkModal && (
+        <BulkPaymentLinksModal
+          onClose={() => setShowBulkModal(false)}
+          onDone={() => {
+            fetchRequests();
+            fetchStats();
+          }}
         />
       )}
 
