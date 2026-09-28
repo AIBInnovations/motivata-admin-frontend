@@ -11,7 +11,7 @@ if (!configuredApiBaseUrl && import.meta.env.PROD) {
     'VITE_API_BASE_URL is not set. A production build must not fall back to localhost:5000 — set it in the environment.'
   );
 }
-export const API_BASE_URL = configuredApiBaseUrl || 'http://localhost:5000/api';
+const API_BASE_URL = configuredApiBaseUrl || 'http://localhost:5000/api';
 
 // Host without the /api suffix, for resolving relative asset URLs returned by the API
 export const API_ORIGIN = API_BASE_URL.replace(/\/api\/?$/, '');

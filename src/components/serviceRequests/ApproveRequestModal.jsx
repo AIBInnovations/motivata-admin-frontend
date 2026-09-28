@@ -66,7 +66,7 @@ function ApproveRequestModal({
    */
   const validateAlternativeEmail = (email) => {
     if (!email) return null;
-    const emailRegex = /^[\w.-]+@([\w-]+\.)+[\w-]{2,4}$/;
+    const emailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
     if (!emailRegex.test(email)) {
       return 'Please enter a valid email address';
     }
