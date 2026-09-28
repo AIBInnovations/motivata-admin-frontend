@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import ProtectedRoute, { PublicRoute } from './components/ProtectedRoute';
@@ -35,7 +36,6 @@ import Services from './pages/Services';
 import ServiceOrders from './pages/ServiceOrders';
 import ServiceRequests from './pages/ServiceRequests';
 import UserSubscriptions from './pages/UserSubscriptions';
-import TestServices from './pages/TestServices';
 import MotivataBlendRequests from './pages/MotivataBlendRequests';
 import RoundTableRequests from './pages/RoundTableRequests';
 import EventRequests from './pages/EventRequests';
@@ -55,6 +55,11 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { PendingCountsProvider } from './contexts/PendingCountsContext';
 
+const testServicesEnabled =
+  import.meta.env.DEV || import.meta.env.VITE_ENABLE_TEST_SERVICES === 'true';
+const TestServices = testServicesEnabled
+  ? lazy(() => import('./pages/TestServices'))
+  : null;
 
 function App() {
   return (
@@ -118,7 +123,16 @@ function App() {
             <Route path="/service-orders" element={<ServiceOrders />} />
             <Route path="/service-requests" element={<ServiceRequests />} />
             <Route path="/user-subscriptions" element={<UserSubscriptions />} />
-            <Route path="/test-services" element={<TestServices />} />
+            {TestServices && (
+              <Route
+                path="/test-services"
+                element={
+                  <Suspense fallback={null}>
+                    <TestServices />
+                  </Suspense>
+                }
+              />
+            )}
             <Route path="/motivata-blend-requests" element={<MotivataBlendRequests />} />
             <Route path="/round-table-requests" element={<RoundTableRequests />} />
             <Route path="/event-requests" element={<EventRequests />} />

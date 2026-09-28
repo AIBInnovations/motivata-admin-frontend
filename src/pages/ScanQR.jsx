@@ -6,6 +6,7 @@ import challengeRewardService from '../services/challenge-reward.service';
 import { MdQrCodeScanner, MdCameraswitch, MdClose, MdCheckCircle, MdContentCopy, MdWarning, MdCardGiftcard } from 'react-icons/md';
 import { FaCamera, FaCameraRetro } from 'react-icons/fa';
 import { tokenStorage } from '../utils/storage';
+import { API_BASE_URL } from '../services/api.service';
 
 /**
  * Error Boundary to catch and handle scanner errors
@@ -131,8 +132,12 @@ function ScanQR() {
   useEffect(() => {
     console.log('[ScanQR] Component mounted', { scannerContainerId });
 
-    // Check if HTTPS
-    const isSecure = window.location.protocol === 'https:' || window.location.hostname === 'localhost';
+    // Camera access requires a secure context (HTTPS or localhost). Prefer the
+    // browser's own signal; it also covers 127.0.0.1 and other trusted origins.
+    const isSecure =
+      window.isSecureContext ||
+      window.location.protocol === 'https:' ||
+      window.location.hostname === 'localhost';
     setIsHttps(isSecure);
 
     // Check if mobile
@@ -569,7 +574,7 @@ function ScanQR() {
     });
 
     const response = await fetch(
-      `${import.meta.env.VITE_API_BASE_URL}/app/tickets/qr-scan?${queryParams}`,
+      `${API_BASE_URL}/app/tickets/qr-scan?${queryParams}`,
       {
         method: 'GET',
         headers: {
@@ -631,7 +636,7 @@ function ScanQR() {
     });
 
     const response = await fetch(
-      `${import.meta.env.VITE_API_BASE_URL}/app/tickets/cash/qr-scan?${queryParams}`,
+      `${API_BASE_URL}/app/tickets/cash/qr-scan?${queryParams}`,
       {
         method: 'GET',
         headers: {

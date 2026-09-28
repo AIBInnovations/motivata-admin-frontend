@@ -9,6 +9,8 @@ lerna-debug.log*
 
 
 .env
+.env.*
+!.env.example
 .claude
 
 node_modules

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { ShoppingCart, CheckCircle, Clock, AlertCircle, RefreshCw } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { tokenStorage } from '../utils/storage';
+import { API_BASE_URL } from '../services/api.service';
 
 /**
  * TestServices Page
@@ -50,7 +51,7 @@ function TestServices() {
     const startTime = Date.now();
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/web/services`, {
+      const response = await fetch(`${API_BASE_URL}/web/services`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
