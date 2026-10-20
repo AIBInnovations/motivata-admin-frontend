@@ -15,6 +15,7 @@ import {
 import { toast } from 'react-toastify';
 import dailyChallengeService from '../services/daily-challenge.service';
 import challengeService from '../services/challenge.service';
+import { formatApiError } from '../services/api.service';
 import Modal from '../components/ui/Modal';
 import ConfirmDialog from '../components/ui/ConfirmDialog';
 import Badge from '../components/ui/Badge';
@@ -113,7 +114,7 @@ function DailyChallenges() {
       setEntries(res.data?.dailyChallenges || []);
       setToday(res.data?.today || '');
     } else {
-      setError(res.error || 'Failed to load the schedule');
+      setError(formatApiError(res.error || res.message, 'Failed to load the schedule'));
     }
 
     setIsLoading(false);
@@ -219,7 +220,7 @@ function DailyChallenges() {
       setModalOpen(false);
       fetchEntries();
     } else {
-      toast.error(res.error || 'Could not save the daily challenge');
+      toast.error(formatApiError(res.error || res.message, 'Could not save the daily challenge'));
     }
   };
 
@@ -233,7 +234,7 @@ function DailyChallenges() {
       toast.success('Daily challenge removed');
       fetchEntries();
     } else {
-      toast.error(res.error || 'Could not remove the daily challenge');
+      toast.error(formatApiError(res.error || res.message, 'Could not remove the daily challenge'));
     }
   };
 
@@ -294,7 +295,7 @@ function DailyChallenges() {
       setBulkOpen(false);
       fetchEntries();
     } else {
-      toast.error(res.error || 'Could not schedule those dates');
+      toast.error(formatApiError(res.error || res.message, 'Could not schedule those dates'));
     }
   };
 

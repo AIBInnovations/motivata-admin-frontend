@@ -9,6 +9,9 @@ const explorePostsService = {
   createPost: (data) =>
     handleApiResponse(api.post(ENDPOINTS.POSTS, data)),
 
+  updatePost: (postId, data) =>
+    handleApiResponse(api.put(ENDPOINTS.POST_BY_ID(postId), data)),
+
   getPosts: (params = {}) =>
     handleApiResponse(api.get(ENDPOINTS.POSTS, { params })),
 

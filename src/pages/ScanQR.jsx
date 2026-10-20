@@ -6,6 +6,7 @@ import challengeRewardService from '../services/challenge-reward.service';
 import { MdQrCodeScanner, MdCameraswitch, MdClose, MdCheckCircle, MdContentCopy, MdWarning, MdCardGiftcard } from 'react-icons/md';
 import { FaCamera, FaCameraRetro } from 'react-icons/fa';
 import { tokenStorage } from '../utils/storage';
+import { formatApiError } from '../services/api.service';
 
 /**
  * Error Boundary to catch and handle scanner errors
@@ -659,7 +660,7 @@ function ScanQR() {
     try {
       const res = await challengeRewardService.verifyCode(code);
       if (!res.success) {
-        return { found: false, error: res.error || 'Could not verify this code' };
+        return { found: false, error: formatApiError(res.error || res.message, 'Could not verify this code') };
       }
       return { found: true, ...res.data };
     } finally {
@@ -687,7 +688,7 @@ function ScanQR() {
         claim: { ...prev.claim, status: 'redeemed', redeemedAt: new Date().toISOString() },
       }));
     } else {
-      toast.error(res.error || 'Could not redeem this reward');
+      toast.error(formatApiError(res.error || res.message, 'Could not redeem this reward'));
       if (navigator.vibrate) navigator.vibrate([300, 100, 300]);
     }
   };

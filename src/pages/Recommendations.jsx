@@ -2,12 +2,14 @@ import { useState, useEffect, useCallback } from 'react';
 import { Plus, RefreshCw, AlertCircle, Trash2, Loader2, X, Tag } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import recommendationService from '../services/recommendation.service';
+import { formatApiError } from '../services/api.service';
 import ConfirmDialog from '../components/ui/ConfirmDialog';
 import Pagination from '../components/ui/Pagination';
 import Modal from '../components/ui/Modal';
 
 const MAX_WORDS = 50;
-const MAX_TAGS = 3;
+const MAX_URL_LENGTH = 500;
+const URL_PATTERN = /^https?:\/\/\S+$/i;
 
 const countWords = (text = '') => text.trim().split(/\s+/).filter(Boolean).length;
 
@@ -32,7 +34,8 @@ function Recommendations() {
   const canDelete = hasRole(['SUPER_ADMIN', 'ADMIN']);
 
   const [recommendations, setRecommendations] = useState([]);
-  const [tags, setTags] = useState([]);
+  const [mainTags, setMainTags] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [pagination, setPagination] = useState({
     currentPage: 1,
     totalPages: 0,
@@ -46,7 +49,9 @@ function Recommendations() {
   // Create modal
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [text, setText] = useState('');
-  const [selectedTags, setSelectedTags] = useState([]);
+  const [mainCategory, setMainCategory] = useState('');
+  const [subTag, setSubTag] = useState('');
+  const [url, setUrl] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState(null);
 
@@ -56,10 +61,19 @@ function Recommendations() {
 
   const wordCount = countWords(text);
   const overLimit = wordCount > MAX_WORDS;
+  const trimmedUrl = url.trim();
+  const urlInvalid = trimmedUrl !== '' && (!URL_PATTERN.test(trimmedUrl) || trimmedUrl.length > MAX_URL_LENGTH);
+  const subTagOptions = categories.find((c) => c.name === mainCategory)?.tags || [];
 
   const fetchTags = useCallback(async () => {
     const result = await recommendationService.getTags();
-    if (result.success) setTags(result.data.tags || []);
+    if (result.success) {
+      const loadedCategories = result.data?.categories || [];
+      setMainTags(result.data?.mainTags || loadedCategories.map((c) => c.name));
+      setCategories(loadedCategories);
+    } else {
+      setError(formatApiError(result.error || result.message, 'Failed to load tags'));
+    }
   }, []);
 
   const fetchRecommendations = useCallback(
@@ -71,7 +85,7 @@ function Recommendations() {
         setRecommendations(result.data.recommendations || []);
         setPagination(result.data.pagination || pagination);
       } else {
-        setError(result.error || result.message || 'Failed to load recommendations');
+        setError(formatApiError(result.error || result.message, 'Failed to load recommendations'));
       }
       setIsLoading(false);
     },
@@ -94,17 +108,16 @@ function Recommendations() {
   const handlePageChange = (page) => fetchRecommendations(page, activeTag);
 
   // ---- Create ----
-  const toggleSelectTag = (tag) => {
-    setSelectedTags((prev) => {
-      if (prev.includes(tag)) return prev.filter((t) => t !== tag);
-      if (prev.length >= MAX_TAGS) return prev;
-      return [...prev, tag];
-    });
+  const handleCategoryChange = (value) => {
+    setMainCategory(value);
+    setSubTag('');
   };
 
   const resetForm = () => {
     setText('');
-    setSelectedTags([]);
+    setMainCategory('');
+    setSubTag('');
+    setUrl('');
     setFormError(null);
   };
 
@@ -112,10 +125,17 @@ function Recommendations() {
     setFormError(null);
     if (wordCount < 1) return setFormError('Recommendation text is required');
     if (overLimit) return setFormError(`Text cannot exceed ${MAX_WORDS} words`);
-    if (selectedTags.length < 1) return setFormError('Select at least one tag');
+    if (!mainCategory) return setFormError('Select a category');
+    if (urlInvalid) return setFormError('Link must be a valid http:// or https:// URL (max 500 characters)');
+
+    const payload = {
+      text: text.trim(),
+      tags: subTag ? [mainCategory, subTag] : [mainCategory],
+    };
+    if (trimmedUrl) payload.url = trimmedUrl;
 
     setIsSubmitting(true);
-    const result = await recommendationService.create({ text: text.trim(), tags: selectedTags });
+    const result = await recommendationService.create(payload);
     setIsSubmitting(false);
 
     if (result.success) {
@@ -123,7 +143,7 @@ function Recommendations() {
       resetForm();
       fetchRecommendations(1, activeTag);
     } else {
-      setFormError(result.error || result.message || 'Failed to post recommendation');
+      setFormError(formatApiError(result.error || result.message, 'Failed to post recommendation'));
     }
   };
 
@@ -141,6 +161,9 @@ function Recommendations() {
           ? pagination.currentPage - 1
           : pagination.currentPage;
       fetchRecommendations(nextPage, activeTag);
+    } else {
+      setDeleteTarget(null);
+      setError(formatApiError(result.error || result.message, 'Failed to delete recommendation'));
     }
   };
 
@@ -178,7 +201,7 @@ function Recommendations() {
       </div>
 
       {/* Tag filter */}
-      {tags.length > 0 && (
+      {mainTags.length > 0 && (
         <div className="flex flex-wrap gap-2 mb-4">
           <button
             onClick={() => handleTagFilter('')}
@@ -188,7 +211,7 @@ function Recommendations() {
           >
             All
           </button>
-          {tags.map((tag) => (
+          {mainTags.map((tag) => (
             <button
               key={tag}
               onClick={() => handleTagFilter(tag)}
@@ -229,6 +252,16 @@ function Recommendations() {
               <div key={rec._id} className="flex items-start justify-between gap-4 px-5 py-4 hover:bg-gray-50">
                 <div className="min-w-0">
                   <p className="text-gray-900">{rec.text}</p>
+                  {rec.url && /^https?:\/\//i.test(rec.url) && (
+                    <a
+                      href={rec.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block text-sm text-amber-700 hover:underline break-all mt-1"
+                    >
+                      {rec.url}
+                    </a>
+                  )}
                   <div className="flex flex-wrap items-center gap-2 mt-2">
                     {(rec.tags || []).map((tag) => (
                       <span
@@ -279,8 +312,9 @@ function Recommendations() {
       >
         <div className="space-y-4">
           {formError && (
-            <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
-              {formError}
+            <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
+              <AlertCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
+              <span>{formatApiError(formError)}</span>
             </div>
           )}
 
@@ -302,33 +336,64 @@ function Recommendations() {
             </div>
           </div>
 
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Category <span className="text-red-500">*</span>
+              </label>
+              <select
+                value={mainCategory}
+                onChange={(e) => handleCategoryChange(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-gray-800 outline-none bg-white"
+              >
+                <option value="">Select a category</option>
+                {categories.map((category) => (
+                  <option key={category.name} value={category.name}>
+                    {category.name}
+                  </option>
+                ))}
+              </select>
+              {categories.length === 0 && (
+                <p className="text-xs text-gray-500 mt-1">Categories could not be loaded. Refresh the page.</p>
+              )}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Sub tag <span className="text-gray-400 text-xs">(optional)</span>
+              </label>
+              <select
+                value={subTag}
+                onChange={(e) => setSubTag(e.target.value)}
+                disabled={!mainCategory}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-gray-800 outline-none bg-white disabled:bg-gray-50 disabled:text-gray-400"
+              >
+                <option value="">{mainCategory ? 'No sub tag' : 'Select a category first'}</option>
+                {subTagOptions.map((tag) => (
+                  <option key={tag} value={tag}>
+                    {tag}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Tags <span className="text-gray-400 text-xs">(select up to {MAX_TAGS})</span>
+              Link <span className="text-gray-400 text-xs">(optional)</span>
             </label>
-            <div className="flex flex-wrap gap-2">
-              {tags.map((tag) => {
-                const selected = selectedTags.includes(tag);
-                const disabled = !selected && selectedTags.length >= MAX_TAGS;
-                return (
-                  <button
-                    key={tag}
-                    type="button"
-                    onClick={() => toggleSelectTag(tag)}
-                    disabled={disabled}
-                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-                      selected
-                        ? 'bg-amber-500 text-white'
-                        : disabled
-                        ? 'bg-gray-50 text-gray-300 cursor-not-allowed'
-                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                    }`}
-                  >
-                    {tag}
-                  </button>
-                );
-              })}
-            </div>
+            <input
+              type="url"
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              maxLength={MAX_URL_LENGTH}
+              placeholder="https://example.com"
+              className={`w-full px-3 py-2 border rounded-lg focus:border-gray-800 outline-none ${
+                urlInvalid ? 'border-red-500' : 'border-gray-300'
+              }`}
+            />
+            {urlInvalid && (
+              <p className="text-xs text-red-500 mt-1">Link must start with http:// or https://</p>
+            )}
           </div>
 
           <div className="flex gap-3 pt-2">
@@ -341,7 +406,7 @@ function Recommendations() {
             </button>
             <button
               onClick={handleCreate}
-              disabled={isSubmitting || overLimit || wordCount < 1 || selectedTags.length < 1}
+              disabled={isSubmitting || overLimit || wordCount < 1 || !mainCategory || urlInvalid}
               className="flex-1 px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {isSubmitting && <Loader2 className="h-4 w-4 animate-spin" />}

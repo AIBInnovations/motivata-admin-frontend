@@ -5,6 +5,8 @@ import { useAuth } from '../contexts/AuthContext';
 import Pagination from '../components/ui/Pagination';
 import ConfirmDialog from '../components/ui/ConfirmDialog';
 import AdminForm from '../components/admin/AdminForm';
+import { formatApiError } from '../services/api.service';
+import { ADMIN_PAGES } from '../utils/adminPages';
 
 // Role display configuration
 const ROLE_CONFIG = {
@@ -139,7 +141,7 @@ function Admins() {
       if (result.success) {
         handleCloseFormModal();
       } else {
-        setFormError(result.error);
+        setFormError(formatApiError(result.error, 'Failed to save admin'));
         if (result.validationErrors) {
           setValidationErrors(result.validationErrors);
         }
@@ -162,7 +164,7 @@ function Admins() {
         handleCloseDeleteDialog();
       } else {
         // Show error in an alert or toast
-        alert(result.error || 'Failed to delete admin');
+        alert(formatApiError(result.error, 'Failed to delete admin'));
       }
     } catch {
       alert('An unexpected error occurred');
@@ -189,6 +191,20 @@ function Admins() {
   // Get status display info
   const getStatusInfo = useCallback((status) => {
     return STATUS_CONFIG[status] || { label: status, color: 'bg-gray-100 text-gray-700' };
+  }, []);
+
+  const getPagesSummary = useCallback((admin) => {
+    const count = Array.isArray(admin.allowedPages) ? admin.allowedPages.length : 0;
+    return count > 0 ? `${count} pages allowed` : 'Full access';
+  }, []);
+
+  const getPagesTitle = useCallback((admin) => {
+    if (!Array.isArray(admin.allowedPages) || admin.allowedPages.length === 0) {
+      return 'No page restriction';
+    }
+    return admin.allowedPages
+      .map((id) => ADMIN_PAGES.find((page) => page.id === id)?.label || id)
+      .join(', ');
   }, []);
 
   // Check if admin can be deleted (can't delete yourself)
@@ -293,6 +309,11 @@ function Admins() {
           {admin.role === 'MANAGEMENT_STAFF' && admin.maxCashTicketsAllowed != null && (
             <span className="text-xs text-gray-500">
               Max Tickets: {admin.maxCashTicketsAllowed}
+            </span>
+          )}
+          {admin.role !== 'SUPER_ADMIN' && (
+            <span className="text-xs text-gray-500" title={getPagesTitle(admin)}>
+              {getPagesSummary(admin)}
             </span>
           )}
         </div>
@@ -455,6 +476,14 @@ function Admins() {
                         {admin.role === 'MANAGEMENT_STAFF' && admin.maxCashTicketsAllowed != null && (
                           <span className="text-xs text-gray-500">
                             Max: {admin.maxCashTicketsAllowed} tickets
+                          </span>
+                        )}
+                        {admin.role !== 'SUPER_ADMIN' && (
+                          <span
+                            className="text-xs text-gray-500"
+                            title={getPagesTitle(admin)}
+                          >
+                            {getPagesSummary(admin)}
                           </span>
                         )}
                       </div>

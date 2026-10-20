@@ -42,8 +42,11 @@ import {
   UserRound,
   MessagesSquare,
   BriefcaseBusiness,
+  Store,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
+import { isPageIdAllowed } from "../utils/adminPages";
 import MotivataLogo from "../assets/logo/Motivata.png";
 import MotivataLogoSmall from "../assets/logo/logo2.png";
 import MembershipRequestBadge from "./MembershipRequestBadge";
@@ -58,6 +61,7 @@ import EventRequestBadge from "./EventRequestBadge";
  */
 function Sidebar({ collapsed, isOpen, onClose }) {
   const location = useLocation();
+  const { admin } = useAuth();
   const [expandedSections, setExpandedSections] = useState({
     clubs: true,
     services: true,
@@ -184,6 +188,12 @@ function Sidebar({ collapsed, isOpen, onClose }) {
           label: "Occupations",
           icon: BriefcaseBusiness,
           path: "/occupations",
+        },
+        {
+          id: "brands",
+          label: "Brands",
+          icon: Store,
+          path: "/brands",
         },
       ],
     },
@@ -429,6 +439,23 @@ function Sidebar({ collapsed, isOpen, onClose }) {
     },
   ];
 
+  const visibleMenu = menuStructure
+    .map((item) =>
+      item.type === "section"
+        ? {
+            ...item,
+            children: item.children.filter((child) =>
+              isPageIdAllowed(admin, child.id)
+            ),
+          }
+        : item
+    )
+    .filter((item) =>
+      item.type === "section"
+        ? item.children.length > 0
+        : isPageIdAllowed(admin, item.id)
+    );
+
   const renderMenuItem = (item) => {
     if (item.type === "single") {
       const isActive = isActivePath(item.path);
@@ -587,7 +614,7 @@ function Sidebar({ collapsed, isOpen, onClose }) {
       {/* Navigation - Scrollable */}
       <nav className="flex-1 p-3 lg:p-4 overflow-y-auto overflow-x-hidden custom-scrollbar">
         <ul className="space-y-1">
-          {menuStructure.map((item) => renderMenuItem(item))}
+          {visibleMenu.map((item) => renderMenuItem(item))}
         </ul>
       </nav>
     </aside>

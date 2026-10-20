@@ -12,6 +12,7 @@ import {
   TrendingUp,
   Target,
 } from 'lucide-react';
+import { formatApiError } from '../../services/api.service';
 
 /**
  * Format date to readable format
@@ -77,7 +78,7 @@ function SOSProgramDetailsModal({
         if (result.success) {
           setStats(result.data.stats);
         } else {
-          setStatsError(result.error || 'Failed to load statistics');
+          setStatsError(formatApiError(result.error, 'Failed to load statistics'));
         }
       } catch (err) {
         console.error('[SOSProgramDetailsModal] Error fetching stats:', err);

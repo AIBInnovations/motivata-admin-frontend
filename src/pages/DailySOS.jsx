@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'react-toastify';
 import dailySosService from '../services/daily-sos.service';
+import { formatApiError } from '../services/api.service';
 import Modal from '../components/ui/Modal';
 import ConfirmDialog from '../components/ui/ConfirmDialog';
 import Badge from '../components/ui/Badge';
@@ -90,7 +91,7 @@ function DailySOS() {
       setQuestions(res.data?.questions || []);
       setToday(res.data?.today || '');
     } else {
-      setError(res.error || 'Failed to load the schedule');
+      setError(formatApiError(res.error || res.message, 'Failed to load the schedule'));
     }
 
     setIsLoading(false);
@@ -186,7 +187,7 @@ function DailySOS() {
       setModalOpen(false);
       fetchQuestions();
     } else {
-      toast.error(res.error || 'Could not save the question');
+      toast.error(formatApiError(res.error || res.message, 'Could not save the question'));
     }
   };
 
@@ -200,7 +201,7 @@ function DailySOS() {
       toast.success('Question removed');
       fetchQuestions();
     } else {
-      toast.error(res.error || 'Could not remove the question');
+      toast.error(formatApiError(res.error || res.message, 'Could not remove the question'));
     }
   };
 

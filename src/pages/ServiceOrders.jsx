@@ -9,6 +9,7 @@ import {
   ServiceOrderTable,
 } from '../components/serviceOrders';
 import Pagination from '../components/ui/Pagination';
+import { formatApiError } from '../services/api.service';
 
 function ServiceOrders() {
   const { hasRole } = useAuth();
@@ -87,7 +88,7 @@ function ServiceOrders() {
       if (result.success) {
         setSuccessData(result.data);
       } else {
-        setFormError(result.error);
+        setFormError(formatApiError(result.error, 'Failed to generate payment link'));
       }
     } finally {
       setIsSubmitting(false);

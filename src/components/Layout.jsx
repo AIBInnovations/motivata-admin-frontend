@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Header from './Header';
+import ErrorBoundary from './ErrorBoundary';
 
 /**
  * Layout Component
@@ -64,6 +65,7 @@ function Layout() {
     '/settings': 'settings',
     '/feature-access': 'feature-access',
     '/clubs': 'clubs',
+    '/brands': 'brands',
     '/scan-qr': 'scan-qr',
     '/ticket-reshare': 'ticket-reshare',
     '/services': 'services',
@@ -101,7 +103,9 @@ function Layout() {
         {/* Main content with custom scrollbar */}
         <main className="flex-1 overflow-auto custom-scrollbar">
           <div className="p-4 sm:p-6 lg:p-8 max-w-[1920px] mx-auto">
-            <Outlet />
+            <ErrorBoundary key={location.pathname} fallbackVariant="compact">
+              <Outlet />
+            </ErrorBoundary>
           </div>
         </main>
       </div>

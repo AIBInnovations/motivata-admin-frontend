@@ -187,6 +187,35 @@ apiClient.interceptors.response.use(
   }
 );
 
+const collectErrorMessages = (value, depth = 0, withField = false) => {
+  if (value === null || value === undefined || depth > 4) return [];
+  if (typeof value === 'string') return value.trim() ? [value.trim()] : [];
+  if (typeof value === 'number' || typeof value === 'boolean') return [String(value)];
+  if (Array.isArray(value)) {
+    return value.flatMap((item) => collectErrorMessages(item, depth + 1, withField));
+  }
+  if (value instanceof Error) return collectErrorMessages(value.message, depth + 1, withField);
+  if (typeof value === 'object') {
+    const inner = value.message ?? value.msg ?? value.error;
+    if (inner === undefined) return [];
+    const messages = collectErrorMessages(inner, depth + 1, withField);
+    if (withField && typeof value.field === 'string' && value.field.trim()) {
+      return messages.map((message) => `${value.field.trim()}: ${message}`);
+    }
+    return messages;
+  }
+  return [];
+};
+
+export const formatApiError = (
+  error,
+  fallback = 'Something went wrong. Please try again.',
+  { withField = false } = {}
+) => {
+  const messages = [...new Set(collectErrorMessages(error, 0, withField))];
+  return messages.length > 0 ? messages.join('; ') : fallback;
+};
+
 /**
  * Generic API response handler
  * @param {Promise} apiCall

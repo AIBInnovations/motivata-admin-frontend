@@ -20,6 +20,7 @@ import VoucherForm from '../components/vouchers/VoucherForm';
 import VoucherDetailsModal from '../components/vouchers/VoucherDetailsModal';
 import ConfirmDialog from '../components/ui/ConfirmDialog';
 import Pagination from '../components/ui/Pagination';
+import { formatApiError } from '../services/api.service';
 
 /**
  * Format date for display
@@ -124,7 +125,7 @@ function Vouchers() {
         setVoucherToEdit(result.data);
         setIsFormModalOpen(true);
       } else {
-        alert(result.error || 'Failed to load voucher details');
+        alert(formatApiError(result.error, 'Failed to load voucher details'));
       }
     } catch (err) {
       alert('An unexpected error occurred');
@@ -157,7 +158,7 @@ function Vouchers() {
         if (result.success) {
           return result;
         } else {
-          setFormError(result.error || 'Failed to save voucher');
+          setFormError(formatApiError(result.error, 'Failed to save voucher'));
           return { success: false };
         }
       } catch {
@@ -205,7 +206,7 @@ function Vouchers() {
       try {
         const result = await toggleVoucherStatus(voucher._id, voucher.isActive);
         if (!result.success) {
-          alert(result.error || 'Failed to update voucher status');
+          alert(formatApiError(result.error, 'Failed to update voucher status'));
         }
       } catch {
         alert('An unexpected error occurred');
@@ -238,7 +239,7 @@ function Vouchers() {
       if (result.success) {
         handleCloseDeleteDialog();
       } else {
-        alert(result.error || 'Failed to delete voucher');
+        alert(formatApiError(result.error, 'Failed to delete voucher'));
       }
     } catch {
       alert('An unexpected error occurred');
