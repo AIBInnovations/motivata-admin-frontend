@@ -5,6 +5,7 @@ import useServices from '../hooks/useServices';
 import { ServiceForm, ServiceDetailsModal, ServiceFilters, ServiceTable } from '../components/services';
 import ConfirmDialog from '../components/ui/ConfirmDialog';
 import Pagination from '../components/ui/Pagination';
+import { formatApiError } from '../services/api.service';
 
 function Services() {
   const { hasRole } = useAuth();
@@ -61,7 +62,7 @@ function Services() {
       setValidationErrors(null);
       setShowEditModal(true);
     } else {
-      setFormError(result.error);
+      setFormError(formatApiError(result.error, 'Failed to load service details'));
     }
   }, [getServiceById]);
 
@@ -91,7 +92,7 @@ function Services() {
       if (result.success) {
         setShowCreateModal(false);
       } else {
-        setFormError(result.error);
+        setFormError(formatApiError(result.error, 'Failed to create service'));
         setValidationErrors(result.validationErrors);
       }
     } finally {
@@ -114,7 +115,7 @@ function Services() {
         setShowEditModal(false);
         setSelectedService(null);
       } else {
-        setFormError(result.error);
+        setFormError(formatApiError(result.error, 'Failed to update service'));
         setValidationErrors(result.validationErrors);
       }
     } finally {
@@ -135,7 +136,7 @@ function Services() {
         setShowDeleteDialog(false);
         setSelectedService(null);
       } else {
-        setFormError(result.error);
+        setFormError(formatApiError(result.error, 'Failed to delete service'));
       }
     } finally {
       setIsSubmitting(false);

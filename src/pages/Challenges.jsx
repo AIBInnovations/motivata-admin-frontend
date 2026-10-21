@@ -19,6 +19,7 @@ import {
   Zap,
 } from 'lucide-react';
 import useChallenges from '../hooks/useChallenges';
+import { formatApiError } from '../services/api.service';
 
 /**
  * Format category name for display
@@ -122,7 +123,7 @@ function Challenges() {
           setChallengeToEdit(result.data);
           setIsFormModalOpen(true);
         } else {
-          alert(result.error || 'Failed to load challenge details');
+          alert(formatApiError(result.error, 'Failed to load challenge details'));
         }
       } catch (err) {
         console.error('[Challenges] Failed to load challenge for edit:', err);
@@ -158,7 +159,7 @@ function Challenges() {
         if (result.success) {
           return result;
         } else {
-          setFormError(result.error || 'Failed to save challenge');
+          setFormError(formatApiError(result.error, 'Failed to save challenge'));
           return { success: false };
         }
       } catch (err) {
@@ -207,7 +208,7 @@ function Challenges() {
       try {
         const result = await toggleChallengeStatus(challenge._id, challenge.isActive);
         if (!result.success) {
-          alert(result.error || 'Failed to update challenge status');
+          alert(formatApiError(result.error, 'Failed to update challenge status'));
         }
       } catch (err) {
         console.error('[Challenges] Toggle status error:', err);
@@ -241,7 +242,7 @@ function Challenges() {
       if (result.success) {
         handleCloseDeleteDialog();
       } else {
-        alert(result.error || 'Failed to delete challenge');
+        alert(formatApiError(result.error, 'Failed to delete challenge'));
       }
     } catch (err) {
       console.error('[Challenges] Delete error:', err);

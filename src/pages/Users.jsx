@@ -6,6 +6,7 @@ import Pagination from '../components/ui/Pagination';
 import ConfirmDialog from '../components/ui/ConfirmDialog';
 import UserForm from '../components/users/UserForm';
 import UserDetailsModal from '../components/users/UserDetailsModal';
+import { formatApiError } from '../services/api.service';
 
 function Users() {
   const { hasRole } = useAuth();
@@ -95,7 +96,7 @@ function Users() {
       setIsEditModalOpen(false);
       setSelectedUser(null);
     } else {
-      setFormError(result.error);
+      setFormError(formatApiError(result.error, 'Failed to update user'));
       setFormValidationErrors(result.validationErrors);
     }
 

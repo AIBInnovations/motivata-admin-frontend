@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'react-toastify';
 import qolFactorService from '../services/qol-factor.service';
+import { formatApiError } from '../services/api.service';
 import Modal from '../components/ui/Modal';
 import ConfirmDialog from '../components/ui/ConfirmDialog';
 import Badge from '../components/ui/Badge';
@@ -45,7 +46,7 @@ function QoLFactors() {
     if (res.success) {
       setFactors(res.data?.factors || []);
     } else {
-      setError(res.error || 'Failed to load factors');
+      setError(formatApiError(res.error || res.message, 'Failed to load factors'));
     }
 
     setIsLoading(false);
@@ -89,7 +90,7 @@ function QoLFactors() {
       setModalOpen(false);
       fetchFactors();
     } else {
-      toast.error(res.error || 'Could not save the factor');
+      toast.error(formatApiError(res.error || res.message, 'Could not save the factor'));
     }
   };
 
@@ -103,7 +104,7 @@ function QoLFactors() {
       toast.success('Factor removed');
       fetchFactors();
     } else {
-      toast.error(res.error || 'Could not remove the factor');
+      toast.error(formatApiError(res.error || res.message, 'Could not remove the factor'));
     }
   };
 

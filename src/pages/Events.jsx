@@ -6,6 +6,7 @@ import { EventForm, EventDetailsModal, EventFilters, EventTable } from '../compo
 import ConfirmDialog from '../components/ui/ConfirmDialog';
 import Pagination from '../components/ui/Pagination';
 import seatArrangementService from '../services/seatArrangement.service';
+import { formatApiError } from '../services/api.service';
 
 function Events() {
   const { hasRole } = useAuth();
@@ -103,7 +104,7 @@ function Events() {
 
       setShowEditModal(true);
     } else {
-      setFormError(result.error);
+      setFormError(formatApiError(result.error, 'Failed to load event details'));
     }
   }, [getEventById]);
 
@@ -162,13 +163,13 @@ function Events() {
             console.error('Failed to create seat arrangement:', seatResult.error);
             // Event was created successfully, but seat arrangement failed
             // Show a warning but still close the modal
-            setFormError(`Event created, but seat arrangement failed: ${seatResult.error}`);
+            setFormError(`Event created, but seat arrangement failed: ${formatApiError(seatResult.error, 'unknown error')}`);
           }
         }
 
         setShowCreateModal(false);
       } else {
-        setFormError(result.error);
+        setFormError(formatApiError(result.error, 'Failed to create event'));
         setValidationErrors(result.validationErrors);
       }
     } finally {
@@ -233,7 +234,7 @@ function Events() {
         setSelectedEvent(null);
         setSelectedSeatArrangement(null);
       } else {
-        setFormError(result.error);
+        setFormError(formatApiError(result.error, 'Failed to update event'));
         setValidationErrors(result.validationErrors);
       }
     } finally {
@@ -254,7 +255,7 @@ function Events() {
         setShowDeleteDialog(false);
         setSelectedEvent(null);
       } else {
-        setFormError(result.error);
+        setFormError(formatApiError(result.error, 'Failed to delete event'));
       }
     } finally {
       setIsSubmitting(false);
@@ -274,7 +275,7 @@ function Events() {
         setShowRestoreDialog(false);
         setSelectedEvent(null);
       } else {
-        setFormError(result.error);
+        setFormError(formatApiError(result.error, 'Failed to restore event'));
       }
     } finally {
       setIsSubmitting(false);
@@ -294,7 +295,7 @@ function Events() {
         setShowPermanentDeleteDialog(false);
         setSelectedEvent(null);
       } else {
-        setFormError(result.error);
+        setFormError(formatApiError(result.error, 'Failed to permanently delete event'));
       }
     } finally {
       setIsSubmitting(false);

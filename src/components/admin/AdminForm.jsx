@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Loader2, Eye, EyeOff } from "lucide-react";
 import Modal from "../ui/Modal";
 import EventMultiSelect from "../ui/EventMultiSelect";
+import { ASSIGNABLE_ADMIN_PAGES } from "../../utils/adminPages";
 
 // Role options matching backend enum
 const ROLE_OPTIONS = [
@@ -49,6 +50,7 @@ const getInitialFormState = (admin = null) => ({
   status: admin?.status || "ACTIVATED",
   access: admin?.access || [],
   allowedEvents: extractEventIds(admin?.allowedEvents),
+  allowedPages: Array.isArray(admin?.allowedPages) ? admin.allowedPages : [],
   maxCashTicketsAllowed: admin?.maxCashTicketsAllowed || "",
 });
 
@@ -177,6 +179,7 @@ function AdminForm({
       // Clear allowedEvents when switching to SUPER_ADMIN
       if (name === "role" && value === "SUPER_ADMIN") {
         newData.allowedEvents = [];
+        newData.allowedPages = [];
       }
       // Clear maxCashTicketsAllowed when switching to ADMIN or SUPER_ADMIN (unlimited)
       if (name === "role" && (value === "ADMIN" || value === "SUPER_ADMIN")) {
@@ -202,6 +205,15 @@ function AdminForm({
       access: prev.access.includes(accessValue)
         ? prev.access.filter((a) => a !== accessValue)
         : [...prev.access, accessValue],
+    }));
+  };
+
+  const handleAllowedPageToggle = (pageId) => {
+    setFormData((prev) => ({
+      ...prev,
+      allowedPages: prev.allowedPages.includes(pageId)
+        ? prev.allowedPages.filter((id) => id !== pageId)
+        : [...prev.allowedPages, pageId],
     }));
   };
 
@@ -570,6 +582,55 @@ function AdminForm({
                 disabled={isLoading}
                 placeholder="Search and select events..."
               />
+            </div>
+          )}
+
+          {showAllowedEvents && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Allowed pages (leave empty for full access)
+                <span className="text-gray-400 text-xs ml-2 font-normal">
+                  {formData.allowedPages.length > 0
+                    ? `${formData.allowedPages.length} selected`
+                    : "Full access"}
+                </span>
+              </label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 max-h-56 overflow-y-auto border border-gray-200 rounded-lg p-2">
+                {ASSIGNABLE_ADMIN_PAGES.map((page) => (
+                  <label
+                    key={page.id}
+                    className={`flex items-center gap-2 px-2 py-1.5 rounded cursor-pointer text-sm hover:bg-gray-50 ${
+                      isLoading ? "opacity-50 cursor-not-allowed" : ""
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={formData.allowedPages.includes(page.id)}
+                      onChange={() => handleAllowedPageToggle(page.id)}
+                      disabled={isLoading}
+                      className="h-4 w-4"
+                    />
+                    <span className="text-gray-700">{page.label}</span>
+                  </label>
+                ))}
+              </div>
+              {formData.allowedPages.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    setFormData((prev) => ({ ...prev, allowedPages: [] }))
+                  }
+                  disabled={isLoading}
+                  className="mt-2 text-xs text-gray-600 underline hover:text-gray-900 disabled:opacity-50"
+                >
+                  Clear selection (full access)
+                </button>
+              )}
+              {errors.allowedPages && (
+                <p className="mt-1 text-xs sm:text-sm text-red-500">
+                  {errors.allowedPages}
+                </p>
+              )}
             </div>
           )}
 

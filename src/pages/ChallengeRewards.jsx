@@ -13,6 +13,7 @@ import {
 import { toast } from 'react-toastify';
 import challengeRewardService from '../services/challenge-reward.service';
 import challengeService from '../services/challenge.service';
+import { formatApiError } from '../services/api.service';
 import Modal from '../components/ui/Modal';
 import ConfirmDialog from '../components/ui/ConfirmDialog';
 import Badge from '../components/ui/Badge';
@@ -77,7 +78,7 @@ function ChallengeRewards() {
     if (res.success) {
       setRewards(res.data?.rewards || []);
     } else {
-      setError(res.error || 'Failed to load rewards');
+      setError(formatApiError(res.error || res.message, 'Failed to load rewards'));
     }
 
     setIsLoading(false);
@@ -179,7 +180,7 @@ function ChallengeRewards() {
       setModalOpen(false);
       fetchRewards();
     } else {
-      toast.error(res.error || 'Could not save the reward');
+      toast.error(formatApiError(res.error || res.message, 'Could not save the reward'));
     }
   };
 
@@ -193,7 +194,7 @@ function ChallengeRewards() {
       toast.success('Reward removed');
       fetchRewards();
     } else {
-      toast.error(res.error || 'Could not remove the reward');
+      toast.error(formatApiError(res.error || res.message, 'Could not remove the reward'));
     }
   };
 

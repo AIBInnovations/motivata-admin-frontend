@@ -26,6 +26,7 @@ import Pagination from '../components/ui/Pagination';
 import ConfirmDialog from '../components/ui/ConfirmDialog';
 import CopyLinkButton from '../components/ui/CopyLinkButton';
 import { productLink } from '../utils/productLink';
+import { formatApiError } from '../services/api.service';
 
 const defaultPlanForm = {
   name: '',
@@ -41,7 +42,18 @@ const defaultPlanForm = {
   isActive: true,
   requiresReferral: false,
   maxPurchases: '',
+  badgeLabel: '',
+  mode: 'virtual',
 };
+
+const PLAN_MODE_OPTIONS = [
+  { value: 'virtual', label: 'Virtual' },
+  { value: 'offline', label: 'Offline' },
+  { value: 'both', label: 'Both' },
+];
+
+const getPlanModeLabel = (mode) =>
+  PLAN_MODE_OPTIONS.find((option) => option.value === mode)?.label || 'Virtual';
 
 const defaultPlanPagination = {
   currentPage: 1,
@@ -66,7 +78,7 @@ function Memberships() {
   // Plans
   const [plans, setPlans] = useState([]);
   const [planForm, setPlanForm] = useState(defaultPlanForm);
-  const [planFilters, setPlanFilters] = useState({ search: '', status: 'all', featured: 'all' });
+  const [planFilters, setPlanFilters] = useState({ search: '', status: 'all', featured: 'all', mode: 'all' });
   const [planPagination, setPlanPagination] = useState(defaultPlanPagination);
   const [isLoadingPlans, setIsLoadingPlans] = useState(false);
   const [isSubmittingPlan, setIsSubmittingPlan] = useState(false);
@@ -116,7 +128,19 @@ function Memberships() {
     []
   );
 
-  const fetchPlans = async (page = 1) => {
+  const fetchPlanOptions = async () => {
+    const result = await membershipService.getPlans({
+      page: 1,
+      limit: 100,
+      sortBy: 'displayOrder',
+      sortOrder: 'asc',
+    });
+    if (result.success) {
+      setPlanOptions(result.data?.plans || []);
+    }
+  };
+
+  const fetchPlans = async (page = 1, filters = planFilters) => {
     setIsLoadingPlans(true);
     setPlanError(null);
 
@@ -127,14 +151,14 @@ function Memberships() {
       sortOrder: 'asc',
     };
 
-    if (planFilters.search.trim()) params.search = planFilters.search.trim();
-    if (planFilters.status !== 'all') params.isActive = planFilters.status === 'active';
-    if (planFilters.featured !== 'all') params.isFeatured = planFilters.featured === 'featured';
+    if (filters.search.trim()) params.search = filters.search.trim();
+    if (filters.status !== 'all') params.isActive = filters.status === 'active';
+    if (filters.featured !== 'all') params.isFeatured = filters.featured === 'featured';
+    if (filters.mode !== 'all') params.mode = filters.mode;
 
     const result = await membershipService.getPlans(params);
     if (result.success) {
       setPlans(result.data?.plans || []);
-      setPlanOptions(result.data?.plans || planOptions);
       setPlanPagination({
         currentPage: result.data?.pagination?.currentPage || page,
         totalPages: result.data?.pagination?.totalPages || 0,
@@ -182,6 +206,7 @@ function Memberships() {
 
   useEffect(() => {
     fetchPlans(1);
+    fetchPlanOptions();
     fetchMemberships(1);
   }, []);
 
@@ -204,6 +229,8 @@ function Memberships() {
       // Student plans must verify a college referral code at checkout. This
       // checkbox is the single switch: on = referral compulsory.
       requiresReferral: !!form.requiresReferral,
+      badgeLabel: (form.badgeLabel || '').trim(),
+      mode: form.mode || 'virtual',
     };
 
     // Only add optional fields if they have values
@@ -241,8 +268,11 @@ function Memberships() {
     if (result.success) {
       resetPlanForm();
       fetchPlans(1);
+      fetchPlanOptions();
     } else {
-      setPlanError(result.message || 'Failed to create plan');
+      setPlanError(
+        formatApiError(result.error || result.message, 'Failed to create plan', { withField: true })
+      );
     }
     setIsSubmittingPlan(false);
   };
@@ -259,6 +289,8 @@ function Memberships() {
       displayOrder: plan.displayOrder ?? '',
       maxPurchases: plan.maxPurchases ?? '',
       requiresReferral: !!plan.requiresReferral,
+      badgeLabel: plan.badgeLabel || '',
+      mode: plan.mode || 'virtual',
       perks: plan.perks || [],
       perkInput: '',
     });
@@ -277,8 +309,11 @@ function Memberships() {
       setEditingPlan(null);
       resetPlanForm();
       fetchPlans(planPagination.currentPage);
+      fetchPlanOptions();
     } else {
-      setPlanError(result.message || 'Failed to update plan');
+      setPlanError(
+        formatApiError(result.error || result.message, 'Failed to update plan', { withField: true })
+      );
     }
     setIsSubmittingPlan(false);
   };
@@ -295,6 +330,7 @@ function Memberships() {
 
     if (result.success) {
       fetchPlans(planPagination.currentPage);
+      fetchPlanOptions();
     } else {
       setPlanError(result.message || 'Failed to delete membership plan');
     }
@@ -310,6 +346,7 @@ function Memberships() {
 
     if (result.success) {
       fetchPlans(planPagination.currentPage);
+      fetchPlanOptions();
     } else {
       setPlanError(result.message || 'Failed to restore membership plan');
     }
@@ -333,7 +370,11 @@ function Memberships() {
       setMembershipForm({ phone: '', membershipPlanId: '', amountPaid: '', adminNotes: '' });
       fetchMemberships(1);
     } else {
-      setMembershipError(result.message || 'Failed to create membership');
+      setMembershipError(
+        formatApiError(result.error || result.message, 'Failed to create membership', {
+          withField: true,
+        })
+      );
     }
     setIsSubmittingMembership(false);
   };
@@ -408,6 +449,14 @@ function Memberships() {
         <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-amber-100 text-amber-700 flex items-center gap-1">
           <Star className="h-3 w-3" />
           Featured
+        </span>
+      )}
+      <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-blue-100 text-blue-700">
+        {getPlanModeLabel(plan.mode)}
+      </span>
+      {plan.badgeLabel && (
+        <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-gray-900 text-white">
+          {plan.badgeLabel}
         </span>
       )}
       {plan.isDeleted && (
@@ -663,10 +712,27 @@ function Memberships() {
                   <option value="featured">Featured</option>
                   <option value="standard">Standard</option>
                 </select>
+                <select
+                  value={planFilters.mode}
+                  onChange={(e) => {
+                    const nextFilters = { ...planFilters, mode: e.target.value };
+                    setPlanFilters(nextFilters);
+                    fetchPlans(1, nextFilters);
+                  }}
+                  className="px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 focus:border-gray-800 outline-none"
+                >
+                  <option value="all">All modes</option>
+                  {PLAN_MODE_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
                 <button
                   onClick={() => {
-                    setPlanFilters({ search: '', status: 'all', featured: 'all' });
-                    fetchPlans(1);
+                    const resetFilters = { search: '', status: 'all', featured: 'all', mode: 'all' };
+                    setPlanFilters(resetFilters);
+                    fetchPlans(1, resetFilters);
                   }}
                   className="px-3 py-2 text-sm text-gray-600 bg-gray-100 border border-gray-200 rounded-lg hover:bg-gray-200"
                 >
@@ -1156,6 +1222,37 @@ function Memberships() {
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-gray-800 outline-none"
               placeholder="Max purchases"
             />
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Badge label <span className="text-gray-400 font-normal">(optional)</span>
+              </label>
+              <input
+                type="text"
+                maxLength={30}
+                value={planForm.badgeLabel}
+                onChange={(e) => setPlanForm({ ...planForm, badgeLabel: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-gray-800 outline-none"
+                placeholder="e.g. Lifetime registration"
+              />
+              <p className="mt-1 text-xs text-gray-500">
+                Shown on the plan card in the app, e.g. Lifetime registration ({planForm.badgeLabel.length}/30)
+              </p>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Mode</label>
+              <select
+                value={planForm.mode}
+                onChange={(e) => setPlanForm({ ...planForm, mode: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-gray-800 outline-none bg-white"
+              >
+                {PLAN_MODE_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+              <p className="mt-1 text-xs text-gray-500">Virtual, Offline, or Both.</p>
+            </div>
           </div>
           <textarea
             rows={3}

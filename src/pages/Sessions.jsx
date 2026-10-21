@@ -26,6 +26,7 @@ import SessionForm from '../components/sessions/SessionForm';
 import SessionDetailsModal from '../components/sessions/SessionDetailsModal';
 import ConfirmDialog from '../components/ui/ConfirmDialog';
 import Pagination from '../components/ui/Pagination';
+import { formatApiError } from '../services/api.service';
 
 /**
  * Format currency
@@ -157,6 +158,16 @@ const formatDateTime = (dateString) => {
   });
 };
 
+const getSosReportInfo = (booking) => {
+  const report = booking?.sosReportId;
+  if (!report || typeof report !== 'object') return null;
+  const parts = [report.programId?.type, report.completedAt ? formatDate(report.completedAt) : null];
+  return {
+    title: report.programId?.title || 'SOS report',
+    meta: parts.filter(Boolean).join(' · '),
+  };
+};
+
 function Sessions() {
   // Hook for data management
   const {
@@ -240,7 +251,7 @@ function Sessions() {
         setSessionToEdit(result.data);
         setIsFormModalOpen(true);
       } else {
-        alert(result.error || 'Failed to load session details');
+        alert(formatApiError(result.error, 'Failed to load session details'));
       }
     } catch (err) {
       alert('An unexpected error occurred');
@@ -273,7 +284,7 @@ function Sessions() {
         if (result.success) {
           return result;
         } else {
-          setFormError(result.error || 'Failed to save session');
+          setFormError(formatApiError(result.error, 'Failed to save session'));
           return { success: false };
         }
       } catch {
@@ -321,7 +332,7 @@ function Sessions() {
       try {
         const result = await toggleSessionLive(session._id, session.isLive);
         if (!result.success) {
-          alert(result.error || 'Failed to update session status');
+          alert(formatApiError(result.error, 'Failed to update session status'));
         }
       } catch {
         alert('An unexpected error occurred');
@@ -354,7 +365,7 @@ function Sessions() {
       if (result.success) {
         handleCloseDeleteDialog();
       } else {
-        alert(result.error || 'Failed to delete session');
+        alert(formatApiError(result.error, 'Failed to delete session'));
       }
     } catch {
       alert('An unexpected error occurred');
@@ -418,7 +429,7 @@ function Sessions() {
       try {
         const result = await updateBooking(bookingId, { status: newStatus });
         if (!result.success) {
-          alert(result.error || 'Failed to update booking status');
+          alert(formatApiError(result.error, 'Failed to update booking status'));
         }
       } catch (err) {
         console.error('[Sessions] Error updating booking:', err);
@@ -1161,6 +1172,12 @@ function Sessions() {
                       Session
                     </th>
                     <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">
+                      Focus Area
+                    </th>
+                    <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">
+                      SOS Report
+                    </th>
+                    <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">
                       Scheduled Date
                     </th>
                     <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">
@@ -1180,14 +1197,14 @@ function Sessions() {
                 <tbody>
                   {isLoadingBookings && bookings.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="px-6 py-12 text-center">
+                      <td colSpan={9} className="px-6 py-12 text-center">
                         <Loader2 className="h-8 w-8 text-gray-800 animate-spin mx-auto" />
                         <p className="mt-2 text-sm text-gray-500">Loading bookings...</p>
                       </td>
                     </tr>
                   ) : bookings.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="px-6 py-12 text-center">
+                      <td colSpan={9} className="px-6 py-12 text-center">
                         <CalendarX className="h-12 w-12 text-gray-300 mx-auto" />
                         <p className="mt-2 text-sm text-gray-500">No bookings found</p>
                       </td>
@@ -1223,6 +1240,27 @@ function Sessions() {
                           <p className="text-xs text-gray-500">
                             {booking.sessionId?.sessionType || '-'}
                           </p>
+                        </td>
+
+                        <td className="px-6 py-4 text-sm text-gray-700">
+                          <span className="block max-w-[160px] truncate" title={booking.focusArea || ''}>
+                            {booking.focusArea || '-'}
+                          </span>
+                        </td>
+
+                        <td className="px-6 py-4">
+                          {getSosReportInfo(booking) ? (
+                            <div className="max-w-[180px]">
+                              <p className="text-sm font-medium text-gray-900 truncate">
+                                {getSosReportInfo(booking).title}
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                {getSosReportInfo(booking).meta || '-'}
+                              </p>
+                            </div>
+                          ) : (
+                            <span className="text-sm text-gray-500">-</span>
+                          )}
                         </td>
 
                         {/* Scheduled Date */}
@@ -1370,6 +1408,25 @@ function Sessions() {
                       <p className="font-medium text-gray-900 text-sm truncate">
                         {booking.sessionId?.title || 'Unknown Session'}
                       </p>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="p-2 bg-gray-50 rounded-lg">
+                        <p className="text-xs text-gray-500">Focus area</p>
+                        <p className="font-medium text-gray-900 text-sm break-words">
+                          {booking.focusArea || '-'}
+                        </p>
+                      </div>
+                      <div className="p-2 bg-gray-50 rounded-lg">
+                        <p className="text-xs text-gray-500">SOS report</p>
+                        <p className="font-medium text-gray-900 text-sm break-words">
+                          {getSosReportInfo(booking)
+                            ? [getSosReportInfo(booking).title, getSosReportInfo(booking).meta]
+                                .filter(Boolean)
+                                .join(' · ')
+                            : '-'}
+                        </p>
+                      </div>
                     </div>
 
                     {/* Info Grid */}

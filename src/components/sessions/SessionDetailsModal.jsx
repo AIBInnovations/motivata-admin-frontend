@@ -303,6 +303,23 @@ function SessionDetailsModal({ isOpen, onClose, session, isLoading = false }) {
             </div>
           )}
 
+          {session.meetingLink && (
+            <div className="bg-gray-50 rounded-lg p-3">
+              <div className="flex items-center gap-2 mb-1">
+                <LinkIcon className="h-4 w-4 text-gray-400" />
+                <span className="text-xs text-gray-500 font-medium">Meeting Link</span>
+              </div>
+              <a
+                href={session.meetingLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-gray-800 hover:text-black hover:underline break-all"
+              >
+                {session.meetingLink}
+              </a>
+            </div>
+          )}
+
           {/* Created By */}
           {session.createdBy && (
             <div className="bg-gray-50 rounded-lg p-3">

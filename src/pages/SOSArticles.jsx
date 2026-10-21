@@ -12,6 +12,7 @@ import {
 import { toast } from 'react-toastify';
 import sosArticleService from '../services/sos-article.service';
 import sosProgramService from '../services/sos-program.service';
+import { formatApiError } from '../services/api.service';
 import Modal from '../components/ui/Modal';
 import ConfirmDialog from '../components/ui/ConfirmDialog';
 import Badge from '../components/ui/Badge';
@@ -65,7 +66,7 @@ function SOSArticles() {
     if (res.success) {
       setArticles(res.data?.articles || []);
     } else {
-      setError(res.error || 'Failed to load articles');
+      setError(formatApiError(res.error || res.message, 'Failed to load articles'));
     }
 
     setIsLoading(false);
@@ -152,7 +153,7 @@ function SOSArticles() {
       setModalOpen(false);
       fetchArticles();
     } else {
-      toast.error(res.error || 'Could not save the article');
+      toast.error(formatApiError(res.error || res.message, 'Could not save the article'));
     }
   };
 
@@ -166,7 +167,7 @@ function SOSArticles() {
       toast.success('Article deleted');
       fetchArticles();
     } else {
-      toast.error(res.error || 'Could not delete the article');
+      toast.error(formatApiError(res.error || res.message, 'Could not delete the article'));
     }
   };
 

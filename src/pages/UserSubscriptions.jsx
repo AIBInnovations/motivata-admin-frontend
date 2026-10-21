@@ -10,6 +10,7 @@ import {
   EditNotesModal,
 } from '../components/userSubscriptions';
 import Pagination from '../components/ui/Pagination';
+import { formatApiError } from '../services/api.service';
 
 function UserSubscriptions() {
   const { hasRole } = useAuth();
@@ -84,7 +85,7 @@ function UserSubscriptions() {
         setShowCancelModal(false);
         setSelectedSubscription(null);
       } else {
-        setFormError(result.error);
+        setFormError(formatApiError(result.error, 'Failed to cancel subscription'));
       }
     } finally {
       setIsSubmitting(false);
@@ -105,7 +106,7 @@ function UserSubscriptions() {
         setShowNotesModal(false);
         setSelectedSubscription(null);
       } else {
-        setFormError(result.error);
+        setFormError(formatApiError(result.error, 'Failed to update notes'));
       }
     } finally {
       setIsSubmitting(false);

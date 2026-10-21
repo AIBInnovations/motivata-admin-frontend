@@ -12,6 +12,7 @@ import {
   Tag,
   Zap,
 } from 'lucide-react';
+import { formatApiError } from '../../services/api.service';
 
 /**
  * Format category name for display
@@ -80,7 +81,7 @@ function ChallengeDetailsModal({
         if (result.success) {
           setStats(result.data.stats || result.data);
         } else {
-          setStatsError(result.error || 'Failed to load statistics');
+          setStatsError(formatApiError(result.error, 'Failed to load statistics'));
         }
       } catch (err) {
         console.error('[ChallengeDetailsModal] Error fetching stats:', err);

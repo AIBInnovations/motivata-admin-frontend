@@ -10,6 +10,7 @@ import {
   RejectRequestModal,
 } from '../components/serviceRequests';
 import Pagination from '../components/ui/Pagination';
+import { formatApiError } from '../services/api.service';
 
 function ServiceRequests() {
   const { hasRole } = useAuth();
@@ -85,7 +86,7 @@ function ServiceRequests() {
       if (result.success) {
         setApproveSuccessData(result.data);
       } else {
-        setFormError(result.error);
+        setFormError(formatApiError(result.error, 'Failed to approve request'));
       }
     } finally {
       setIsSubmitting(false);
@@ -106,7 +107,7 @@ function ServiceRequests() {
         setShowRejectModal(false);
         setSelectedRequest(null);
       } else {
-        setFormError(result.error);
+        setFormError(formatApiError(result.error, 'Failed to reject request'));
       }
     } finally {
       setIsSubmitting(false);

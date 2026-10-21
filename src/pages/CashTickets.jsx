@@ -19,6 +19,7 @@ import {
 import { useAuth } from '../contexts/AuthContext';
 import useCashTickets from '../hooks/useCashTickets';
 import offlineCashService from '../services/offline-cash.service';
+import { formatApiError } from '../services/api.service';
 import CashTicketForm from '../components/cashtickets/CashTicketForm';
 import CashTicketDetailsModal from '../components/cashtickets/CashTicketDetailsModal';
 import DirectTicketModal from '../components/cashtickets/DirectTicketModal';
@@ -247,7 +248,7 @@ function CashTickets() {
             });
             return { success: false };
           }
-          setFormError(result.error || 'Failed to create cash ticket');
+          setFormError(formatApiError(result.error, 'Failed to create cash ticket'));
           return { success: false };
         }
       } catch {
@@ -310,7 +311,7 @@ function CashTickets() {
       if (result.success) {
         handleCloseDeleteDialog();
       } else {
-        alert(result.error || 'Failed to delete record');
+        alert(formatApiError(result.error, 'Failed to delete record'));
       }
     } catch {
       alert('An unexpected error occurred');

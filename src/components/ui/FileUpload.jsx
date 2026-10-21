@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback } from 'react';
 import { Upload, X, Image, FileVideo, Music, Loader2, AlertCircle, Check } from 'lucide-react';
 import { uploadSingleAsset, uploadMultipleAssets, validateFile, validateFiles, formatFileSize } from '../../services/asset.service';
+import { formatApiError } from '../../services/api.service';
 
 /**
  * FileUpload Component
@@ -149,7 +150,7 @@ function FileUpload({
         onUpload(result.url);
         setUploadProgress(100);
       } else {
-        setUploadError(result.message || result.error || 'Upload failed');
+        setUploadError(formatApiError(result.message || result.error, 'Upload failed'));
       }
     } catch (err) {
       setUploadError(err.message || 'Upload failed');
@@ -173,7 +174,7 @@ function FileUpload({
         onUpload([...values, ...result.urls]);
         setUploadProgress(100);
       } else {
-        setUploadError(result.message || result.error || 'Upload failed');
+        setUploadError(formatApiError(result.message || result.error, 'Upload failed'));
       }
     } catch (err) {
       setUploadError(err.message || 'Upload failed');

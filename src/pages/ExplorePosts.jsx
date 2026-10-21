@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Loader2,
   Plus,
@@ -7,10 +7,18 @@ import {
   Trash2,
   Images,
   Globe,
+  Edit,
+  Search,
+  Save,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import explorePostsService from '../services/explore-posts.service';
+import { formatApiError } from '../services/api.service';
 import FileUpload from '../components/ui/FileUpload';
+import Pagination from '../components/ui/Pagination';
+
+const POSTS_PER_PAGE = 20;
+const EDITABLE_TEXT_FIELDS = ['title', 'subHeading', 'category', 'content', 'caption', 'videoUrl', 'linkUrl'];
 
 const defaultForm = {
   title: '',
@@ -27,13 +35,46 @@ const LINK_PATTERN = /^https?:\/\/\S+$/i;
 
 const countWords = (text) => text.trim().split(/\s+/).filter(Boolean).length;
 
+const normalizeLineEndings = (text) => String(text || '').replace(/\r\n?/g, '\n');
+
+const buildChanges = (original, current) => {
+  const changes = {};
+  EDITABLE_TEXT_FIELDS.forEach((key) => {
+    if (normalizeLineEndings(original[key]).trim() !== normalizeLineEndings(current[key])) {
+      changes[key] = current[key];
+    }
+  });
+  const originalMedia = original.mediaUrls || [];
+  const mediaChanged =
+    originalMedia.length !== current.mediaUrls.length ||
+    originalMedia.some((url, index) => url !== current.mediaUrls[index]);
+  if (mediaChanged) {
+    changes.mediaUrls = current.mediaUrls;
+  }
+  return changes;
+};
+
 function ExplorePosts() {
   const { hasRole } = useAuth();
-  const canManage = hasRole(['SUPER_ADMIN', 'ADMIN']);
+  const canManageAll = hasRole(['SUPER_ADMIN', 'ADMIN']);
+  const canModifyPost = (post) => canManageAll || post.isOwnPost === true;
+  const formCardRef = useRef(null);
+  const requestIdRef = useRef(0);
 
   const [form, setForm] = useState(defaultForm);
+  const [editingPost, setEditingPost] = useState(null);
   const [posts, setPosts] = useState([]);
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    totalPages: 0,
+    totalCount: 0,
+    limit: POSTS_PER_PAGE,
+  });
+  const [page, setPage] = useState(1);
+  const [searchInput, setSearchInput] = useState('');
+  const [search, setSearch] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [listError, setListError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
   const [error, setError] = useState(null);
@@ -41,8 +82,9 @@ function ExplorePosts() {
   const [categories, setCategories] = useState([]);
   const [maxWords, setMaxWords] = useState(100);
 
+  const isEditing = editingPost !== null;
+
   useEffect(() => {
-    fetchPosts();
     explorePostsService.getCategories().then((res) => {
       if (res.success) {
         setCategories(res.data?.categories || []);
@@ -51,24 +93,70 @@ function ExplorePosts() {
     });
   }, []);
 
-  const fetchPosts = async () => {
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearch(searchInput.trim());
+      setPage(1);
+    }, 350);
+    return () => clearTimeout(timer);
+  }, [searchInput]);
+
+  const fetchPosts = useCallback(async () => {
+    requestIdRef.current += 1;
+    const requestId = requestIdRef.current;
     setIsLoading(true);
-    const result = await explorePostsService.getPosts({ page: 1, limit: 20 });
+    setListError(null);
+    const params = { page, limit: POSTS_PER_PAGE };
+    if (search) params.search = search;
+    const result = await explorePostsService.getPosts(params);
+    if (requestId !== requestIdRef.current) return;
     if (result.success) {
       setPosts(result.data?.posts || []);
+      setPagination(
+        result.data?.pagination || {
+          currentPage: page,
+          totalPages: 0,
+          totalCount: 0,
+          limit: POSTS_PER_PAGE,
+        }
+      );
+    } else {
+      setPosts([]);
+      setListError(formatApiError(result.error || result.message, 'Failed to load posts'));
     }
     setIsLoading(false);
-  };
+  }, [page, search]);
+
+  useEffect(() => {
+    fetchPosts();
+  }, [fetchPosts]);
 
   const resetForm = () => {
     setForm(defaultForm);
+    setEditingPost(null);
     setError(null);
     setSuccess(null);
   };
 
+  const handleEdit = (post) => {
+    setEditingPost(post);
+    setForm({
+      title: post.title || '',
+      subHeading: post.subHeading || '',
+      category: post.category || '',
+      content: post.content || '',
+      caption: post.caption || '',
+      videoUrl: post.videoUrl || '',
+      linkUrl: post.linkUrl || '',
+      mediaUrls: post.mediaUrls || [],
+    });
+    setError(null);
+    setSuccess(null);
+    formCardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!canManage) return;
 
     if (!form.title.trim()) {
       setError('Title is required');
@@ -78,7 +166,7 @@ function ExplorePosts() {
       setError('Please upload at least one photo');
       return;
     }
-    if (countWords(form.content) > maxWords) {
+    if (!isEditing && countWords(form.content) > maxWords) {
       setError(`Text cannot be more than ${maxWords} words`);
       return;
     }
@@ -95,7 +183,7 @@ function ExplorePosts() {
     setError(null);
     setSuccess(null);
 
-    const result = await explorePostsService.createPost({
+    const payload = {
       title: form.title.trim(),
       subHeading: form.subHeading.trim(),
       category: form.category,
@@ -104,14 +192,45 @@ function ExplorePosts() {
       videoUrl: form.videoUrl.trim(),
       linkUrl: form.linkUrl.trim(),
       mediaUrls: form.mediaUrls,
-    });
+    };
+
+    if (isEditing) {
+      const changes = buildChanges(editingPost, payload);
+      if (Object.keys(changes).length === 0) {
+        setError('Nothing to save, no fields were changed');
+        setIsSubmitting(false);
+        return;
+      }
+      if ('content' in changes && countWords(changes.content) > maxWords) {
+        setError(`Text cannot be more than ${maxWords} words`);
+        setIsSubmitting(false);
+        return;
+      }
+
+      const updateResult = await explorePostsService.updatePost(editingPost.id, changes);
+      if (updateResult.success) {
+        resetForm();
+        setSuccess('Post updated');
+        fetchPosts();
+      } else {
+        setError(formatApiError(updateResult.error || updateResult.message, 'Failed to update post'));
+      }
+      setIsSubmitting(false);
+      return;
+    }
+
+    const result = await explorePostsService.createPost(payload);
 
     if (result.success) {
-      setSuccess('Post published to Explore tab!');
       resetForm();
-      fetchPosts();
+      setSuccess('Post published to Explore tab!');
+      if (page === 1) {
+        fetchPosts();
+      } else {
+        setPage(1);
+      }
     } else {
-      setError(result.message || 'Failed to create post');
+      setError(formatApiError(result.error || result.message, 'Failed to create post'));
     }
 
     setIsSubmitting(false);
@@ -122,9 +241,16 @@ function ExplorePosts() {
     setDeletingId(postId);
     const result = await explorePostsService.deletePost(postId);
     if (result.success) {
-      setPosts((prev) => prev.filter((p) => p.id !== postId));
+      if (editingPost?.id === postId) {
+        resetForm();
+      }
+      if (posts.length === 1 && page > 1) {
+        setPage(page - 1);
+      } else {
+        fetchPosts();
+      }
     } else {
-      alert(result.message || 'Failed to delete post');
+      alert(formatApiError(result.error || result.message, 'Failed to delete post'));
     }
     setDeletingId(null);
   };
@@ -144,7 +270,8 @@ function ExplorePosts() {
         </div>
         <button
           onClick={fetchPosts}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+          disabled={isLoading}
+          className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 disabled:opacity-60"
         >
           <RefreshCw className="h-4 w-4" />
           Refresh
@@ -152,8 +279,13 @@ function ExplorePosts() {
       </div>
 
       {/* Create Post Form */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <h2 className="text-base font-semibold text-gray-900 mb-5">Create New Post</h2>
+      <div ref={formCardRef} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <h2 className="text-base font-semibold text-gray-900 mb-1">
+          {isEditing ? 'Edit Post' : 'Create New Post'}
+        </h2>
+        <p className="text-xs text-gray-500 mb-5">
+          Posts appear as 'Motivata' in the app.
+        </p>
 
         {success && (
           <div className="mb-4 px-4 py-3 bg-green-50 border border-green-200 text-green-700 rounded-lg text-sm font-medium">
@@ -205,6 +337,9 @@ function ExplorePosts() {
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-gray-800 outline-none text-sm bg-white"
             >
               <option value="">— Choose a category —</option>
+              {form.category && !categories.includes(form.category) && (
+                <option value={form.category}>{form.category}</option>
+              )}
               {categories.map((c) => (
                 <option key={c} value={c}>{c}</option>
               ))}
@@ -285,6 +420,9 @@ function ExplorePosts() {
             <p className="text-xs text-gray-500">
               Upload up to 10 photos. First photo will be used as the cover.
             </p>
+            <p className="text-xs text-gray-500">
+              Recommended 1080x1080 (1:1). Other ratios get cropped in the app.
+            </p>
           </div>
 
           {/* Actions */}
@@ -295,7 +433,7 @@ function ExplorePosts() {
               disabled={isSubmitting}
               className="px-5 py-2.5 text-sm text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 disabled:opacity-60"
             >
-              Reset
+              {isEditing ? 'Cancel edit' : 'Reset'}
             </button>
             <button
               type="submit"
@@ -305,7 +443,12 @@ function ExplorePosts() {
               {isSubmitting ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  Publishing...
+                  {isEditing ? 'Saving...' : 'Publishing...'}
+                </>
+              ) : isEditing ? (
+                <>
+                  <Save className="h-4 w-4" />
+                  Save changes
                 </>
               ) : (
                 <>
@@ -320,11 +463,34 @@ function ExplorePosts() {
 
       {/* Posts List */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-        <div className="px-6 py-4 border-b border-gray-200">
+        <div className="px-6 py-4 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <h2 className="text-base font-semibold text-gray-900">
-            Published Posts ({posts.length})
+            All Explore Posts ({pagination.totalCount})
           </h2>
+          <div className="relative w-full sm:w-72">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <input
+              type="text"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              placeholder="Search by title, caption or text..."
+              className="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg focus:border-gray-800 outline-none text-sm"
+            />
+          </div>
         </div>
+
+        {listError && (
+          <div className="m-4 flex items-center gap-2 px-4 py-3 bg-red-50 border border-red-200 text-red-700 rounded-lg">
+            <XCircle className="h-4 w-4 shrink-0" />
+            <span className="text-sm flex-1">{listError}</span>
+            <button
+              onClick={fetchPosts}
+              className="text-sm font-medium underline hover:no-underline"
+            >
+              Retry
+            </button>
+          </div>
+        )}
 
         {isLoading ? (
           <div className="flex items-center justify-center py-12 gap-2 text-gray-500">
@@ -334,7 +500,11 @@ function ExplorePosts() {
         ) : posts.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-gray-400">
             <Images className="h-10 w-10 mb-3" />
-            <p className="text-sm">No posts yet. Create your first Explore post above.</p>
+            <p className="text-sm">
+              {search
+                ? 'No posts match your search.'
+                : 'No posts yet. Create your first Explore post above.'}
+            </p>
           </div>
         ) : (
           <ul className="divide-y divide-gray-100">
@@ -351,7 +521,14 @@ function ExplorePosts() {
 
                 {/* Info */}
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-gray-900 truncate">{post.title}</p>
+                  <div className="flex items-center gap-2 min-w-0">
+                    <p className="text-sm font-semibold text-gray-900 truncate">{post.title}</p>
+                    {post.isOwnPost && (
+                      <span className="shrink-0 px-2 py-0.5 rounded-full text-xs font-medium bg-gray-900 text-white">
+                        Yours
+                      </span>
+                    )}
+                  </div>
                   {(post.category || post.subHeading) && (
                     <p className="text-xs text-gray-500 truncate">
                       {[post.category, post.subHeading].filter(Boolean).join(' · ')}
@@ -360,7 +537,9 @@ function ExplorePosts() {
                   {post.content && (
                     <p className="text-xs text-gray-500 mt-1 line-clamp-2">{post.content}</p>
                   )}
-                  <div className="flex items-center gap-3 mt-2 text-xs text-gray-400">
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2 text-xs text-gray-400">
+                    <span>By {post.author?.name || 'Unknown'}</span>
+                    <span>•</span>
                     <span>{post.mediaUrls?.length || 0} photo{post.mediaUrls?.length !== 1 ? 's' : ''}</span>
                     <span>•</span>
                     <span>{post.likeCount || 0} likes</span>
@@ -369,24 +548,44 @@ function ExplorePosts() {
                   </div>
                 </div>
 
-                {/* Delete */}
-                {canManage && (
-                  <button
-                    onClick={() => handleDelete(post.id)}
-                    disabled={deletingId === post.id}
-                    className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50 shrink-0"
-                    title="Delete post"
-                  >
-                    {deletingId === post.id ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Trash2 className="h-4 w-4" />
-                    )}
-                  </button>
+                {canModifyPost(post) && (
+                  <div className="flex items-center gap-1 shrink-0">
+                    <button
+                      onClick={() => handleEdit(post)}
+                      disabled={isSubmitting}
+                      className="p-2 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
+                      title="Edit post"
+                    >
+                      <Edit className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(post.id)}
+                      disabled={deletingId === post.id}
+                      className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
+                      title="Delete post"
+                    >
+                      {deletingId === post.id ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Trash2 className="h-4 w-4" />
+                      )}
+                    </button>
+                  </div>
                 )}
               </li>
             ))}
           </ul>
+        )}
+
+        {pagination.totalPages > 1 && (
+          <Pagination
+            currentPage={pagination.currentPage}
+            totalPages={pagination.totalPages}
+            totalItems={pagination.totalCount}
+            itemsPerPage={pagination.limit}
+            onPageChange={setPage}
+            itemLabel="posts"
+          />
         )}
       </div>
     </div>

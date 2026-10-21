@@ -20,6 +20,7 @@ import {
 } from '../components/stories';
 import ConfirmDialog from '../components/ui/ConfirmDialog';
 import Pagination from '../components/ui/Pagination';
+import { formatApiError } from '../services/api.service';
 
 /**
  * Stories Page
@@ -151,7 +152,7 @@ function Stories() {
         setTimeout(() => setSuccessMessage(null), 3000);
         console.log('[Stories] Story created successfully');
       } else {
-        setFormError(result.error || 'Failed to create story');
+        setFormError(formatApiError(result.error, 'Failed to create story'));
         console.error('[Stories] Failed to create story:', result.error);
       }
     } catch (err) {
@@ -180,7 +181,7 @@ function Stories() {
         setTimeout(() => setSuccessMessage(null), 3000);
         console.log('[Stories] Story updated successfully');
       } else {
-        setFormError(result.error || 'Failed to update story');
+        setFormError(formatApiError(result.error, 'Failed to update story'));
         console.error('[Stories] Failed to update story:', result.error);
       }
     } catch (err) {

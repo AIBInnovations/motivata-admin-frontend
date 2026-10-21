@@ -35,6 +35,7 @@ const getInitialFormState = () => ({
   hostPhone: '',
   availableSlots: '',
   calendlyLink: '',
+  meetingLink: '',
   sessionDate: '',
   imageUrl: '',
   tags: [],
@@ -87,6 +88,7 @@ function SessionForm({
           hostPhone: sessionToEdit.hostPhone || '',
           availableSlots: sessionToEdit.availableSlots?.toString() || '',
           calendlyLink: sessionToEdit.calendlyLink || '',
+          meetingLink: sessionToEdit.meetingLink || '',
           sessionDate: sessionToEdit.sessionDate
             ? new Date(sessionToEdit.sessionDate).toISOString().slice(0, 16)
             : '',
@@ -203,6 +205,10 @@ function SessionForm({
       newErrors.calendlyLink = 'Please provide a valid URL';
     }
 
+    if (data.meetingLink.trim() && !/^https:\/\/.+/i.test(data.meetingLink.trim())) {
+      newErrors.meetingLink = 'Meeting link must start with https://';
+    }
+
     // Image URL validation
     if (data.imageUrl && !/^https?:\/\/.+/.test(data.imageUrl)) {
       newErrors.imageUrl = 'Please provide a valid image URL';
@@ -267,6 +273,11 @@ function SessionForm({
       submitData.availableSlots = parseInt(formData.availableSlots, 10);
     }
     submitData.calendlyLink = formData.calendlyLink.trim();
+    if (formData.meetingLink.trim()) {
+      submitData.meetingLink = formData.meetingLink.trim();
+    } else if (isEditMode) {
+      submitData.meetingLink = '';
+    }
     if (formData.sessionDate) {
       submitData.sessionDate = new Date(formData.sessionDate).toISOString();
     }
@@ -598,6 +609,29 @@ function SessionForm({
           {errors.calendlyLink && (
             <p className="text-red-600 text-sm mt-1">{errors.calendlyLink}</p>
           )}
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Meeting link (https, for online group sessions)
+            <span className="text-gray-400 font-normal ml-1">(optional)</span>
+          </label>
+          <input
+            type="url"
+            value={formData.meetingLink}
+            onChange={(e) => handleChange('meetingLink', e.target.value)}
+            placeholder="https://meet.google.com/..."
+            disabled={isLoading}
+            className={`w-full px-3 py-2 border rounded-lg focus:border-gray-800 outline-none transition-colors ${
+              errors.meetingLink ? 'border-red-500' : 'border-gray-300'
+            } ${isLoading ? 'bg-gray-100' : ''}`}
+          />
+          {errors.meetingLink && (
+            <p className="text-red-600 text-sm mt-1">{errors.meetingLink}</p>
+          )}
+          <p className="text-xs text-gray-500 mt-1">
+            Shown to users only after their booking is confirmed and paid.
+          </p>
         </div>
 
         {/* Session Image */}

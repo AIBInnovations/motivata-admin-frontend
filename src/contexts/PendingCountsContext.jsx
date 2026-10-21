@@ -4,6 +4,8 @@ import doerRequestService from '../services/doerRequest.service';
 import motivataBlendService from '../services/motivataBlend.service';
 import roundTableService from '../services/roundTable.service';
 import eventRequestService from '../services/eventRequest.service';
+import { useAuth } from './AuthContext';
+import { isPageIdAllowed } from '../utils/adminPages';
 
 /**
  * One poller for every sidebar pending-count badge.
@@ -25,16 +27,33 @@ const SOURCES = {
   eventRequest: eventRequestService,
 };
 
+const SOURCE_PAGE_IDS = {
+  membership: 'membership-requests',
+  doer: 'doer-requests',
+  motivataBlend: 'motivata-blend-requests',
+  roundTable: 'round-table-requests',
+  eventRequest: 'event-requests',
+};
+
 const PendingCountsContext = createContext({ counts: {}, error: {} });
 
 export function PendingCountsProvider({ children }) {
   const [counts, setCounts] = useState({});
   const [error, setError] = useState({});
   const timerRef = useRef(null);
+  const { admin } = useAuth();
+  const adminRef = useRef(admin);
+
+  useEffect(() => {
+    adminRef.current = admin;
+  }, [admin]);
 
   const fetchAll = useCallback(async () => {
+    const allowedSources = Object.entries(SOURCES).filter(([key]) =>
+      isPageIdAllowed(adminRef.current, SOURCE_PAGE_IDS[key])
+    );
     const entries = await Promise.all(
-      Object.entries(SOURCES).map(async ([key, service]) => {
+      allowedSources.map(async ([key, service]) => {
         try {
           const result = await service.getPendingCount();
           if (result?.success) return [key, { count: result.data?.count || 0, error: false }];

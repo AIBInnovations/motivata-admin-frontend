@@ -1,5 +1,6 @@
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { isPathAllowed, getFirstAllowedPath } from '../utils/adminPages';
 
 /**
  * Loading spinner component
@@ -48,6 +49,24 @@ const AccessDenied = () => (
   </div>
 );
 
+const NoPagesAssigned = ({ onLogout }) => (
+  <div className="min-h-screen flex items-center justify-center bg-gray-100">
+    <div className="bg-white p-8 rounded-xl shadow-lg text-center max-w-md">
+      <h2 className="text-xl font-semibold text-gray-900 mb-2">No pages assigned</h2>
+      <p className="text-gray-600 mb-6">
+        Your account has no admin pages assigned yet. Ask a super admin to give you access, then sign in again.
+      </p>
+      <button
+        type="button"
+        onClick={onLogout}
+        className="inline-block px-6 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition-colors"
+      >
+        Sign out
+      </button>
+    </div>
+  </div>
+);
+
 /**
  * Protected Route Component
  * Wraps routes that require authentication
@@ -64,7 +83,7 @@ const ProtectedRoute = ({
   requiredAccess = [],
   redirectTo = '/login',
 }) => {
-  const { isAuthenticated, isLoading, admin, hasRole, hasAccess } = useAuth();
+  const { isAuthenticated, isLoading, admin, hasRole, hasAccess, logout } = useAuth();
   const location = useLocation();
 
   console.log('[ProtectedRoute] Checking access:', {
@@ -105,6 +124,14 @@ const ProtectedRoute = ({
       });
       return <AccessDenied />;
     }
+  }
+
+  if (!isPathAllowed(admin, location.pathname)) {
+    const firstAllowedPath = getFirstAllowedPath(admin);
+    if (!firstAllowedPath || firstAllowedPath === location.pathname) {
+      return <NoPagesAssigned onLogout={logout} />;
+    }
+    return <Navigate to={firstAllowedPath} replace />;
   }
 
   console.log('[ProtectedRoute] Access granted');

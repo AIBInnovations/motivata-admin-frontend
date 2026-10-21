@@ -26,6 +26,7 @@ import SOSProgramForm from '../components/challenges/SOSProgramForm';
 import SOSProgramDetailsModal from '../components/challenges/SOSProgramDetailsModal';
 import ConfirmDialog from '../components/ui/ConfirmDialog';
 import Pagination from '../components/ui/Pagination';
+import { formatApiError } from '../services/api.service';
 
 /**
  * Status badge colors
@@ -141,7 +142,7 @@ function Quizes() {
           setQuizToEdit(result.data);
           setIsQuizFormModalOpen(true);
         } else {
-          alert(result.error || 'Failed to load quiz details');
+          alert(formatApiError(result.error, 'Failed to load quiz details'));
         }
       } catch (err) {
         console.error('[Quizes] Failed to load quiz for edit:', err);
@@ -173,7 +174,7 @@ function Quizes() {
         if (result.success) {
           return result;
         } else {
-          setFormError(result.error || 'Failed to save quiz');
+          setFormError(formatApiError(result.error, 'Failed to save quiz'));
           return { success: false };
         }
       } catch (err) {
@@ -229,7 +230,7 @@ function Quizes() {
       if (result.success) {
         handleCloseQuizDeleteDialog();
       } else {
-        alert(result.error || 'Failed to delete quiz');
+        alert(formatApiError(result.error, 'Failed to delete quiz'));
       }
     } catch (err) {
       console.error('[Quizes] Delete error:', err);
@@ -276,7 +277,7 @@ function Quizes() {
           setProgramToEdit(result.data);
           setIsProgramFormModalOpen(true);
         } else {
-          alert(result.error || 'Failed to load program details');
+          alert(formatApiError(result.error, 'Failed to load program details'));
         }
       } catch (err) {
         console.error('[Quizes] Failed to load program for edit:', err);
@@ -308,7 +309,7 @@ function Quizes() {
         if (result.success) {
           return result;
         } else {
-          setFormError(result.error || 'Failed to save program');
+          setFormError(formatApiError(result.error, 'Failed to save program'));
           return { success: false };
         }
       } catch (err) {
@@ -352,7 +353,7 @@ function Quizes() {
       try {
         const result = await toggleProgramStatus(program._id, program.isActive);
         if (!result.success) {
-          alert(result.error || 'Failed to update program status');
+          alert(formatApiError(result.error, 'Failed to update program status'));
         }
       } catch (err) {
         console.error('[Quizes] Toggle status error:', err);
@@ -382,7 +383,7 @@ function Quizes() {
       if (result.success) {
         handleCloseProgramDeleteDialog();
       } else {
-        alert(result.error || 'Failed to delete program');
+        alert(formatApiError(result.error, 'Failed to delete program'));
       }
     } catch (err) {
       console.error('[Quizes] Delete error:', err);
