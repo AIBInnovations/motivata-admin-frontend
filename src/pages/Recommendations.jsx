@@ -30,7 +30,7 @@ const formatDate = (iso) =>
  */
 function Recommendations() {
   const { hasRole } = useAuth();
-  const canCreate = hasRole(['SUPER_ADMIN', 'ADMIN']);
+  const canCreate = true;
   const canDelete = hasRole(['SUPER_ADMIN', 'ADMIN']);
 
   const [recommendations, setRecommendations] = useState([]);

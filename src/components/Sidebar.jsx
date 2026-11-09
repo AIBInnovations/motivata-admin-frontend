@@ -41,6 +41,7 @@ import {
   KeyRound,
   UserRound,
   MessagesSquare,
+  Bell,
   BriefcaseBusiness,
   Store,
 } from "lucide-react";
@@ -182,6 +183,12 @@ function Sidebar({ collapsed, isOpen, onClose }) {
           label: "Weekly Updates & Help",
           icon: MessagesSquare,
           path: "/community",
+        },
+        {
+          id: "push-notifications",
+          label: "Push Notifications",
+          icon: Bell,
+          path: "/push-notifications",
         },
         {
           id: "occupations",
