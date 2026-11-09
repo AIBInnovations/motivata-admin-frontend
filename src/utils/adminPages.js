@@ -12,6 +12,7 @@ export const ADMIN_PAGES = [
   { id: 'admin-club-posts', label: 'Club Post', path: '/admin-club-posts' },
   { id: 'explore-posts', label: 'Explore Posts', path: '/explore-posts' },
   { id: 'community', label: 'Weekly Updates & Help', path: '/community' },
+  { id: 'push-notifications', label: 'Push Notifications', path: '/push-notifications' },
   { id: 'occupations', label: 'Occupations', path: '/occupations' },
   { id: 'brands', label: 'Brands', path: '/brands' },
   { id: 'sessions', label: 'Sessions', path: '/sessions' },

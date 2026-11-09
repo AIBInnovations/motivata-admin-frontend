@@ -421,7 +421,7 @@ function ExplorePosts() {
               Upload up to 10 photos. First photo will be used as the cover.
             </p>
             <p className="text-xs text-gray-500">
-              Recommended 1080x1080 (1:1). Other ratios get cropped in the app.
+              Best size: 1080 px wide. Square (1080x1080), portrait 4:5 (1080x1350) and landscape up to 1.91:1 (1080x566) show in full in the app. Taller or wider photos get trimmed at the edges.
             </p>
           </div>
 

@@ -50,6 +50,7 @@ import Colleges from './pages/Colleges';
 import Leaders from './pages/Leaders';
 import ReferralCodes from './pages/ReferralCodes';
 import Community from './pages/Community';
+import PushNotifications from './pages/PushNotifications';
 import Occupations from './pages/Occupations';
 import Brands from './pages/Brands';
 import { ToastContainer } from 'react-toastify';
@@ -110,6 +111,7 @@ function App() {
             <Route path="/feature-access" element={<FeatureAccess />} />
             <Route path="/clubs" element={<Clubs />} />
             <Route path="/community" element={<Community />} />
+            <Route path="/push-notifications" element={<PushNotifications />} />
             <Route path="/occupations" element={<Occupations />} />
             <Route path="/brands" element={<Brands />} />
             <Route path="/club-join-requests" element={<ClubJoinRequests />} />

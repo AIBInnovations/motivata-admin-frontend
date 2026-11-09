@@ -43,6 +43,23 @@ const defaultForm = {
 
 const defaultFilterInputs = { q: '', category: '', city: '' };
 
+const SUGGESTED_BRAND_CATEGORIES = [
+  'Art & Culture',
+  'Beauty & Personal Care',
+  'Education',
+  'Events & Experiences',
+  'Fashion',
+  'Finance',
+  'Fitness & Sports',
+  'Food & Drink',
+  'Health & Wellness',
+  'Home & Living',
+  'Media & Content',
+  'Services',
+  'Technology',
+  'Travel',
+];
+
 const inputClass = (hasError) =>
   `w-full px-3 py-2 text-sm border rounded-lg outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent ${
     hasError ? 'border-red-300' : 'border-gray-300'
@@ -604,12 +621,23 @@ function Brands() {
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Category</label>
               <input
                 type="text"
+                list="brand-category-options"
                 value={form.category}
                 maxLength={100}
                 onChange={(e) => setField('category', e.target.value)}
-                placeholder="e.g. Food & Drink"
+                placeholder="Pick a category or type a new one"
                 className={inputClass(formErrors.category)}
               />
+              <datalist id="brand-category-options">
+                {Array.from(
+                  new Set([...SUGGESTED_BRAND_CATEGORIES, ...brands.map((b) => b.category).filter(Boolean)])
+                )
+                  .sort((a, b) => a.localeCompare(b))
+                  .map((cat) => (
+                    <option key={cat} value={cat} />
+                  ))}
+              </datalist>
+              <p className="mt-1 text-xs text-gray-500">Members filter brands by this in the app. Reuse the same names.</p>
               {formErrors.category && (
                 <p className="mt-1 text-xs text-red-600">{formErrors.category}</p>
               )}
